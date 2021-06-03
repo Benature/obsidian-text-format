@@ -2,9 +2,9 @@
 	"id": "obsidian-text-format",
 	"name": "Text Format",
 	"version": "0.0.1",
-	"minAppVersion": "0.9.12",
+	"minAppVersion": "0.9.7",
 	"description": "Format selected text upper/lower/capitalize",
-	"author": "Obsidian",
+	"author": "Benature",
 	"authorUrl": "https://github.com/Benature",
 	"isDesktopOnly": false
 }
