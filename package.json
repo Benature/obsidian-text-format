@@ -1,7 +1,7 @@
 {
   "name": "obsidian-text-format",
-  "version": "0.0.1",
-  "description": "Format selected text upper/lower/capitalize/title",
+  "version": "0.1.0",
+  "description": "Format selected text upper/lower/capitalize/title or remove redundant blanks/enters.",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",

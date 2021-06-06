@@ -1,9 +1,9 @@
 {
 	"id": "obsidian-text-format",
 	"name": "Text Format",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"minAppVersion": "0.9.7",
-	"description": "Format selected text upper/lower/capitalize",
+	"description": "Format selected text upper/lower/capitalize/title or remove redundant blanks/enters.",
 	"author": "Benature",
 	"authorUrl": "https://github.com/Benature",
 	"isDesktopOnly": false

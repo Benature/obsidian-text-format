@@ -5,21 +5,31 @@ export default class Underline extends Plugin {
     this.addCommand({
       id: "text-format-lower",
       name: "Lower text",
-      callback: () => this.textLower("lower"),
+      callback: () => this.textFormat("lower"),
     });
     this.addCommand({
       id: "text-format-upper",
       name: "Upper text",
-      callback: () => this.textLower("upper"),
+      callback: () => this.textFormat("upper"),
     });
     this.addCommand({
       id: "text-format-capitalize",
       name: "Capitalize text",
-      callback: () => this.textLower("capitalize"),
+      callback: () => this.textFormat("capitalize"),
+    });
+    this.addCommand({
+      id: "text-format-remove-blanks",
+      name: "Remove redundant blanks",
+      callback: () => this.textFormat("blanks"),
+    });
+    this.addCommand({
+      id: "text-format-remove-enter",
+      name: "Remove all enters in selection",
+      callback: () => this.textFormat("enters"),
     });
   }
 
-  textLower(cmd: string): void {
+  textFormat(cmd: string): void {
     let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) {
       return;
@@ -28,19 +38,33 @@ export default class Underline extends Plugin {
 
     if (editor.somethingSelected()) {
       let selectedText = editor.getSelection();
+      let replacedText;
       switch (cmd) {
         case "lower":
-          editor.replaceSelection(selectedText.toLowerCase());
+          replacedText = selectedText.toLowerCase();
           break;
         case "upper":
-          editor.replaceSelection(selectedText.toUpperCase());
+          replacedText = selectedText.toUpperCase();
           break;
         case "capitalize":
-          editor.replaceSelection(toTitleCase(selectedText));
+          replacedText = toTitleCase(selectedText);
+          break;
+        case "blanks":
+          replacedText = selectedText;
+          while (replacedText.indexOf(`  `) > -1) {
+            replacedText = replacedText.replace(/  /g, " ");
+          }
+          break;
+        case "enters":
+          replacedText = selectedText.replace(/\n/g, " ");
+          while (replacedText.indexOf(`  `) > -1) {
+            replacedText = replacedText.replace(/  /g, " ");
+          }
           break;
         default:
           break;
       }
+      editor.replaceSelection(replacedText);
     }
   }
 }
