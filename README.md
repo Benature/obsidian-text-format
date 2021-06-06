@@ -10,6 +10,8 @@ Therefore, I wrote this plugin to format selected text with lower/upper/capitali
 
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
+Or you can consider to bind custom hotkeys to those commands.
+
 | Command                        | Description                                       |
 | :----------------------------- | ------------------------------------------------- |
 | Lower text                     | Lower all letters in selection                    |
