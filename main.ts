@@ -50,10 +50,11 @@ export default class Underline extends Plugin {
           replacedText = toTitleCase(selectedText);
           break;
         case "blanks":
-          replacedText = selectedText;
+          replacedText = selectedText.replace(/    /g, "\t");
           while (replacedText.indexOf(`  `) > -1) {
             replacedText = replacedText.replace(/  /g, " ");
           }
+          replacedText = replacedText.replace(/\n /g, "\n");
           break;
         case "enters":
           replacedText = selectedText.replace(/\n/g, " ");
