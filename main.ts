@@ -4,28 +4,28 @@ export default class Underline extends Plugin {
   async onload() {
     this.addCommand({
       id: "text-format-lower",
-      name: "Lower text",
-      callback: () => this.textFormat("lower"),
+      name: "Lowercase selected text",
+      callback: () => this.textFormat("lowercase"),
     });
     this.addCommand({
       id: "text-format-upper",
-      name: "Upper text",
-      callback: () => this.textFormat("upper"),
+      name: "Uppercase selected text",
+      callback: () => this.textFormat("uppercase"),
     });
     this.addCommand({
       id: "text-format-capitalize",
-      name: "Capitalize text",
+      name: "Capitalize selected text",
       callback: () => this.textFormat("capitalize"),
     });
     this.addCommand({
-      id: "text-format-remove-blanks",
-      name: "Remove redundant blanks",
-      callback: () => this.textFormat("blanks"),
+      id: "text-format-remove-spaces",
+      name: "Remove redundant spaces in selection",
+      callback: () => this.textFormat("spaces"),
     });
     this.addCommand({
-      id: "text-format-remove-enter",
-      name: "Remove all enters in selection",
-      callback: () => this.textFormat("enters"),
+      id: "text-format-remove-newline",
+      name: "Remove all newline characters in selection",
+      callback: () => this.textFormat("newline"),
     });
   }
 
@@ -40,23 +40,23 @@ export default class Underline extends Plugin {
       let selectedText = editor.getSelection();
       let replacedText;
       switch (cmd) {
-        case "lower":
+        case "lowercase":
           replacedText = selectedText.toLowerCase();
           break;
-        case "upper":
+        case "uppercase":
           replacedText = selectedText.toUpperCase();
           break;
         case "capitalize":
           replacedText = toTitleCase(selectedText);
           break;
-        case "blanks":
-          replacedText = selectedText.replace(/    /g, "\t");
+        case "spaces":
+          replacedText = selectedText.replace(/    /g, "\t"); // four spaces to be a tab
           while (replacedText.indexOf(`  `) > -1) {
             replacedText = replacedText.replace(/  /g, " ");
           }
-          replacedText = replacedText.replace(/\n /g, "\n");
+          replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
           break;
-        case "enters":
+        case "newline":
           replacedText = selectedText.replace(/\n/g, " ");
           while (replacedText.indexOf(`  `) > -1) {
             replacedText = replacedText.replace(/  /g, " ");
@@ -65,7 +65,9 @@ export default class Underline extends Plugin {
         default:
           break;
       }
-      editor.replaceSelection(replacedText);
+      if (replacedText != selectedText) {
+        editor.replaceSelection(replacedText);
+      }
     }
   }
 }
