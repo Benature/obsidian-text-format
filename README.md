@@ -1,10 +1,10 @@
 # Text Format
 
-Sometimes encounter some issues like
-1. I copy some text from pdf or some other source, but the copied content is out of format like more than one blanks between words or one paragraph broke into several lines.
-2. I want to lower the letters when they are all upper, etc.
+Sometimes encounter some issues like  
+1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
+2. I want to lowercase the letters when they are all uppercase, etc.
 
-Therefore, I wrote this plugin to format selected text with lower/upper/capitalize or remove redundant blanks/enters.
+Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize or remove redundant spaces/newline characters.
 
 ## Features
 
@@ -12,18 +12,18 @@ Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
 Or you can consider to bind custom hotkeys to those commands.
 
-| Command                        | Description                                       |
-| :----------------------------- | ------------------------------------------------- |
-| Lower text                     | Lower all letters in selection                    |
-| Upper text                     | Upper all letters in selection                    |
-| Capitalize text                | Capitalize all words in selection                 |
-| Remove redundant blanks        | Ensure only one blank between words               |
-| Remove all enters in selection | Change multi-line selection into single-line text |
+| Command                                    | Description                                       |
+| :----------------------------------------- | ------------------------------------------------- |
+| Lowercase selected text                    | Lowercase all letters in selection                |
+| Uppercase selected text                    | Uppercase all letters in selection                |
+| Capitalize selected text                   | Capitalize all words in selection                 |
+| Remove redundant spaces in selection       | Ensure only one space between words               |
+| Remove all newline characters in selection | Change multi-line selection into single-line text |
 ## Example
 
 
-- `lower`: "Hello, I am using Obsidian." -> "hello, i am using obsidian."
-- `upper`: "Hello, I am using Obsidian." -> "HELLO, I AM USING OBSIDIAN."
+- `lowercase`: "Hello, I am using Obsidian." -> "hello, i am using obsidian."
+- `uppercase`: "Hello, I am using Obsidian." -> "HELLO, I AM USING OBSIDIAN."
 - `capitalize`: "Hello, I am using Obsidian." -> "Hello, I Am Using Obsidian."
 - `remove blanks`: "There  are so   many redundant      blanks" -> "There are so many redundant blanks"
 

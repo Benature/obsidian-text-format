@@ -63,6 +63,7 @@ export default class Underline extends Plugin {
           }
           break;
         default:
+          return;
           break;
       }
       if (replacedText != selectedText) {
