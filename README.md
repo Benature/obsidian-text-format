@@ -1,6 +1,6 @@
 # Text Format
 
-Sometimes encounter some issues like  
+Sometimes I encounter some issues like  
 1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
 2. I want to lowercase the letters when they are all uppercase, etc.
 

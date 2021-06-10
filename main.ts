@@ -50,21 +50,15 @@ export default class Underline extends Plugin {
           replacedText = toTitleCase(selectedText);
           break;
         case "spaces":
-          replacedText = selectedText.replace(/    /g, "\t"); // four spaces to be a tab
-          while (replacedText.indexOf(`  `) > -1) {
-            replacedText = replacedText.replace(/  /g, " ");
-          }
-          replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
+          replacedText = selectedText.replace(/ +/g, " ");
+          // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
           break;
         case "newline":
           replacedText = selectedText.replace(/\n/g, " ");
-          while (replacedText.indexOf(`  `) > -1) {
-            replacedText = replacedText.replace(/  /g, " ");
-          }
+          // replacedText = selectedText.replace(/ +/g, " ");
           break;
         default:
           return;
-          break;
       }
       if (replacedText != selectedText) {
         editor.replaceSelection(replacedText);
