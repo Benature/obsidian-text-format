@@ -1,5 +1,7 @@
 import { MarkdownView, Plugin } from "obsidian";
 
+import "node_modules/@gouch/to-title-case/to-title-case";
+
 export default class Underline extends Plugin {
   async onload() {
     this.addCommand({
@@ -16,6 +18,11 @@ export default class Underline extends Plugin {
       id: "text-format-capitalize",
       name: "Capitalize selected text",
       callback: () => this.textFormat("capitalize"),
+    });
+    this.addCommand({
+      id: "text-format-titlecase",
+      name: "Title case selected text",
+      callback: () => this.textFormat("titlecase"),
     });
     this.addCommand({
       id: "text-format-remove-spaces",
@@ -49,6 +56,9 @@ export default class Underline extends Plugin {
         case "capitalize":
           replacedText = toTitleCase(selectedText);
           break;
+        case "titlecase":
+          replacedText = selectedText.toTitleCase();
+          break;
         case "spaces":
           replacedText = selectedText.replace(/ +/g, " ");
           // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
@@ -67,10 +77,13 @@ export default class Underline extends Plugin {
   }
 }
 
-function toTitleCase(phrase: string): string {
-  return phrase
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+function toTitleCase(s: string): string {
+  return s.replace(/\w\S*/g, function (t) {
+    return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
+  });
+  // return s
+  //   .toLowerCase()
+  //   .split(" ")
+  //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+  //   .join(" ");
 }
