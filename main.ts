@@ -57,6 +57,7 @@ export default class Underline extends Plugin {
           replacedText = toTitleCase(selectedText);
           break;
         case "titlecase":
+          // @ts-ignore
           replacedText = selectedText.toTitleCase();
           break;
         case "spaces":
@@ -70,8 +71,22 @@ export default class Underline extends Plugin {
         default:
           return;
       }
+
       if (replacedText != selectedText) {
         editor.replaceSelection(replacedText);
+      }
+
+      if (cmd != "newline") {
+        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+        editor.setSelection(
+          editor.offsetToPos(tos - replacedText.length),
+          editor.offsetToPos(tos)
+        );
+      } else {
+        let anchor = editor.getCursor("anchor");
+        let head = editor.getCursor("head");
+        anchor.ch = 0;
+        editor.setSelection(anchor, head);
       }
     }
   }
@@ -81,9 +96,4 @@ function toTitleCase(s: string): string {
   return s.replace(/\w\S*/g, function (t) {
     return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
   });
-  // return s
-  //   .toLowerCase()
-  //   .split(" ")
-  //   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  //   .join(" ");
 }
