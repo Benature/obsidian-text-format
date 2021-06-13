@@ -65,7 +65,7 @@ export default class Underline extends Plugin {
           // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
           break;
         case "newline":
-          replacedText = selectedText.replace(/\n/g, " ");
+          replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
           // replacedText = selectedText.replace(/ +/g, " ");
           break;
         default:
