@@ -12,14 +12,16 @@ Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
 Or you can consider to bind custom hotkeys to those commands.
 
-| Command                                        | Description                                                         |
-| :--------------------------------------------- | ------------------------------------------------------------------- |
-| **Lowercase** selected text                    | Lowercase all letters in selection                                  |
-| **Uppercase** selected text                    | Uppercase all letters in selection                                  |
-| **Capitalize** selected text                   | Capitalize all words in selection                                   |
-| **Title case** selected text                   | Capitalize words but leave certain words in lower case in selection |
-| Remove redundant **spaces** in selection       | Ensure only one space between words                                 |
-| Remove all **newline characters** in selection | Change multi-line selection into single-line text                   |
+| Command                                    | Description                                                                                                                             |
+| :----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                | Lowercase all letters in selection                                                                                                      |
+| **Uppercase** selected text                | Uppercase all letters in selection                                                                                                      |
+| **Capitalize** selected text               | Capitalize all words in selection                                                                                                       |
+| **Title case** selected text               | Capitalize words but leave certain words in lower case in selection                                                                     |
+| Remove redundant **spaces** in selection   | Ensure only one space between words                                                                                                     |
+| Merge **broken paragraph(s)** in selection | Change selected lines into single-line, except lines are separated by blank line(s), and blank lines will be merged into one blank line |
+
+*If the command behavior does not fit in your use case, please issue it.*
 
 ## Example
 

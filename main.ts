@@ -30,9 +30,9 @@ export default class Underline extends Plugin {
       callback: () => this.textFormat("spaces"),
     });
     this.addCommand({
-      id: "text-format-remove-newline",
-      name: "Remove all newline characters in selection",
-      callback: () => this.textFormat("newline"),
+      id: "text-format-merge-line",
+      name: "Merge broken paragraph(s) in selection",
+      callback: () => this.textFormat("merge"),
     });
   }
 
@@ -64,29 +64,29 @@ export default class Underline extends Plugin {
           replacedText = selectedText.replace(/ +/g, " ");
           // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
           break;
-        case "newline":
+        case "merge":
           replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
+          // replacedText = replacedText.replace(/\n\n+/g, "\n\n");
           // replacedText = selectedText.replace(/ +/g, " ");
           break;
         default:
           return;
       }
 
+      const fos = editor.posToOffset(editor.getCursor("from"));
       if (replacedText != selectedText) {
         editor.replaceSelection(replacedText);
       }
 
-      if (cmd != "newline") {
+      if (cmd != "merge") {
         const tos = editor.posToOffset(editor.getCursor("to")); // to offset
         editor.setSelection(
           editor.offsetToPos(tos - replacedText.length),
           editor.offsetToPos(tos)
         );
       } else {
-        let anchor = editor.getCursor("anchor");
         let head = editor.getCursor("head");
-        anchor.ch = 0;
-        editor.setSelection(anchor, head);
+        editor.setSelection(editor.offsetToPos(fos), head);
       }
     }
   }
