@@ -1,9 +1,22 @@
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 
 import "node_modules/@gouch/to-title-case/to-title-case";
 
-export default class Underline extends Plugin {
+interface FormatSettings {
+  MergeParagraph_Newlines: boolean;
+  MergeParagraph_Spaces: boolean;
+}
+
+const DEFAULT_SETTINGS: FormatSettings = {
+  MergeParagraph_Newlines: true,
+  MergeParagraph_Spaces: true,
+};
+export default class TextFormat extends Plugin {
+  settings: FormatSettings;
+
   async onload() {
+    await this.loadSettings();
+
     this.addCommand({
       id: "text-format-lower",
       name: "Lowercase selected text",
@@ -34,6 +47,7 @@ export default class Underline extends Plugin {
       name: "Merge broken paragraph(s) in selection",
       callback: () => this.textFormat("merge"),
     });
+    this.addSettingTab(new TextFormatSettingTab(this.app, this));
   }
 
   textFormat(cmd: string): void {
@@ -66,8 +80,13 @@ export default class Underline extends Plugin {
           break;
         case "merge":
           replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
-          // replacedText = replacedText.replace(/\n\n+/g, "\n\n");
-          // replacedText = selectedText.replace(/ +/g, " ");
+          console.log(this.settings);
+          if (this.settings.MergeParagraph_Newlines) {
+            replacedText = replacedText.replace(/\n\n+/g, "\n\n");
+          }
+          if (this.settings.MergeParagraph_Spaces) {
+            replacedText = replacedText.replace(/ +/g, " ");
+          }
           break;
         default:
           return;
@@ -90,10 +109,61 @@ export default class Underline extends Plugin {
       }
     }
   }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
 }
 
 function toTitleCase(s: string): string {
   return s.replace(/\w\S*/g, function (t) {
     return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
   });
+}
+
+class TextFormatSettingTab extends PluginSettingTab {
+  plugin: TextFormat;
+
+  constructor(app: App, plugin: TextFormat) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+
+  display(): void {
+    let { containerEl } = this;
+
+    containerEl.empty();
+
+    containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
+
+    new Setting(containerEl)
+      .setName("Remove redundant blank lines")
+      .setDesc(
+        'change blank lines into single blank lines, e.g. "\\n\\n\\n" will be changed to "\\n\\n"'
+      )
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.MergeParagraph_Newlines)
+          .onChange(async (value) => {
+            this.plugin.settings.MergeParagraph_Newlines = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(containerEl)
+      .setName("Remove redundant blank spaces")
+      .setDesc("ensure only one space between words")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.MergeParagraph_Spaces)
+          .onChange(async (value) => {
+            this.plugin.settings.MergeParagraph_Spaces = value;
+            await this.plugin.saveSettings();
+          });
+      });
+  }
 }
