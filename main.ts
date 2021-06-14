@@ -2,15 +2,6 @@ import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 
 import "node_modules/@gouch/to-title-case/to-title-case";
 
-interface FormatSettings {
-  MergeParagraph_Newlines: boolean;
-  MergeParagraph_Spaces: boolean;
-}
-
-const DEFAULT_SETTINGS: FormatSettings = {
-  MergeParagraph_Newlines: true,
-  MergeParagraph_Spaces: true,
-};
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
 
@@ -57,56 +48,62 @@ export default class TextFormat extends Plugin {
     }
     let editor = markdownView.editor;
 
-    if (editor.somethingSelected()) {
-      let selectedText = editor.getSelection();
-      let replacedText;
-      switch (cmd) {
-        case "lowercase":
-          replacedText = selectedText.toLowerCase();
-          break;
-        case "uppercase":
-          replacedText = selectedText.toUpperCase();
-          break;
-        case "capitalize":
-          replacedText = toTitleCase(selectedText);
-          break;
-        case "titlecase":
-          // @ts-ignore
-          replacedText = selectedText.toTitleCase();
-          break;
-        case "spaces":
-          replacedText = selectedText.replace(/ +/g, " ");
-          // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
-          break;
-        case "merge":
-          replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
-          console.log(this.settings);
-          if (this.settings.MergeParagraph_Newlines) {
-            replacedText = replacedText.replace(/\n\n+/g, "\n\n");
-          }
-          if (this.settings.MergeParagraph_Spaces) {
-            replacedText = replacedText.replace(/ +/g, " ");
-          }
-          break;
-        default:
-          return;
-      }
+    var selectedText, replacedText;
+    if (!editor.somethingSelected()) {
+      let cursor = editor.getCursor();
+      cursor.ch = 0;
+      let aos = editor.posToOffset(cursor);
+      cursor.line += 1;
+      let hos = editor.posToOffset(cursor);
+      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos));
+    }
+    selectedText = editor.getSelection();
+    switch (cmd) {
+      case "lowercase":
+        replacedText = selectedText.toLowerCase();
+        break;
+      case "uppercase":
+        replacedText = selectedText.toUpperCase();
+        break;
+      case "capitalize":
+        replacedText = toTitleCase(selectedText);
+        break;
+      case "titlecase":
+        // @ts-ignore
+        replacedText = selectedText.toTitleCase();
+        break;
+      case "spaces":
+        replacedText = selectedText.replace(/ +/g, " ");
+        // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
+        break;
+      case "merge":
+        replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
+        console.log(this.settings);
+        if (this.settings.MergeParagraph_Newlines) {
+          replacedText = replacedText.replace(/\n\n+/g, "\n\n");
+        }
+        if (this.settings.MergeParagraph_Spaces) {
+          replacedText = replacedText.replace(/ +/g, " ");
+        }
+        break;
+      default:
+        return;
+    }
 
-      const fos = editor.posToOffset(editor.getCursor("from"));
-      if (replacedText != selectedText) {
-        editor.replaceSelection(replacedText);
-      }
+    const fos = editor.posToOffset(editor.getCursor("from"));
+    if (replacedText != selectedText) {
+      editor.replaceSelection(replacedText);
+    }
 
-      if (cmd != "merge") {
-        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
-        editor.setSelection(
-          editor.offsetToPos(tos - replacedText.length),
-          editor.offsetToPos(tos)
-        );
-      } else {
-        let head = editor.getCursor("head");
-        editor.setSelection(editor.offsetToPos(fos), head);
-      }
+    if (cmd != "merge") {
+      const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+      editor.setSelection(
+        editor.offsetToPos(tos - replacedText.length),
+        editor.offsetToPos(tos)
+      );
+    } else {
+      let head = editor.getCursor("head");
+      editor.setSelection(editor.offsetToPos(fos), head);
     }
   }
 
@@ -125,6 +122,18 @@ function toTitleCase(s: string): string {
   });
 }
 
+/* ----------------------------------------------------------------
+   --------------------------Settings------------------------------
+   ---------------------------------------------------------------- */
+interface FormatSettings {
+  MergeParagraph_Newlines: boolean;
+  MergeParagraph_Spaces: boolean;
+}
+
+const DEFAULT_SETTINGS: FormatSettings = {
+  MergeParagraph_Newlines: true,
+  MergeParagraph_Spaces: true,
+};
 class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
 
