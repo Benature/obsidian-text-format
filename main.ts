@@ -19,9 +19,14 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("uppercase"),
     });
     this.addCommand({
-      id: "text-format-capitalize",
-      name: "Capitalize selected text",
-      callback: () => this.textFormat("capitalize"),
+      id: "text-format-capitalize-word",
+      name: "Capitalize all words in selected text",
+      callback: () => this.textFormat("capitalize-word"),
+    });
+    this.addCommand({
+      id: "text-format-capitalize-sentence",
+      name: "Capitalize only first word of sentence in selected text",
+      callback: () => this.textFormat("capitalize-sentence"),
     });
     this.addCommand({
       id: "text-format-titlecase",
@@ -49,14 +54,22 @@ export default class TextFormat extends Plugin {
     let editor = markdownView.editor;
 
     var selectedText, replacedText;
+
     if (!editor.somethingSelected()) {
       let cursor = editor.getCursor();
+
       cursor.ch = 0;
       let aos = editor.posToOffset(cursor);
+
       cursor.line += 1;
       let hos = editor.posToOffset(cursor);
-      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos - 1));
+      if (cursor.line <= editor.lastLine()) {
+        // don't select the next line which is not selected by user
+        hos -= 1;
+      }
+      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos));
     }
+
     selectedText = editor.getSelection();
     switch (cmd) {
       case "lowercase":
@@ -65,8 +78,11 @@ export default class TextFormat extends Plugin {
       case "uppercase":
         replacedText = selectedText.toUpperCase();
         break;
-      case "capitalize":
-        replacedText = toTitleCase(selectedText);
+      case "capitalize-word":
+        replacedText = capitalizeWord(selectedText);
+        break;
+      case "capitalize-sentence":
+        replacedText = capitalizeSentence(selectedText);
         break;
       case "titlecase":
         // @ts-ignore
@@ -116,9 +132,15 @@ export default class TextFormat extends Plugin {
   }
 }
 
-function toTitleCase(s: string): string {
+function capitalizeWord(s: string): string {
   return s.replace(/\w\S*/g, function (t) {
     return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
+  });
+}
+
+function capitalizeSentence(s: string): string {
+  return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
+    return t.toUpperCase();
   });
 }
 
