@@ -25,14 +25,44 @@ Or you can consider to bind custom hotkeys to those commands.
 ## Example
 
 
-- `lowercase`: "Hello, I am using Obsidian." -> "hello, i am using obsidian."
-- `uppercase`: "Hello, I am using Obsidian." -> "HELLO, I AM USING OBSIDIAN."
-- `capitalize`: "Hello, I am using Obsidian." -> "Hello, I Am Using Obsidian."
-- `titlecase`: "Obsidian is a good app." -> "Obsidian Is a Good App."
-- `remove blanks`
+- lowercase
+  ```diff
+  - Hello, I am using Obsidian.
+  + hello, i am using obsidian.
+  ```
+- uppercase
+  ```diff
+  - Hello, I am using Obsidian.
+  + HELLO, I AM USING OBSIDIAN.
+  ```
+- capitalize
+  ```diff
+  - Hello, I am using Obsidian.
+  + Hello, I Am Using Obsidian.
+  ```
+- titlecase
+  ```diff
+  - Obsidian is a good app.
+  + Obsidian Is a Good App.
+  ```
+- redundant spaces
   ```diff
   - There  are so   many redundant      blanks
   + There are so many redundant blanks"
+  ```
+- merge broken paragraph
+  ```diff
+  - This paragraph is broken 
+  - into several lines. I want 
+  - those lines merged!
+  - 
+  - And this is second paragraph. There is a blank line between 
+  - two paragraph, indicating that they should not be merged into 
+  - one paragraph!
+  
+  + This paragraph is broken into several lines. I want those lines merged!
+  +
+  + And this is second paragraph. There is a blank line between two paragraph, indicating that they should not be merged into One paragraph!
   ```
 
 ![demo](https://user-images.githubusercontent.com/35028647/121776728-149ea500-cbc1-11eb-89ee-f4afcb0816ed.gif)
