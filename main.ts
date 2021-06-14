@@ -55,7 +55,7 @@ export default class TextFormat extends Plugin {
       let aos = editor.posToOffset(cursor);
       cursor.line += 1;
       let hos = editor.posToOffset(cursor);
-      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos));
+      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos - 1));
     }
     selectedText = editor.getSelection();
     switch (cmd) {
