@@ -58,7 +58,7 @@ Or you can consider to bind custom hotkeys to those commands.
 - redundant spaces
   ```diff
   - There  are so   many redundant      blanks
-  + There are so many redundant blanks"
+  + There are so many redundant blanks
   ```
 - merge broken paragraph
   ```diff

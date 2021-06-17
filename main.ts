@@ -7,6 +7,7 @@ export default class TextFormat extends Plugin {
 
   async onload() {
     await this.loadSettings();
+    this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
     this.addCommand({
       id: "text-format-lower",
@@ -43,7 +44,11 @@ export default class TextFormat extends Plugin {
       name: "Merge broken paragraph(s) in selection",
       callback: () => this.textFormat("merge"),
     });
-    this.addSettingTab(new TextFormatSettingTab(this.app, this));
+    this.addCommand({
+      id: "text-format-bullet-list",
+      name: "Format bullet list",
+      callback: () => this.textFormat("bullet"),
+    });
   }
 
   textFormat(cmd: string): void {
@@ -71,6 +76,18 @@ export default class TextFormat extends Plugin {
     }
 
     selectedText = editor.getSelection();
+
+    switch (cmd) {
+      case "capitalize-word":
+      case "titlecase":
+        if (this.settings.LowercaseFirst) {
+          replacedText = selectedText.toLowerCase();
+        } else {
+          replacedText = selectedText;
+        }
+        break;
+    }
+
     switch (cmd) {
       case "lowercase":
         replacedText = selectedText.toLowerCase();
@@ -79,14 +96,14 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.toUpperCase();
         break;
       case "capitalize-word":
-        replacedText = capitalizeWord(selectedText);
+        replacedText = capitalizeWord(replacedText);
         break;
       case "capitalize-sentence":
         replacedText = capitalizeSentence(selectedText);
         break;
       case "titlecase":
         // @ts-ignore
-        replacedText = selectedText.toTitleCase();
+        replacedText = replacedText.toTitleCase();
         break;
       case "spaces":
         replacedText = selectedText.replace(/ +/g, " ");
@@ -101,6 +118,14 @@ export default class TextFormat extends Plugin {
         if (this.settings.MergeParagraph_Spaces) {
           replacedText = replacedText.replace(/ +/g, " ");
         }
+        break;
+      case "bullet":
+        replacedText = selectedText.replace(
+          // /^[ ]*•[ ]*/g,
+          /^ *• *|(?<=\n) *• */g,
+          "- "
+        );
+        replacedText = replacedText.replace(/\n+/g, "\n");
         break;
       default:
         return;
@@ -134,7 +159,7 @@ export default class TextFormat extends Plugin {
 
 function capitalizeWord(s: string): string {
   return s.replace(/\w\S*/g, function (t) {
-    return t.charAt(0).toUpperCase() + t.substr(1).toLowerCase();
+    return t.charAt(0).toUpperCase() + t.substr(1);
   });
 }
 
@@ -150,11 +175,13 @@ function capitalizeSentence(s: string): string {
 interface FormatSettings {
   MergeParagraph_Newlines: boolean;
   MergeParagraph_Spaces: boolean;
+  LowercaseFirst: boolean;
 }
 
 const DEFAULT_SETTINGS: FormatSettings = {
   MergeParagraph_Newlines: true,
   MergeParagraph_Spaces: true,
+  LowercaseFirst: false,
 };
 class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -168,6 +195,22 @@ class TextFormatSettingTab extends PluginSettingTab {
     let { containerEl } = this;
 
     containerEl.empty();
+
+    containerEl.createEl("h3", { text: "Lowercase" });
+
+    new Setting(containerEl)
+      .setName("Lowercase before capitalize/title case")
+      .setDesc(
+        "When running the capitalize or title case command, the plugin will lowercase the selection at first."
+      )
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.LowercaseFirst)
+          .onChange(async (value) => {
+            this.plugin.settings.LowercaseFirst = value;
+            await this.plugin.saveSettings();
+          });
+      });
 
     containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
 
