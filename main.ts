@@ -49,6 +49,11 @@ export default class TextFormat extends Plugin {
       name: "Format bullet list",
       callback: () => this.textFormat("bullet"),
     });
+    this.addCommand({
+      id: "text-format-ordered-list",
+      name: "Format ordered list",
+      callback: () => this.textFormat("ordered"),
+    });
   }
 
   textFormat(cmd: string): void {
@@ -120,12 +125,18 @@ export default class TextFormat extends Plugin {
         }
         break;
       case "bullet":
-        replacedText = selectedText.replace(
-          // /^[ ]*•[ ]*/g,
-          /^ *• *|(?<=\n) *• */g,
-          "- "
-        );
-        replacedText = replacedText.replace(/\n+/g, "\n");
+        replacedText = selectedText.replace(/(^|(?<=[\s])) *• */g, "\n- ");
+        replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
+        break;
+      case "ordered":
+        var orderedCount = 0;
+        console.log(orderedCount);
+        replacedText = selectedText.replace(/(^|\s)[^\s\(]+\)/g, function (t) {
+          console.log(t);
+          orderedCount++;
+          return "\n" + String(orderedCount) + ". ";
+        });
+        replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
         break;
       default:
         return;
