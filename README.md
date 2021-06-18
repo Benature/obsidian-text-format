@@ -23,6 +23,8 @@ Or you can consider to bind custom hotkeys to those commands.
 | **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection                                                                                                                                                                                |
 | Remove redundant **spaces** in selection                        | Ensure only one space between words                                                                                                                                                                                                                |
 | Merge **broken paragraph(s)** in selection                      | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
+| Format **bullet** list                                          | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                                                                                                                         |
+| Format **ordered** list                                         | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines.                                                                                                   |
 
 
 ## Example
@@ -74,5 +76,21 @@ Or you can consider to bind custom hotkeys to those commands.
   +
   + And this is second paragraph. There is a blank line between two paragraph, indicating that they should not be merged into one paragraph!
   ```
-
+- bullet list
+  ```diff
+  - • first, blahblah • second, blahblah • third, blahblah
+  
+  + - first, blahblah 
+  + - second, blahblah 
+  + - third, blahblah
+  ```
+- ordered list
+  ```diff
+  - a) first, blahblah b) second, blahblah c) third, blahblah
+  - i) first, blahblah ii) second, blahblah iii) third, blahblah
+  
+  + 1. first, blahblah 
+  + 2. second, blahblah 
+  + 3. third, blahblah
+  ```
 ![demo](https://user-images.githubusercontent.com/35028647/121776728-149ea500-cbc1-11eb-89ee-f4afcb0816ed.gif)
