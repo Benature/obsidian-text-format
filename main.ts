@@ -91,6 +91,25 @@ export default class TextFormat extends Plugin {
           replacedText = selectedText;
         }
         break;
+      case "bullet":
+      case "ordered":
+        let from = editor.getCursor("from");
+        let to = editor.getCursor("to");
+        from.ch = 0;
+        to.line += 1;
+        to.ch = 0;
+        if (to.line <= editor.lastLine()) {
+          editor.setSelection(
+            from,
+            editor.offsetToPos(editor.posToOffset(to) - 1)
+          );
+        } else {
+          editor.setSelection(from, to);
+        }
+        selectedText = editor.getSelection();
+        break;
+      default:
+        break;
     }
 
     switch (cmd) {
@@ -129,7 +148,7 @@ export default class TextFormat extends Plugin {
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
         break;
       case "ordered":
-        var orderedCount = 0;
+        let orderedCount = 0;
         console.log(orderedCount);
         replacedText = selectedText.replace(/(^|\s)[^\s\(]+\)/g, function (t) {
           console.log(t);
