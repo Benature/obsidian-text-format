@@ -6,7 +6,7 @@ Sometimes I encounter some issues like
 1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
 2. I want to lowercase the letters when they are all uppercase, etc.
 
-Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters.
+Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
 ## Features
 
@@ -25,6 +25,8 @@ Or you can consider to bind custom hotkeys to those commands.
 | Merge **broken paragraph(s)** in selection                      | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
 | Format **bullet** list                                          | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                                                                                                                         |
 | Format **ordered** list                                         | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines.                                                                                                   |
+| **Split** line(s) by **blanks**                                 | Replace ` ` with `\n`.                                                                                                                                                                                                                             |
+| Convert to **Chinese character** of this file (,;:!?)           | Note: this command apply on the whole file                                                                                                                                                                                                         |
 
 
 ## Example

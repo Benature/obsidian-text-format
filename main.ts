@@ -54,6 +54,32 @@ export default class TextFormat extends Plugin {
       name: "Format ordered list",
       callback: () => this.textFormat("ordered"),
     });
+    this.addCommand({
+      id: "text-format-split-blank",
+      name: "Split line(s) by blanks",
+      callback: () => this.textFormat("split-blank"),
+    });
+    this.addCommand({
+      id: "text-format-chinese-character",
+      name: "Convert to Chinese character of this file (,;:!?)",
+      callback: () => this.convertChinese(),
+    });
+  }
+
+  convertChinese(): void {
+    let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!markdownView) {
+      return;
+    }
+    let sourceMode = markdownView.sourceMode;
+    let content = sourceMode.get();
+    content = content
+      .replace(/,/g, "，")
+      .replace(/;/g, "；")
+      .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
+      .replace(/\!(?=[^\[])/g, "！")
+      .replace(/\?/g, "？");
+    sourceMode.set(content, false);
   }
 
   textFormat(cmd: string): void {
@@ -63,7 +89,7 @@ export default class TextFormat extends Plugin {
     }
     let editor = markdownView.editor;
 
-    var selectedText, replacedText;
+    var selectedText: string, replacedText;
 
     if (!editor.somethingSelected()) {
       let cursor = editor.getCursor();
@@ -91,6 +117,7 @@ export default class TextFormat extends Plugin {
           replacedText = selectedText;
         }
         break;
+      case "split-blank":
       case "bullet":
       case "ordered":
         let from = editor.getCursor("from");
@@ -150,12 +177,21 @@ export default class TextFormat extends Plugin {
       case "ordered":
         let orderedCount = 0;
         console.log(orderedCount);
-        replacedText = selectedText.replace(/(^|\s)[^\s\(]+\)/g, function (t) {
-          console.log(t);
-          orderedCount++;
-          return "\n" + String(orderedCount) + ". ";
-        });
+        replacedText = selectedText.replace(
+          /(^|\s)[^\s[\(]]+\)|[:;]\w+\)|(?<=^|\s)[0-9]\./g,
+          function (t) {
+            orderedCount++;
+            let head = "\n"; // if single line, then add newline character.
+            if (selectedText.indexOf("\n") > -1) {
+              head = "";
+            }
+            return head + String(orderedCount) + ". ";
+          }
+        );
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
+        break;
+      case "split-blank":
+        replacedText = selectedText.replace(/ /g, "\n");
         break;
       default:
         return;
