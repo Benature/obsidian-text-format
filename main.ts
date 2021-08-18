@@ -2,6 +2,8 @@ import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 
 import "node_modules/@gouch/to-title-case/to-title-case";
 
+const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
+
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
 
@@ -147,7 +149,7 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.toUpperCase();
         break;
       case "capitalize-word":
-        replacedText = capitalizeWord(replacedText);
+        replacedText = capitalizeWord(selectedText);
         break;
       case "capitalize-sentence":
         replacedText = capitalizeSentence(selectedText);
@@ -223,14 +225,18 @@ export default class TextFormat extends Plugin {
   }
 }
 
-function capitalizeWord(s: string): string {
-  return s.replace(/\w\S*/g, function (t) {
+function capitalizeWord(str: string): string {
+  var rx = new RegExp(LC + "\\S*", "g");
+  return str.replace(rx, function (t) {
     return t.charAt(0).toUpperCase() + t.substr(1);
   });
 }
 
 function capitalizeSentence(s: string): string {
-  return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
+  var rx = new RegExp("^" + LC + "|(?<=[\\.!?\\n~]\\s+)" + LC + "", "g");
+
+  // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
+  return s.replace(rx, function (t) {
     return t.toUpperCase();
   });
 }
