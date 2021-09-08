@@ -1,9 +1,5 @@
 import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 
-import "node_modules/@gouch/to-title-case/to-title-case";
-
-const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
-
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
 
@@ -42,6 +38,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("spaces"),
     });
     this.addCommand({
+      id: "text-format-remove-blank-line",
+      name: "Remove blank line(s)",
+      callback: () => this.textFormat("blank-line"),
+    });
+    this.addCommand({
       id: "text-format-merge-line",
       name: "Merge broken paragraph(s) in selection",
       callback: () => this.textFormat("merge"),
@@ -52,10 +53,15 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("bullet"),
     });
     this.addCommand({
-      id: "text-format-ordered-list",
+      id: "text-format-convert-ordered-list",
       name: "Format ordered list",
-      callback: () => this.textFormat("ordered"),
+      callback: () => this.textFormat("convert-ordered"),
     });
+    // this.addCommand({
+    //   id: "text-format-toggle-ordered-list",
+    //   name: "Toggle ordered list",
+    //   callback: () => this.textFormat("toggle-ordered"),
+    // });
     this.addCommand({
       id: "text-format-split-blank",
       name: "Split line(s) by blanks",
@@ -110,6 +116,7 @@ export default class TextFormat extends Plugin {
 
     selectedText = editor.getSelection();
 
+    // adjust selection
     switch (cmd) {
       case "capitalize-word":
       case "titlecase":
@@ -172,11 +179,16 @@ export default class TextFormat extends Plugin {
           replacedText = replacedText.replace(/ +/g, " ");
         }
         break;
+      case "blank-line":
+        replacedText = selectedText.replace(/\n+/g, "\n");
+        break;
       case "bullet":
         replacedText = selectedText.replace(/(^|(?<=[\s])) *• */g, "\n- ");
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
         break;
-      case "ordered":
+      // case "toggle-ordered":
+      //   break;
+      case "convert-ordered":
         let orderedCount = 0;
         console.log(orderedCount);
         replacedText = selectedText.replace(
@@ -225,25 +237,10 @@ export default class TextFormat extends Plugin {
   }
 }
 
-function capitalizeWord(str: string): string {
-  var rx = new RegExp(LC + "\\S*", "g");
-  return str.replace(rx, function (t) {
-    return t.charAt(0).toUpperCase() + t.substr(1);
-  });
-}
-
-function capitalizeSentence(s: string): string {
-  var rx = new RegExp("^" + LC + "|(?<=[\\.!?\\n~]\\s+)" + LC + "", "g");
-
-  // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
-  return s.replace(rx, function (t) {
-    return t.toUpperCase();
-  });
-}
-
 /* ----------------------------------------------------------------
    --------------------------Settings------------------------------
    ---------------------------------------------------------------- */
+
 interface FormatSettings {
   MergeParagraph_Newlines: boolean;
   MergeParagraph_Spaces: boolean;
@@ -313,3 +310,71 @@ class TextFormatSettingTab extends PluginSettingTab {
       });
   }
 }
+
+/* ----------------------------------------------------------------
+   --------------------------Function------------------------------
+   ---------------------------------------------------------------- */
+
+const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
+
+function capitalizeWord(str: string): string {
+  var rx = new RegExp(LC + "\\S*", "g");
+  return str.replace(rx, function (t) {
+    return t.charAt(0).toUpperCase() + t.substr(1);
+  });
+}
+
+function capitalizeSentence(s: string): string {
+  var rx = new RegExp("(^|\\n)" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "", "g");
+
+  // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
+  return s.replace(rx, function (t) {
+    return t.toUpperCase();
+  });
+}
+
+/* To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case */
+// eslint-disable-next-line no-extend-native
+// @ts-ignore
+String.prototype.toTitleCase = function () {
+  "use strict";
+  var smallWords =
+    /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
+  var alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
+  var wordSeparators = /([ :–—-])/;
+
+  return this.split(wordSeparators)
+    .map(function (current: string, index: number, array: string) {
+      if (
+        /* Check for small words */
+        current.search(smallWords) > -1 &&
+        /* Skip first and last word */
+        index !== 0 &&
+        index !== array.length - 1 &&
+        /* Ignore title end and subtitle start */
+        array[index - 3] !== ":" &&
+        array[index + 1] !== ":" &&
+        /* Ignore small words that start a hyphenated phrase */
+        (array[index + 1] !== "-" ||
+          (array[index - 1] === "-" && array[index + 1] === "-"))
+      ) {
+        return current.toLowerCase();
+      }
+
+      /* Ignore intentional capitalization */
+      if (current.substr(1).search(/[A-Z]|\../) > -1) {
+        return current;
+      }
+
+      /* Ignore URLs */
+      if (array[index + 1] === ":" && array[index + 2] !== "") {
+        return current;
+      }
+
+      /* Capitalize the first letter */
+      return current.replace(alphanumericPattern, function (match) {
+        return match.toUpperCase();
+      });
+    })
+    .join("");
+};
