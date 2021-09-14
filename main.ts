@@ -191,8 +191,18 @@ export default class TextFormat extends Plugin {
       case "convert-ordered":
         let orderedCount = 0;
         console.log(orderedCount);
+        var rx = new RegExp(
+          "(^|\\s)[^\\s\\(\\[\\]]+\\)" +
+            "|" +
+            "[:;]?\\w+[）\\)]" +
+            "|" +
+            "(?<=^|\\s)[0-9]\\.",
+          "g"
+        );
+
         replacedText = selectedText.replace(
-          /(^|\s)[^\s[\(]]+\)|[:;]\w+\)|(?<=^|\s)[0-9]\./g,
+          rx,
+          // /(^|\s)[^\s\[\(\]]+\)|[:;]?\w+[）\)]|(?<=^|\s)[0-9]\./g,
           function (t) {
             orderedCount++;
             let head = "\n"; // if single line, then add newline character.
