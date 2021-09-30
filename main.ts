@@ -38,6 +38,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("spaces"),
     });
     this.addCommand({
+      id: "text-format-remove-spaces-all",
+      name: "Remove all spaces in selection",
+      callback: () => this.textFormat("spaces-all"),
+    });
+    this.addCommand({
       id: "text-format-remove-blank-line",
       name: "Remove blank line(s)",
       callback: () => this.textFormat("blank-line"),
@@ -168,6 +173,9 @@ export default class TextFormat extends Plugin {
       case "spaces":
         replacedText = selectedText.replace(/ +/g, " ");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
+        break;
+      case "spaces-all":
+        replacedText = selectedText.replace(/(?<![\)\]:]) | $/g, "");
         break;
       case "merge":
         replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
