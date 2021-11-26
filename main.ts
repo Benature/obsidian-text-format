@@ -126,9 +126,9 @@ export default class TextFormat extends Plugin {
       case "capitalize-word":
       case "titlecase":
         if (this.settings.LowercaseFirst) {
-          replacedText = selectedText.toLowerCase();
+          selectedText = selectedText.toLowerCase();
         } else {
-          replacedText = selectedText;
+          selectedText = selectedText;
         }
         break;
       case "split-blank":
@@ -168,7 +168,7 @@ export default class TextFormat extends Plugin {
         break;
       case "titlecase":
         // @ts-ignore
-        replacedText = replacedText.toTitleCase();
+        replacedText = selectedText.toTitleCase();
         break;
       case "spaces":
         replacedText = selectedText.replace(/ +/g, " ");
