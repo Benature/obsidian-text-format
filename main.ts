@@ -175,7 +175,7 @@ export default class TextFormat extends Plugin {
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
       case "spaces-all":
-        replacedText = selectedText.replace(/(?<![\)\]:]) | $/g, "");
+        replacedText = selectedText.replace(/(?<![\)\]:#]) | $/g, "");
         break;
       case "merge":
         replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
