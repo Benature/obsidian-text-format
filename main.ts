@@ -124,6 +124,7 @@ export default class TextFormat extends Plugin {
     // adjust selection
     switch (cmd) {
       case "capitalize-word":
+      case "capitalize-sentence":
       case "titlecase":
         if (this.settings.LowercaseFirst) {
           selectedText = selectedText.toLowerCase();
@@ -179,7 +180,7 @@ export default class TextFormat extends Plugin {
         break;
       case "merge":
         replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
-        console.log(this.settings);
+        // console.log(this.settings);
         if (this.settings.MergeParagraph_Newlines) {
           replacedText = replacedText.replace(/\n\n+/g, "\n\n");
         }
@@ -191,8 +192,10 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\n+/g, "\n");
         break;
       case "bullet":
-        replacedText = selectedText.replace(/(^|(?<=[\s])) *• */g, "\n- ");
-        replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
+        replacedText = selectedText
+          .replace(/(^|(?<=[\s])) *• */g, "\n- ")
+          .replace(/\n+/g, "\n")
+          .replace(/^\n/, "");
         break;
       // case "toggle-ordered":
       //   break;
