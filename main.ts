@@ -74,8 +74,14 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-chinese-character",
-      name: "Convert to Chinese character of this file (,;:!?)",
-      callback: () => this.convertChinese(),
+      name: "Convert to Chinese character (,;:!?)",
+      callback: () => this.textFormat("Chinese"),
+      // callback: () => this.convertChinese(),
+    });
+    this.addCommand({
+      id: "text-format-latex-single-letter",
+      name: "Convert single letter into math mode",
+      callback: () => this.textFormat("latex-letter"),
     });
   }
 
@@ -104,6 +110,7 @@ export default class TextFormat extends Plugin {
 
     var selectedText: string, replacedText;
 
+    // if nothing is selected, select the whole line.
     if (!editor.somethingSelected()) {
       let cursor = editor.getCursor();
 
@@ -126,6 +133,7 @@ export default class TextFormat extends Plugin {
       case "capitalize-word":
       case "capitalize-sentence":
       case "titlecase":
+        // lower case text if setting is true
         if (this.settings.LowercaseFirst) {
           selectedText = selectedText.toLowerCase();
         } else {
@@ -154,6 +162,7 @@ export default class TextFormat extends Plugin {
         break;
     }
 
+    // modify selection text
     switch (cmd) {
       case "lowercase":
         replacedText = selectedText.toLowerCase();
@@ -219,7 +228,7 @@ export default class TextFormat extends Plugin {
           // /(^|\s)[^\s\[\(\]]+\)|[:;]?\w+[）\)]|(?<=^|\s)[0-9]\./g,
           function (t) {
             orderedCount++;
-            console.log(orderedCount, t);
+            // console.log(orderedCount, t);
             let head = "\n"; // if single line, then add newline character.
             if (selectedText.indexOf("\n") > -1) {
               head = "";
@@ -232,11 +241,31 @@ export default class TextFormat extends Plugin {
       case "split-blank":
         replacedText = selectedText.replace(/ /g, "\n");
         break;
+      case "Chinese":
+        replacedText = selectedText
+          .replace(/ ?, ?/g, "，")
+          .replace(/ ?\. ?/g, "。")
+          .replace(/ ?、 ?/g, "、")
+          .replace(/;/g, "；")
+          .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
+          .replace(/\!(?=[^\[])/g, "！")
+          .replace(/\?/g, "？");
+        break;
+      case "latex-letter":
+        replacedText = selectedText.replace(
+          /(?<= )[b-zA-Z](?=[ ,\.?!，。、])/g,
+          function (t) {
+            console.log(t);
+            return `$${t}$`;
+          }
+        );
+        break;
       default:
         return;
     }
 
     const fos = editor.posToOffset(editor.getCursor("from"));
+    // change text only when two viable is different
     if (replacedText != selectedText) {
       editor.replaceSelection(replacedText);
     }
