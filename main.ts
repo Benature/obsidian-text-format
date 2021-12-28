@@ -379,7 +379,10 @@ function capitalizeWord(str: string): string {
 }
 
 function capitalizeSentence(s: string): string {
-  var rx = new RegExp("(^|\\n)" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "", "g");
+  var rx = new RegExp(
+    "(^|\\n|[\"'])" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "",
+    "g"
+  );
 
   // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
   return s.replace(rx, function (t) {
