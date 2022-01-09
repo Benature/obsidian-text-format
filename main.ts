@@ -185,7 +185,7 @@ export default class TextFormat extends Plugin {
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
       case "spaces-all":
-        replacedText = selectedText.replace(/(?<![\)\]:#]) | $/g, "");
+        replacedText = removeAllSpaces(selectedText);
         break;
       case "merge":
         replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
@@ -242,6 +242,9 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/ /g, "\n");
         break;
       case "Chinese":
+        if (this.settings.RemoveBlanksWhenChinese) {
+          selectedText = removeAllSpaces(selectedText);
+        }
         replacedText = selectedText
           .replace(/ ?, ?/g, "，")
           .replace(/ ?\. ?/g, "。")
@@ -249,13 +252,21 @@ export default class TextFormat extends Plugin {
           .replace(/;/g, "；")
           .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
           .replace(/\!(?=[^\[])/g, "！")
-          .replace(/\?/g, "？");
+          .replace(/\?/g, "？")
+          .replace(/\(.*?\)/g, function (t) {
+            console.log(t);
+            if (/^[a-zA-Z0-9\.\[\]\!\?\-]*$/.test(t)) {
+              // console.log("all english!");
+              return t;
+            } else {
+              return `（${t.slice(1, t.length - 1)}）`;
+            }
+          });
         break;
       case "latex-letter":
         replacedText = selectedText.replace(
           /(?<= )[b-zA-Z](?=[ ,\.?!，。、])/g,
           function (t) {
-            console.log(t);
             return `$${t}$`;
           }
         );
@@ -299,12 +310,14 @@ interface FormatSettings {
   MergeParagraph_Newlines: boolean;
   MergeParagraph_Spaces: boolean;
   LowercaseFirst: boolean;
+  RemoveBlanksWhenChinese: boolean;
 }
 
 const DEFAULT_SETTINGS: FormatSettings = {
   MergeParagraph_Newlines: true,
   MergeParagraph_Spaces: true,
   LowercaseFirst: false,
+  RemoveBlanksWhenChinese: false,
 };
 class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -362,6 +375,20 @@ class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    containerEl.createEl("h3", { text: "When converting Chinese characters" });
+
+    new Setting(containerEl)
+      .setName("Remove all spaces")
+      .setDesc("for OCR case")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
+          .onChange(async (value) => {
+            this.plugin.settings.RemoveBlanksWhenChinese = value;
+            await this.plugin.saveSettings();
+          });
+      });
   }
 }
 
@@ -388,6 +415,10 @@ function capitalizeSentence(s: string): string {
   return s.replace(rx, function (t) {
     return t.toUpperCase();
   });
+}
+
+function removeAllSpaces(s: string): string {
+  return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
 
 /* To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case */
