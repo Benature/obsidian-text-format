@@ -253,14 +253,8 @@ export default class TextFormat extends Plugin {
           .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
-          .replace(/\(.*?\)/g, function (t) {
-            console.log(t);
-            if (/^[a-zA-Z0-9\.\[\]\!\?\-]*$/.test(t)) {
-              // console.log("all english!");
-              return t;
-            } else {
-              return `（${t.slice(1, t.length - 1)}）`;
-            }
+          .replace(/\([^\)]*?[\u4e00-\u9fa5]+?[^\)]*?\)/g, function (t) {
+            return `（${t.slice(1, t.length - 1)}）`;
           });
         break;
       case "latex-letter":
