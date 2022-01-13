@@ -76,29 +76,12 @@ export default class TextFormat extends Plugin {
       id: "text-format-chinese-character",
       name: "Convert to Chinese character (,;:!?)",
       callback: () => this.textFormat("Chinese"),
-      // callback: () => this.convertChinese(),
     });
     this.addCommand({
       id: "text-format-latex-single-letter",
       name: "Convert single letter into math mode",
       callback: () => this.textFormat("latex-letter"),
     });
-  }
-
-  convertChinese(): void {
-    let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!markdownView) {
-      return;
-    }
-    let sourceMode = markdownView.sourceMode;
-    let content = sourceMode.get();
-    content = content
-      .replace(/,/g, "，")
-      .replace(/;/g, "；")
-      .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
-      .replace(/\!(?=[^\[])/g, "！")
-      .replace(/\?/g, "？");
-    sourceMode.set(content, false);
   }
 
   textFormat(cmd: string): void {
