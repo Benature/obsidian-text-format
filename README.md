@@ -30,9 +30,9 @@ Or you can consider to bind custom hotkeys to those commands.
 | **Split** line(s) by **blanks**                                 | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
 | Convert to **Chinese character** (,;:!?)                        | For OCR use case.                                                                                                                                                                                                                                  |
 | Convert single letter into **math** mode                        | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                                                       |
+| Decode URL                                                      | Decode URL for better reading and shorter url.                                                                                                                                                                                                     |
 
-
-## Example
+## Some Example
 
 
 - lowercase

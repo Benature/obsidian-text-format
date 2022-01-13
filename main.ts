@@ -1,4 +1,5 @@
 import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
+import { decode } from "querystring";
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -81,6 +82,11 @@ export default class TextFormat extends Plugin {
       id: "text-format-latex-single-letter",
       name: "Convert single letter into math mode",
       callback: () => this.textFormat("latex-letter"),
+    });
+    this.addCommand({
+      id: "text-format-decodeURI",
+      name: "Decode URL",
+      callback: () => this.textFormat("decodeURI"),
     });
   }
 
@@ -247,6 +253,15 @@ export default class TextFormat extends Plugin {
             return `$${t}$`;
           }
         );
+        break;
+      case "decodeURI":
+        replacedText = selectedText.replace(
+          /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
+          function (t) {
+            return decodeURI(t);
+          }
+        );
+
         break;
       default:
         return;
