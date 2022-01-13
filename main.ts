@@ -88,6 +88,29 @@ export default class TextFormat extends Plugin {
       name: "Decode URL",
       callback: () => this.textFormat("decodeURI"),
     });
+    this.addCommand({
+      id: "text-format-extra-line-break",
+      name: "Add extra line break to paragraph for whole file (beta)",
+      callback: () => this.extraLineBreak(),
+    });
+  }
+
+  extraLineBreak(): void {
+    let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!markdownView) {
+      return;
+    }
+    let editor = markdownView.editor;
+    let content = editor.getValue();
+    content = content.replace(
+      /(?<=(^---\n[\s\S]*?\n---\n|^))[\s\S]+$/g,
+      function (match) {
+        return match.replace(/(?<=\n).*[^-\n]+.*(?=\n)/g, function (t) {
+          return `${t}  `;
+        });
+      }
+    );
+    editor.setValue(content);
   }
 
   textFormat(cmd: string): void {
