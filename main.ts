@@ -46,7 +46,7 @@ export default class TextFormat extends Plugin {
     this.addCommand({
       id: "text-format-remove-blank-line",
       name: "Remove blank line(s)",
-      callback: () => this.textFormat("blank-line"),
+      callback: () => this.textFormat("remove-blank-line"),
     });
     this.addCommand({
       id: "text-format-merge-line",
@@ -89,13 +89,18 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("decodeURI"),
     });
     this.addCommand({
-      id: "text-format-extra-line-break",
-      name: "Add extra line break to paragraph for whole file (beta)",
-      callback: () => this.extraLineBreak(),
+      id: "text-format-paragraph-double-spaces",
+      name: "Add extra double spaces per paragraph for whole file (beta)",
+      callback: () => this.extraDoubleSpaces(),
+    });
+    this.addCommand({
+      id: "text-format-add-line-break",
+      name: "Add extra line break to paragraph",
+      callback: () => this.textFormat("add-line-break"),
     });
   }
 
-  extraLineBreak(): void {
+  extraDoubleSpaces(): void {
     let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) {
       return;
@@ -209,8 +214,11 @@ export default class TextFormat extends Plugin {
           replacedText = replacedText.replace(/ +/g, " ");
         }
         break;
-      case "blank-line":
+      case "remove-blank-line":
         replacedText = selectedText.replace(/\n+/g, "\n");
+        break;
+      case "add-line-break":
+        replacedText = selectedText.replace(/\n/g, "\n\n");
         break;
       case "bullet":
         replacedText = selectedText
