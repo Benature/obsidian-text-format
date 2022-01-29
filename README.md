@@ -31,6 +31,7 @@ Or you can consider to bind custom hotkeys to those commands.
 | Convert to **Chinese character** (,;:!?)                        | For OCR use case.                                                                                                                                                                                                                                  |
 | Convert single letter into **math** mode                        | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                                                       |
 | Decode URL                                                      | Decode URL for better reading and shorter url.                                                                                                                                                                                                     |
+| Remove hyphens                                                  | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 
 ## Some Example
 

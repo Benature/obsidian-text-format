@@ -98,6 +98,11 @@ export default class TextFormat extends Plugin {
       name: "Add extra line break to paragraph",
       callback: () => this.textFormat("add-line-break"),
     });
+    this.addCommand({
+      id: "text-format-hyphen",
+      name: "Remove hyphens",
+      callback: () => this.textFormat("hyphen"),
+    });
   }
 
   extraDoubleSpaces(): void {
@@ -267,9 +272,10 @@ export default class TextFormat extends Plugin {
         }
         replacedText = selectedText
           .replace(/ ?, ?/g, "，")
-          .replace(/ ?\. ?/g, "。")
+          .replace(/(?<!\d) ?\. ?/g, "。")
           .replace(/ ?、 ?/g, "、")
           .replace(/;/g, "；")
+          .replace(/--/g, "——")
           .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
@@ -292,12 +298,13 @@ export default class TextFormat extends Plugin {
             return decodeURI(t);
           }
         );
-
+        break;
+      case "hyphen":
+        replacedText = selectedText.replace(/(\w)-[ ]/g, "");
         break;
       default:
         return;
     }
-
     const fos = editor.posToOffset(editor.getCursor("from"));
     // change text only when two viable is different
     if (replacedText != selectedText) {
