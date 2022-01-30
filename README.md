@@ -8,30 +8,48 @@ Sometimes I encounter some issues like
 
 Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
-[Install this plugin right now.](obsidian://show-plugin?id=obsidian-text-format)
+[Install this plugin right now.] (obsidian://show-plugin?id=obsidian-text-format)
 ## Features
 
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
 Or you can consider to bind custom hotkeys to those commands.
 
-| Command                                                         | Description                                                                                                                                                                                                                                        |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                                                                                                                                                 |
-| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                                                                                                                                                 |
-| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                                                                                                                                                  |
-| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                                                                                                                                                             |
-| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)*                                                                                                                                 |
-| Remove redundant **spaces** in selection                        | Ensure only one space between words                                                                                                                                                                                                                |
-| Remove **blank line(s)**                                        | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
-| Merge **broken paragraph(s)** in selection                      | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
-| Format **bullet** list                                          | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                                                                                                                         |
-| Format **ordered** list                                         | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines.                                                                                                   |
-| **Split** line(s) by **blanks**                                 | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
-| Convert to **Chinese character** (,;:!?)                        | For OCR use case.                                                                                                                                                                                                                                  |
-| Convert single letter into **math** mode                        | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                                                       |
-| Decode URL                                                      | Decode URL for better reading and shorter url.                                                                                                                                                                                                     |
-| Remove hyphens                                                  | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
+### Basic
+
+| Command                                                         | Description                                                                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                 |
+| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                 |
+| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                  |
+| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                             |
+| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* |
+
+
+### List
+| Command                 | Description                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Format **bullet** list  | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                       |
+| Format **ordered** list | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. |
+
+### PDF copy / OCR
+
+| Command                                    | Description                                                                                                                                                                                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Remove redundant **spaces** in selection   | Ensure only one space between words                                                                                                                                                                                                                |
+| Remove **blank line(s)**                   | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
+| Merge **broken paragraph(s)** in selection | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
+| Remove **hyphens**                         | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
+| **Split** line(s) by **blanks**            | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
+| Convert to **Chinese character** (,;:!?)   | For OCR use case.                                                                                                                                                                                                                                  |
+
+
+### Others
+| Command                                  | Description                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| Convert single letter into **math** mode | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`. |
+| Decode **URL**                           | Decode URL for better reading and shorter url.                               |
+
 
 ## Some Example
 
