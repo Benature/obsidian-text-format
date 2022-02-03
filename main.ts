@@ -1,5 +1,11 @@
 import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 import { decode } from "querystring";
+import {
+  array2markdown,
+  capitalizeWord,
+  capitalizeSentence,
+  removeAllSpaces,
+} from "src/format";
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -63,11 +69,6 @@ export default class TextFormat extends Plugin {
       name: "Format ordered list",
       callback: () => this.textFormat("convert-ordered"),
     });
-    // this.addCommand({
-    //   id: "text-format-toggle-ordered-list",
-    //   name: "Toggle ordered list",
-    //   callback: () => this.textFormat("toggle-ordered"),
-    // });
     this.addCommand({
       id: "text-format-split-blank",
       name: "Split line(s) by blanks",
@@ -102,6 +103,11 @@ export default class TextFormat extends Plugin {
       id: "text-format-hyphen",
       name: "Remove hyphens",
       callback: () => this.textFormat("hyphen"),
+    });
+    this.addCommand({
+      id: "text-format-mathpix-array2table",
+      name: "Convert Mathpix array to markdown table",
+      callback: () => this.textFormat("array2table"),
     });
   }
 
@@ -302,6 +308,9 @@ export default class TextFormat extends Plugin {
       case "hyphen":
         replacedText = selectedText.replace(/(\w)-[ ]/g, "");
         break;
+      case "array2table":
+        replacedText = array2markdown(selectedText);
+        break;
       default:
         return;
     }
@@ -421,78 +430,3 @@ class TextFormatSettingTab extends PluginSettingTab {
       });
   }
 }
-
-/* ----------------------------------------------------------------
-   --------------------------Function------------------------------
-   ---------------------------------------------------------------- */
-
-const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
-
-function capitalizeWord(str: string): string {
-  var rx = new RegExp(LC + "\\S*", "g");
-  return str.replace(rx, function (t) {
-    return t.charAt(0).toUpperCase() + t.substr(1);
-  });
-}
-
-function capitalizeSentence(s: string): string {
-  var rx = new RegExp(
-    "(^|\\n|[\"'])" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "",
-    "g"
-  );
-
-  // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
-  return s.replace(rx, function (t) {
-    return t.toUpperCase();
-  });
-}
-
-function removeAllSpaces(s: string): string {
-  return s.replace(/(?<![\)\]:#-]) | $/g, "");
-}
-
-/* To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case */
-// eslint-disable-next-line no-extend-native
-// @ts-ignore
-String.prototype.toTitleCase = function () {
-  "use strict";
-  var smallWords =
-    /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
-  var alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
-  var wordSeparators = /([ :–—-])/;
-
-  return this.split(wordSeparators)
-    .map(function (current: string, index: number, array: string) {
-      if (
-        /* Check for small words */
-        current.search(smallWords) > -1 &&
-        /* Skip first and last word */
-        index !== 0 &&
-        index !== array.length - 1 &&
-        /* Ignore title end and subtitle start */
-        array[index - 3] !== ":" &&
-        array[index + 1] !== ":" &&
-        /* Ignore small words that start a hyphenated phrase */
-        (array[index + 1] !== "-" ||
-          (array[index - 1] === "-" && array[index + 1] === "-"))
-      ) {
-        return current.toLowerCase();
-      }
-
-      /* Ignore intentional capitalization */
-      if (current.substr(1).search(/[A-Z]|\../) > -1) {
-        return current;
-      }
-
-      /* Ignore URLs */
-      if (array[index + 1] === ":" && array[index + 2] !== "") {
-        return current;
-      }
-
-      /* Capitalize the first letter */
-      return current.replace(alphanumericPattern, function (match) {
-        return match.toUpperCase();
-      });
-    })
-    .join("");
-};
