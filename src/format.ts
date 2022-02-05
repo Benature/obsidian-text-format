@@ -30,7 +30,7 @@ export function array2markdown(content: string): string {
     .replace(/\$|\n/g, ``)
     .replace(/\\\\ \\hline/g, (t) => t + `\n`)
     .replace(/\\text *\{.*?\}/g, (t) =>
-      t.match(/(?<=\{).*?(?=\})/g)[0].replace(/ /g, ``)
+      t.match(/(?<=\{).*?(?=\})/g)[0].replace(/^ +| +$/g, ``)
     );
 
   let single_line_content = normal_content.replace(

@@ -242,7 +242,7 @@ export default class TextFormat extends Plugin {
       case "convert-ordered":
         let orderedCount = 0;
         var rx = new RegExp(
-          "(^|\\s)[^\\s\\(\\[\\]]+\\)" +
+          String.raw`(^|\s| and )[^\s\(\[\]]\)` +
             "|" +
             /* (?<=^|\s)
               (
@@ -250,7 +250,7 @@ export default class TextFormat extends Plugin {
                 |
                 [:;]?\w+[）\)]
               ) */
-            "(?<=^|[\\s，。])([:;]?(\\w|i{1,4})[）\\)]|[0-9]\\.)",
+            String.raw`(?<=^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
           "g"
         );
 
