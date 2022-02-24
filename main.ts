@@ -25,6 +25,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("uppercase"),
     });
     this.addCommand({
+      id: "text-format-toggle",
+      name: "Toggle case selected text",
+      callback: () => this.textFormat("togglecase"),
+    });
+    this.addCommand({
       id: "text-format-capitalize-word",
       name: "Capitalize all words in selected text",
       callback: () => this.textFormat("capitalize-word"),
@@ -197,6 +202,19 @@ export default class TextFormat extends Plugin {
         break;
       case "uppercase":
         replacedText = selectedText.toUpperCase();
+        break;
+      case "togglecase":
+          for (var i = 0; i < selectedText.length; i++) {
+            var char = selectedText.charAt(i);
+            if (char.toUpperCase()!=char.toLowerCase()) {
+              if (char != char.toUpperCase()) {
+                replacedText = selectedText.toUpperCase();
+              } else {
+                replacedText = selectedText.toLowerCase();
+              }
+              break;
+            }
+          }
         break;
       case "capitalize-word":
         replacedText = capitalizeWord(selectedText);
