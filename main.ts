@@ -226,7 +226,7 @@ export default class TextFormat extends Plugin {
         }
         break;
       case "remove-blank-line":
-        replacedText = selectedText.replace(/\n+/g, "\n");
+        replacedText = selectedText.replace(/\n\s*\n/g, "\n"); // issue #16
         break;
       case "add-line-break":
         replacedText = selectedText.replace(/\n/g, "\n\n");
