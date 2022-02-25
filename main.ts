@@ -26,7 +26,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-toggle",
-      name: "Toggle case selected text",
+      name: "Togglecase selected text",
       callback: () => this.textFormat("togglecase"),
     });
     this.addCommand({
