@@ -42,7 +42,7 @@ export default class TextFormat extends Plugin {
     this.addCommand({
       id: "text-format-remove-spaces",
       name: "Remove redundant spaces in selection",
-      callback: () => this.textFormat("spaces"),
+      callback: () => this.textFormat("remove-spaces"),
     });
     this.addCommand({
       id: "text-format-remove-spaces-all",
@@ -208,8 +208,10 @@ export default class TextFormat extends Plugin {
         // @ts-ignore
         replacedText = selectedText.toTitleCase();
         break;
-      case "spaces":
-        replacedText = selectedText.replace(/ +/g, " ");
+      case "remove-spaces":
+        replacedText = selectedText
+          .replace(/ +/g, " ")
+          .replace(/ $| (?=\n)/g, "");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
       case "spaces-all":
