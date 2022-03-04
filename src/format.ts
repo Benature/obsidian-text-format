@@ -24,28 +24,32 @@ export function removeAllSpaces(s: string): string {
 }
 
 export function array2markdown(content: string): string {
-  let volume = content.match(/(?<=\{)[c]+(?=\})/)[0].length;
+  let volume = content.match(/(?<=\{)[clr]+(?=\})/)[0].length;
 
-  let normal_content = content
+  content = content
     .replace(/\$|\n/g, ``)
-    .replace(/\\\\ \\hline/g, (t) => t + `\n`)
     .replace(/\\text *\{.*?\}/g, (t) =>
       t.match(/(?<=\{).*?(?=\})/g)[0].replace(/^ +| +$/g, ``)
     );
 
-  let single_line_content = normal_content.replace(
-    /\\begin\{array\}\{c\}.*?\\end\{array\}/g,
+  // single line
+  content = content.replace(
+    /\\begin\{array\}\{[clr]\}.*?\\end\{array\}/g,
     (t) =>
       t
-        .replace("\\begin{array}{c}", "")
+        .replace(/\\\\begin\{array\}\{[clr]\}/g, "")
         .replace("\\end{array}", "")
         .replace(/\\\\ /g, "")
   );
 
+  // \n
+  content = content.replace(/\\\\ \\hline|\\\\ */g, (t) => t + `\n`);
+
+  // convert to table
   let markdown = (
     "|" +
-    single_line_content
-      .replace(/\\begin\{array\}\{c+\}|\\end\{array\}|\\hline/g, "")
+    content
+      .replace(/\\begin\{array\}\{[clr]+\}|\\end\{array\}|\\hline/g, "")
       .replace(/&/g, "|")
       .replace(/\n[ ]*$/, "")
       .replace(/\\\\[ ]*?\n/g, "|\n|")
