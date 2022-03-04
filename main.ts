@@ -2,6 +2,7 @@ import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
 import { decode } from "querystring";
 import {
   array2markdown,
+  table2bullet,
   capitalizeWord,
   capitalizeSentence,
   removeAllSpaces,
@@ -108,6 +109,16 @@ export default class TextFormat extends Plugin {
       id: "text-format-mathpix-array2table",
       name: "Convert Mathpix array to markdown table",
       callback: () => this.textFormat("array2table"),
+    });
+    this.addCommand({
+      id: "text-format-table2bullet",
+      name: "Convert table to bullet list",
+      callback: () => this.textFormat("table2bullet"),
+    });
+    this.addCommand({
+      id: "text-format-table2bullet-head",
+      name: "Convert table to bullet list with header",
+      callback: () => this.textFormat("table2bullet-header"),
     });
   }
 
@@ -312,6 +323,12 @@ export default class TextFormat extends Plugin {
         break;
       case "array2table":
         replacedText = array2markdown(selectedText);
+        break;
+      case "table2bullet":
+        replacedText = table2bullet(selectedText, false);
+        break;
+      case "table2bullet-header":
+        replacedText = table2bullet(selectedText, true);
         break;
       default:
         return;

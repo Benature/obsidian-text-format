@@ -23,6 +23,31 @@ export function removeAllSpaces(s: string): string {
   return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
 
+export function table2bullet(content: string, header: boolean = false): string {
+  let header_str = "";
+  let output = "";
+  content = content.replace(/[\S ]+\n[:\-\| ]+[:\-]+\|\n/g, (t) => {
+    header_str = t
+      .match(/^[\S ]+/)[0]
+      .replace(/ *\| *$|^ *\| */g, "")
+      .replace(/ *\| */g, "|");
+    return "";
+  });
+  let headers = header_str.split("|");
+  for (let i = 0; i < headers.length; i++) {
+    headers[i] = header ? `${headers[i]}: ` : "";
+  }
+  content.split("\n").forEach((line) => {
+    let items = line.replace(/\| *$|^ *\|/g, "").split("|");
+    output += `- ${items[0].trim()}\n`;
+    for (let i = 1; i < items.length; i++) {
+      output += `    - ${headers[i]}${items[i].trim()}\n`;
+    }
+  });
+
+  return output;
+}
+
 export function array2markdown(content: string): string {
   let volume = content.match(/(?<=\{)[clr]+(?=\})/)[0].length;
 
