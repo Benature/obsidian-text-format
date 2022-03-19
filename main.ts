@@ -134,12 +134,12 @@ export default class TextFormat extends Plugin {
         let editor = markdownView.editor;
         editor.replaceSelection(text);
       },
-      hotkeys: [
-        {
-          modifiers: ["Alt", "Mod"],
-          key: "v",
-        },
-      ],
+      // hotkeys: [
+      //   {
+      //     modifiers: ["Alt", "Mod"],
+      //     key: "v",
+      //   },
+      // ],
     });
   }
 

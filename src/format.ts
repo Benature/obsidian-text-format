@@ -28,7 +28,10 @@ export function zoteroNote(text: string): string {
     /“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)/g.exec(text);
   if (result) {
     let z = result.groups;
-    return `${z.text} [🔖](${z.pdf_url})`;
+    let text = result.groups.text.replace(/\\\[\d+\\\]/g, (t) =>
+      t.replace("\\[", "[").replace("\\]", "]")
+    );
+    return `${text} [🔖](${z.pdf_url})`;
   } else {
     return ``;
   }
