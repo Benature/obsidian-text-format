@@ -6,6 +6,7 @@ import {
   capitalizeWord,
   capitalizeSentence,
   removeAllSpaces,
+  zoteroNote,
 } from "src/format";
 
 export default class TextFormat extends Plugin {
@@ -119,6 +120,26 @@ export default class TextFormat extends Plugin {
       id: "text-format-table2bullet-head",
       name: "Convert table to bullet list with header",
       callback: () => this.textFormat("table2bullet-header"),
+    });
+    this.addCommand({
+      id: "text-format-zotero-note",
+      name: "Zotero note format and paste",
+      callback: async () => {
+        const clipboardText = await navigator.clipboard.readText();
+        let text = zoteroNote(clipboardText);
+        let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!markdownView) {
+          return;
+        }
+        let editor = markdownView.editor;
+        editor.replaceSelection(text);
+      },
+      hotkeys: [
+        {
+          modifiers: ["Alt", "Mod"],
+          key: "v",
+        },
+      ],
     });
   }
 
@@ -245,8 +266,11 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\n/g, "\n\n");
         break;
       case "bullet":
+        let r = "•–§";
         replacedText = selectedText
-          .replace(/(^|(?<=[\s])) *• */g, "\n- ")
+          .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+            t.replace(RegExp(`[${r}] *`), "\n- ")
+          )
           .replace(/\n+/g, "\n")
           .replace(/^\n/, "");
         break;

@@ -23,6 +23,17 @@ export function removeAllSpaces(s: string): string {
   return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
 
+export function zoteroNote(text: string): string {
+  let result =
+    /“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)/g.exec(text);
+  if (result) {
+    let z = result.groups;
+    return `${z.text} [🔖](${z.pdf_url})`;
+  } else {
+    return ``;
+  }
+}
+
 export function table2bullet(content: string, header: boolean = false): string {
   let header_str = "";
   let output = "";
