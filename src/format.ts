@@ -23,9 +23,10 @@ export function removeAllSpaces(s: string): string {
   return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
 
-export function zoteroNote(text: string): string {
-  let result =
-    /“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)/g.exec(text);
+export function zoteroNote(text: string, regexp: string): string {
+  let template_regexp = new RegExp(regexp);
+  let result = template_regexp.exec(text);
+
   if (result) {
     let z = result.groups;
     let text = result.groups.text.replace(/\\\[\d+\\\]/g, (t) =>

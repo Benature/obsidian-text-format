@@ -126,7 +126,7 @@ export default class TextFormat extends Plugin {
       name: "Zotero note format and paste",
       callback: async () => {
         const clipboardText = await navigator.clipboard.readText();
-        let text = zoteroNote(clipboardText);
+        let text = zoteroNote(clipboardText, this.settings.ZoteroNoteRegExp);
         let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!markdownView) {
           return;
@@ -134,12 +134,6 @@ export default class TextFormat extends Plugin {
         let editor = markdownView.editor;
         editor.replaceSelection(text);
       },
-      // hotkeys: [
-      //   {
-      //     modifiers: ["Alt", "Mod"],
-      //     key: "v",
-      //   },
-      // ],
     });
   }
 
@@ -393,6 +387,8 @@ interface FormatSettings {
   MergeParagraph_Spaces: boolean;
   LowercaseFirst: boolean;
   RemoveBlanksWhenChinese: boolean;
+  ZoteroNoteRegExp: string;
+  // ZoteroNoteTemplate: string;
 }
 
 const DEFAULT_SETTINGS: FormatSettings = {
@@ -400,6 +396,8 @@ const DEFAULT_SETTINGS: FormatSettings = {
   MergeParagraph_Spaces: true,
   LowercaseFirst: false,
   RemoveBlanksWhenChinese: false,
+  ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
+  // ZoteroNoteTemplate: String.raw`${text} [🔖](${z.pdf_url})`;
 };
 class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -471,5 +469,28 @@ class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    containerEl.createEl("h3", { text: "Zotero pdf note format" });
+
+    new Setting(containerEl)
+      .setName("Zotero pdf note format")
+      .setDesc(
+        "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
+          "Variables: \n" +
+          "${text}: highlight,\n" +
+          "${z.pdf_url}: comment,\n" +
+          "${z.item}: citation."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(
+            String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
+          )
+          .setValue(this.plugin.settings.ZoteroNoteRegExp)
+          .onChange(async (value) => {
+            this.plugin.settings.ZoteroNoteRegExp = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }
