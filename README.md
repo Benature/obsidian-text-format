@@ -8,7 +8,7 @@ Sometimes I encounter some issues like
 
 Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
-[Install this plugin right now.] (obsidian://show-plugin?id=obsidian-text-format)
+Install this plugin right now: <obsidian://show-plugin?id=obsidian-text-format>
 ## Features
 
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
