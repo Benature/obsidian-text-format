@@ -23,16 +23,29 @@ export function removeAllSpaces(s: string): string {
   return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
 
-export function zoteroNote(text: string, regexp: string): string {
+export function zoteroNote(
+  text: string,
+  regexp: string,
+  template: string
+): string {
   let template_regexp = new RegExp(regexp);
   let result = template_regexp.exec(text);
+  console.log(text);
+  console.log(result);
 
   if (result) {
     let z = result.groups;
     let text = result.groups.text.replace(/\\\[\d+\\\]/g, (t) =>
       t.replace("\\[", "[").replace("\\]", "]")
     );
-    return `${text} [🔖](${z.pdf_url})`;
+    console.log(template);
+    // @ts-ignore
+    return template.format({
+      text: text,
+      item: z.item,
+      pdf_url: z.pdf_url,
+    });
+    // return `${text} [🔖](${z.pdf_url})`;
   } else {
     return ``;
   }
@@ -147,4 +160,26 @@ String.prototype.toTitleCase = function () {
       });
     })
     .join("");
+};
+
+String.prototype.format = function (args: any) {
+  var result = this;
+  if (arguments.length > 0) {
+    if (arguments.length == 1 && typeof args == "object") {
+      for (var key in args) {
+        if (args[key] != undefined) {
+          var reg = new RegExp("({" + key + "})", "g");
+          result = result.replace(reg, args[key]);
+        }
+      }
+    } else {
+      for (var i = 0; i < arguments.length; i++) {
+        if (arguments[i] != undefined) {
+          var reg = new RegExp("({)" + i + "(})", "g");
+          result = result.replace(reg, arguments[i]);
+        }
+      }
+    }
+  }
+  return result;
 };

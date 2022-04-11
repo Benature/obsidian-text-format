@@ -59,7 +59,7 @@ The format template can refer to https://www.zotero.org/support/note_templates
 - default
   - zotero: `<p>{{highlight quotes='true'}} {{citation}} {{comment}}</p>`
   - plugin config: `“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
-  - result: `hight [🔖](note_url)`
+  - result: `{text} [🔖]({pdf_url})`
 
 
 ## Some Example

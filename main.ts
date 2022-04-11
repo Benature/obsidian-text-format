@@ -126,7 +126,11 @@ export default class TextFormat extends Plugin {
       name: "Zotero note format and paste",
       callback: async () => {
         const clipboardText = await navigator.clipboard.readText();
-        let text = zoteroNote(clipboardText, this.settings.ZoteroNoteRegExp);
+        let text = zoteroNote(
+          clipboardText,
+          this.settings.ZoteroNoteRegExp,
+          this.settings.ZoteroNoteTemplate
+        );
         let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!markdownView) {
           return;
@@ -388,7 +392,7 @@ interface FormatSettings {
   LowercaseFirst: boolean;
   RemoveBlanksWhenChinese: boolean;
   ZoteroNoteRegExp: string;
-  // ZoteroNoteTemplate: string;
+  ZoteroNoteTemplate: string;
 }
 
 const DEFAULT_SETTINGS: FormatSettings = {
@@ -397,7 +401,7 @@ const DEFAULT_SETTINGS: FormatSettings = {
   LowercaseFirst: false,
   RemoveBlanksWhenChinese: false,
   ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
-  // ZoteroNoteTemplate: String.raw`${text} [🔖](${z.pdf_url})`;
+  ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
 };
 class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -473,13 +477,13 @@ class TextFormatSettingTab extends PluginSettingTab {
     containerEl.createEl("h3", { text: "Zotero pdf note format" });
 
     new Setting(containerEl)
-      .setName("Zotero pdf note format")
+      .setName("Zotero pdf note (input) format")
       .setDesc(
         "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
           "Variables: \n" +
-          "${text}: highlight,\n" +
-          "${z.pdf_url}: comment,\n" +
-          "${z.item}: citation."
+          "<text>: highlight,\n" +
+          "<pdf_url>: comment,\n" +
+          "<item>: citation."
       )
       .addTextArea((text) =>
         text
@@ -489,6 +493,23 @@ class TextFormatSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.ZoteroNoteRegExp)
           .onChange(async (value) => {
             this.plugin.settings.ZoteroNoteRegExp = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
+      .setName("Zotero note pasted in Obsidian (output) format")
+      .setDesc(
+        "Variables: \n" +
+          "{text}: <text>,\n" +
+          "{pdf_url}: <pdf_url>,\n" +
+          "{item}: <item>."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{text} [🔖]({pdf_url})")
+          .setValue(this.plugin.settings.ZoteroNoteTemplate)
+          .onChange(async (value) => {
+            this.plugin.settings.ZoteroNoteTemplate = value;
             await this.plugin.saveSettings();
           })
       );
