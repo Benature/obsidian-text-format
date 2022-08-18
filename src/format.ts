@@ -8,13 +8,21 @@ export function capitalizeWord(str: string): string {
 }
 
 export function capitalizeSentence(s: string): string {
+  let lcp = LC + "+"; // LC plus
   var rx = new RegExp(
-    "(^|\\n|[\"'])" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "|(?<=- )" + LC,
+    "(^|\\n|(?<=[\"']))" + lcp + "|(?<=[\\.!?~]\\s+)" + lcp + "|(?<=- )" + lcp,
     "g"
   );
   // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
   return s.replace(rx, function (t) {
-    return t.toUpperCase();
+    console.log(t);
+    // return t.toUpperCase();
+    if (/^(ve|t|m|d|ll|s|re)$/.test(t)) {
+      return t;
+    } else {
+      console.log("aha!!!!");
+      return t.charAt(0).toUpperCase() + t.substr(1);
+    }
   });
 }
 
