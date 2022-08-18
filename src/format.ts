@@ -9,10 +9,9 @@ export function capitalizeWord(str: string): string {
 
 export function capitalizeSentence(s: string): string {
   var rx = new RegExp(
-    "(^|\\n|[\"'])" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "",
+    "(^|\\n|[\"'])" + LC + "|(?<=[\\.!?~]\\s+)" + LC + "|(?<=- )" + LC,
     "g"
   );
-
   // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
   return s.replace(rx, function (t) {
     return t.toUpperCase();
@@ -30,8 +29,6 @@ export function zoteroNote(
 ): string {
   let template_regexp = new RegExp(regexp);
   let result = template_regexp.exec(text);
-  console.log(text);
-  console.log(result);
 
   if (result) {
     let z = result.groups;
@@ -45,7 +42,6 @@ export function zoteroNote(
       item: z.item,
       pdf_url: z.pdf_url,
     });
-    // return `${text} [🔖](${z.pdf_url})`;
   } else {
     return ``;
   }
