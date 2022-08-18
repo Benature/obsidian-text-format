@@ -338,7 +338,7 @@ export default class TextFormat extends Plugin {
           function (t) {
             return decodeURI(t);
           }
-        );
+        ); // .replace(/ /g, "%20");
         break;
       case "hyphen":
         replacedText = selectedText.replace(/(\w)-[ ]/g, "");
@@ -477,7 +477,7 @@ class TextFormatSettingTab extends PluginSettingTab {
     containerEl.createEl("h3", { text: "Zotero pdf note format" });
 
     new Setting(containerEl)
-      .setName("Zotero pdf note (input) format")
+      .setName("Zotero pdf note (input) RegExp")
       .setDesc(
         "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
           "Variables: \n" +
