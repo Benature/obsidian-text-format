@@ -8,6 +8,7 @@ import {
   removeAllSpaces,
   zoteroNote,
 } from "src/format";
+import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -16,6 +17,21 @@ export default class TextFormat extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
+    this.addCommand({
+      id: "text-format-remove-wiki-link",
+      name: "Remove WikiLinks format in selection",
+      callback: () => this.textFormat("remove-wiki-link"),
+    });
+    this.addCommand({
+      id: "text-format-remove-url-link",
+      name: "Remove URL links format in selection",
+      callback: () => this.textFormat("remove-url-link"),
+    });
+    this.addCommand({
+      id: "text-format-link-url2wiki",
+      name: "Convert URL links to WikiLinks in selection",
+      callback: () => this.textFormat("link-url2wiki"),
+    });
     this.addCommand({
       id: "text-format-lower",
       name: "Lowercase selected text",
@@ -351,6 +367,15 @@ export default class TextFormat extends Plugin {
         break;
       case "table2bullet-header":
         replacedText = table2bullet(selectedText, true);
+        break;
+      case "remove-wiki-link":
+        replacedText = removeWikiLink(selectedText);
+        break;
+      case "remove-url-link":
+        replacedText = removeUrlLink(selectedText);
+        break;
+      case "link-url2wiki":
+        replacedText = url2WikiLink(selectedText);
         break;
       default:
         return;
