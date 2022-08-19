@@ -27,18 +27,18 @@ Or you can consider to bind custom hotkeys to those commands.
 
 
 ### List
+| Command                 | Description                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Format **bullet** list  | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                       |
+| Format **ordered** list | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. |
+
+### Links
+
 | Command                                     | Description                                        |
 | ------------------------------------------- | -------------------------------------------------- |
 | Remove WikiLinks format in selection        | Convert `[[WikiLinks]]` to `WikiLinks`             |
 | Remove URL links format in selection        | Convert `[Google](www.google.com)` to `Google`     |
 | Convert URL links to WikiLinks in selection | Convert `[Google](www.google.com)` to `[[Google]]` |
-
-### Links
-
-| Command                 | Description                                                                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Format **bullet** list  | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                       |
-| Format **ordered** list | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. |
 
 ### PDF copy / OCR
 
