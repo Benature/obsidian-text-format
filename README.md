@@ -17,26 +17,27 @@ Or you can consider to bind custom hotkeys to those commands.
 
 ### Basic
 
-| Command                                                         | Description                                                                                                        |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                 |
-| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                 |
-| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                  |
-| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                             |
-| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* |
+| Command                                                         | Description                                                                                                             |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                      |
+| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                      |
+| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                       |
+| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                                  |
+| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* (#1) |
 
 
 ### List
-| Command                 | Description                                                                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Format **bullet** list  | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                       |
-| Format **ordered** list | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. |
-
+| Command                                  | Description                                                                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format **bullet** list                   | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
+| Format **ordered** list                  | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
+| Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
+| Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
 ### Links
 
 | Command                                     | Description                                        |
 | ------------------------------------------- | -------------------------------------------------- |
-| Remove WikiLinks format in selection        | Convert `[[WikiLinks]]` to `WikiLinks`             |
+| Remove WikiLinks format in selection        | Convert `[[WikiLinks]]` to `WikiLinks` (#28)       |
 | Remove URL links format in selection        | Convert `[Google](www.google.com)` to `Google`     |
 | Convert URL links to WikiLinks in selection | Convert `[Google](www.google.com)` to `[[Google]]` |
 
@@ -53,14 +54,14 @@ Or you can consider to bind custom hotkeys to those commands.
 
 
 ### Others
-| Command                                     | Description                                                                  |
-| ------------------------------------------- | ---------------------------------------------------------------------------- |
-| Decode **URL**                              | Decode URL for better reading and shorter url.                               |
-| Convert single letter into **math** mode    | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`. |
-| Convert **Mathpix** array to markdown table | Convert latex array generated by Mathpix to markdown table format            |
-| Convert table to bullet list                | The first volume is 1st list, other volumes are sub-list                     |
-| Convert table to bullet list with header    | Sub-list begins with `${header}: `                                           |
-| **Zotero** note format and paste            |                                                                              |
+| Command                                     | Description                                                                                                                                                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom **Wrapper**                          | Add any arbitrary wrapping element in Setting. e.g. underline wrapper: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>` ^[https://github.com/Benature/obsidian-underline/issues/5] |
+| Decode **URL**                              | Decode URL for better reading and shorter url.                                                                                                                                                                 |
+| Convert single letter into **math** mode    | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                   |
+| Convert **Mathpix** array to markdown table | Convert latex array generated by Mathpix to markdown table format                                                                                                                                              |
+
+| **Zotero** note format and paste            |                                                                                                                                                                                                                |
 
 #### Zotero format
 The format template can refer to https://www.zotero.org/support/note_templates
