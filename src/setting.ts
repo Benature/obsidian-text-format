@@ -107,34 +107,16 @@ export class TextFormatSettingTab extends PluginSettingTab {
       });
 
     containerEl.createEl("h3", { text: "Wrapper" });
-    // new Setting(containerEl)
-    //   //   .setName("Add new wrapper")
-    //   .setDesc("wapper with prefix and suffix");
-    // let wrapperListEl = containerEl.createEl("ol");
-    // new Setting(this.containerEl).addButton((button: ButtonComponent) => {
-    //   button
-    //     .setTooltip("Add new wrapper")
-    //     .setButtonText("+")
-    //     // .setCta()
-    //     .onClick(async () => {
-    //       addWrapperInput(
-    //         { prefix: "", suffix: "" },
-    //         wrapperListEl,
-    //         this.plugin.settings.wrapperList,
-    //         this.plugin
-    //         //   this.plugin.settings.wrapperList.length
-    //       );
-    //       // this.plugin.settings.wrapperList.push({
-    //       //   prefix: "",
-    //       //   suffix: "",
-    //       // });
-    //       // await this.plugin.saveSettings();
-    //       // this.display();
-    //     });
-    // });
+    const descEl = document.createDocumentFragment();
+    const ruleDesc = document.createDocumentFragment();
+    ruleDesc.append(
+      "<Wrapper Name> <Prefix> <Suffix>",
+      descEl.createEl("br"),
+      "Note: To make sure the command is valid in Command Palette, you need to reload/reopen Obsidian."
+    );
     new Setting(this.containerEl)
       .setName("Add new wrapper")
-      .setDesc("<Wrapper Name> <Prefix> <Suffix>")
+      .setDesc(ruleDesc)
       .addButton((button: ButtonComponent) => {
         button
           .setTooltip("Add new rule")
@@ -150,7 +132,6 @@ export class TextFormatSettingTab extends PluginSettingTab {
             this.display();
           });
       });
-
     this.plugin.settings.wrapperList.forEach((wrapperSetting, index) => {
       const s = new Setting(this.containerEl)
         .addSearch((cb) => {
@@ -228,63 +209,4 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
   }
-}
-
-function addWrapperInput(
-  originalValue: WrapperSetting,
-  el: HTMLElement,
-  keyset: Array<WrapperSetting>,
-  plugin: TextFormat
-  //   idx: number
-) {
-  const idx = keyset.length;
-  const item = el.createEl("li");
-  item.setAttribute("id", `filter-${idx}`);
-
-  let prefix = item.createEl("input");
-  let suffix = item.createEl("input");
-  //   prefix.setAttribute("type", "text");
-  //   suffix.setAttribute("type", "text");
-  //   prefix.setAttribute("value", originalValue.prefix);
-  //   suffix.setAttribute("value", originalValue.suffix);
-  //   prefix.setAttribute(
-  //     "data-prev",
-  //     originalValue.prefix == "" ? "prefix" : originalValue.prefix
-  //   );
-  //   suffix.setAttribute(
-  //     "data-prev",
-  //     originalValue.suffix == "" ? "suffix" : originalValue.suffix
-  //   );
-  function processWrapperInput(
-    input: HTMLInputElement,
-    value: string,
-    type: string
-  ): HTMLInputElement {
-    input.setAttribute("type", "text");
-    input.setAttribute("value", value);
-    input.setAttribute("data-prev", value == "" ? type : value);
-    input.addEventListener("input", async (e) => {
-      let target = e.target as HTMLInputElement;
-      console.log(target);
-      //   keyset[idx][type as keyof WrapperSetting] = target.value;
-      //   input.setAttribute("data-prev", target.value);
-      //   plugin.settings.wrapperList = keyset;
-      //   await plugin.saveSettings();
-    });
-    return input;
-  }
-
-  prefix = processWrapperInput(prefix, originalValue.prefix, "prefix");
-  suffix = processWrapperInput(suffix, originalValue.suffix, "suffix");
-  // prefix.addEventListener("input", async (e) => {
-  //   let target = e.target as HTMLInputElement;
-
-  //   keyset[idx] = target.value;
-
-  //   input.setAttribute("data-prev", target.value);
-
-  //   plugin.settings.filterKeys = keyset;
-
-  //   await plugin.saveSettings();
-  // });
 }
