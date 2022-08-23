@@ -1,4 +1,13 @@
-import { MarkdownView, Plugin, Setting, PluginSettingTab, App } from "obsidian";
+import { wrap } from "module";
+import {
+  MarkdownView,
+  Plugin,
+  Setting,
+  PluginSettingTab,
+  App,
+  Menu,
+  ButtonComponent,
+} from "obsidian";
 import { decode } from "querystring";
 import {
   array2markdown,
@@ -7,8 +16,14 @@ import {
   capitalizeSentence,
   removeAllSpaces,
   zoteroNote,
+  textWrapper,
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
+import {
+  FormatSettings,
+  DEFAULT_SETTINGS,
+  TextFormatSettingTab,
+} from "src/setting";
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -16,6 +31,33 @@ export default class TextFormat extends Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
+
+    /*
+    // https://marcus.se.net/obsidian-plugin-docs/user-interface/context-menus
+    this.app.workspace.on("editor-menu", (menu) => {
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item
+          .setTitle("lowercase selection")
+          .setIcon("documents")
+          .onClick(() => {
+            this.textFormat("lowercase");
+          });
+        // .setSection("danger");
+        console.log("ooooo");
+        console.log(item);
+      });
+      console.log(menu);
+    });
+    */
+
+    this.settings.wrapperList.forEach((wrapper, index) => {
+      this.addCommand({
+        id: `text-format-wrapper-${index}`,
+        name: wrapper.name,
+        callback: () => textWrapper(wrapper.prefix, wrapper.suffix, app),
+      });
+    });
 
     this.addCommand({
       id: "text-format-remove-wiki-link",
@@ -404,139 +446,5 @@ export default class TextFormat extends Plugin {
 
   async saveSettings() {
     await this.saveData(this.settings);
-  }
-}
-
-/* ----------------------------------------------------------------
-   --------------------------Settings------------------------------
-   ---------------------------------------------------------------- */
-
-interface FormatSettings {
-  MergeParagraph_Newlines: boolean;
-  MergeParagraph_Spaces: boolean;
-  LowercaseFirst: boolean;
-  RemoveBlanksWhenChinese: boolean;
-  ZoteroNoteRegExp: string;
-  ZoteroNoteTemplate: string;
-}
-
-const DEFAULT_SETTINGS: FormatSettings = {
-  MergeParagraph_Newlines: true,
-  MergeParagraph_Spaces: true,
-  LowercaseFirst: false,
-  RemoveBlanksWhenChinese: false,
-  ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
-  ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
-};
-class TextFormatSettingTab extends PluginSettingTab {
-  plugin: TextFormat;
-
-  constructor(app: App, plugin: TextFormat) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
-  display(): void {
-    let { containerEl } = this;
-
-    containerEl.empty();
-
-    containerEl.createEl("h3", { text: "Lowercase" });
-
-    new Setting(containerEl)
-      .setName("Lowercase before capitalize/title case")
-      .setDesc(
-        "When running the capitalize or title case command, the plugin will lowercase the selection at first."
-      )
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.LowercaseFirst)
-          .onChange(async (value) => {
-            this.plugin.settings.LowercaseFirst = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
-
-    new Setting(containerEl)
-      .setName("Remove redundant blank lines")
-      .setDesc(
-        'change blank lines into single blank lines, e.g. "\\n\\n\\n" will be changed to "\\n\\n"'
-      )
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.MergeParagraph_Newlines)
-          .onChange(async (value) => {
-            this.plugin.settings.MergeParagraph_Newlines = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    new Setting(containerEl)
-      .setName("Remove redundant blank spaces")
-      .setDesc("ensure only one space between words")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.MergeParagraph_Spaces)
-          .onChange(async (value) => {
-            this.plugin.settings.MergeParagraph_Spaces = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    containerEl.createEl("h3", { text: "When converting Chinese characters" });
-
-    new Setting(containerEl)
-      .setName("Remove all spaces")
-      .setDesc("for OCR case")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
-          .onChange(async (value) => {
-            this.plugin.settings.RemoveBlanksWhenChinese = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    containerEl.createEl("h3", { text: "Zotero pdf note format" });
-
-    new Setting(containerEl)
-      .setName("Zotero pdf note (input) RegExp")
-      .setDesc(
-        "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
-          "Variables: \n" +
-          "<text>: highlight,\n" +
-          "<pdf_url>: comment,\n" +
-          "<item>: citation."
-      )
-      .addTextArea((text) =>
-        text
-          .setPlaceholder(
-            String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
-          )
-          .setValue(this.plugin.settings.ZoteroNoteRegExp)
-          .onChange(async (value) => {
-            this.plugin.settings.ZoteroNoteRegExp = value;
-            await this.plugin.saveSettings();
-          })
-      );
-    new Setting(containerEl)
-      .setName("Zotero note pasted in Obsidian (output) format")
-      .setDesc(
-        "Variables: \n" +
-          "{text}: <text>,\n" +
-          "{pdf_url}: <pdf_url>,\n" +
-          "{item}: <item>."
-      )
-      .addTextArea((text) =>
-        text
-          .setPlaceholder("{text} [🔖]({pdf_url})")
-          .setValue(this.plugin.settings.ZoteroNoteTemplate)
-          .onChange(async (value) => {
-            this.plugin.settings.ZoteroNoteTemplate = value;
-            await this.plugin.saveSettings();
-          })
-      );
   }
 }
