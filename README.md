@@ -51,6 +51,7 @@ Or you can consider to bind custom hotkeys to those commands.
 | Remove **hyphens**                         | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 | **Split** line(s) by **blanks**            | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
 | Convert to **Chinese character** (,;:!?)   | For OCR use case.                                                                                                                                                                                                                                  |
+| Replace **ligature**                       | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature (#24)                                                                                                                                                         |
 
 
 ### Others

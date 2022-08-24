@@ -17,6 +17,7 @@ import {
   removeAllSpaces,
   zoteroNote,
   textWrapper,
+  replaceLigature,
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -59,6 +60,11 @@ export default class TextFormat extends Plugin {
       });
     });
 
+    this.addCommand({
+      id: "text-format-ligature",
+      name: "Replace ligature",
+      callback: () => this.textFormat("ligature"),
+    });
     this.addCommand({
       id: "text-format-remove-wiki-link",
       name: "Remove WikiLinks format in selection",
@@ -418,6 +424,9 @@ export default class TextFormat extends Plugin {
         break;
       case "link-url2wiki":
         replacedText = url2WikiLink(selectedText);
+        break;
+      case "ligature":
+        replacedText = replaceLigature(selectedText);
         break;
       default:
         return;
