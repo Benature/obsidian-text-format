@@ -112,7 +112,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     ruleDesc.append(
       "<Wrapper Name> <Prefix> <Suffix>",
       descEl.createEl("br"),
-      "Note: To make sure the command is valid in Command Palette, you need to reload/reopen Obsidian."
+      "Note: To make sure the command is valid in Command Palette, you need to **reload/reopen** Obsidian App."
     );
     new Setting(this.containerEl)
       .setName("Add new wrapper")
