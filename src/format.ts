@@ -28,6 +28,51 @@ export function capitalizeSentence(s: string): string {
   });
 }
 
+export function ankiSelection(str: string): string {
+  let sections = str.split(/\r?\n/)
+  var seclen = sections.length;
+  let returned = "";
+
+  if (sections[0] == ""){
+      sections.shift();
+      returned += "\n"
+  }
+
+  if (seclen > 1) {
+      returned += "START\nCloze\n";
+      let i = 1;
+      let gap = 0;
+      sections.forEach(function(entry){
+          if (entry != "" && gap > 0) {
+              returned += "\nBack Extra:\nTags:\nEND\n";
+              for (let n = 0; n < gap; n++) {
+                  returned += "\n";
+              } 
+              returned += "START\nCloze\n";
+              gap = 0;
+              i = 1;
+          }
+          
+          if (entry != "") {
+              returned += "{{c" + i + "::" + entry + "}} ";
+              i++;
+          }
+          else {
+              gap++;
+          }
+      });
+      returned += "\nBack Extra:\nTags:\nEND";
+      for (let n = 0; n < gap; n++) {
+          returned += "\n";
+      } 
+      return returned;
+  }
+  else {
+      return str;
+  }
+
+}
+
 export function removeAllSpaces(s: string): string {
   return s.replace(/(?<![\)\]:#-]) | $/g, "");
 }
