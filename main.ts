@@ -177,6 +177,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("hyphen"),
     });
     this.addCommand({
+      id: "text-format-remove-citation-index",
+      name: "Remove citation index",
+      callback: () => this.textFormat("remove-citation"),
+    });
+    this.addCommand({
       id: "text-format-mathpix-array2table",
       name: "Convert Mathpix array to markdown table",
       callback: () => this.textFormat("array2table"),
@@ -335,6 +340,9 @@ export default class TextFormat extends Plugin {
         break;
       case "add-line-break":
         replacedText = selectedText.replace(/\n/g, "\n\n");
+        break;
+      case "remove-citation":
+        replacedText = selectedText.replace(/\[\d+\]/g, "").replace(/ +/g, " ");
         break;
       case "bullet":
         // let r = "•–§";
