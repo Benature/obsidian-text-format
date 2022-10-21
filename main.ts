@@ -337,7 +337,8 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\n/g, "\n\n");
         break;
       case "bullet":
-        let r = "•–§";
+        // let r = "•–§";
+        let r = this.settings.BulletPoints;
         replacedText = selectedText
           .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
             t.replace(RegExp(`[${r}] *`), "\n- ")

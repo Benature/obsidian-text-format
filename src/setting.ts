@@ -22,6 +22,7 @@ export interface FormatSettings {
   RemoveBlanksWhenChinese: boolean;
   ZoteroNoteRegExp: string;
   ZoteroNoteTemplate: string;
+  BulletPoints: string;
   wrapperList: Array<WrapperSetting>;
 }
 
@@ -32,6 +33,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   RemoveBlanksWhenChinese: false,
   ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
   ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
+  BulletPoints: "•–§",
   wrapperList: [{ name: "", prefix: "", suffix: "" }],
 };
 
@@ -105,6 +107,20 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    containerEl.createEl("h3", { text: "Bullet points list" });
+    new Setting(containerEl)
+      .setName("Possible bullet points")
+      .setDesc("The characters that will be regarded as bullet points.")
+      .addTextArea((text) =>
+        text
+          // .setPlaceholder("")
+          .setValue(this.plugin.settings.BulletPoints)
+          .onChange(async (value) => {
+            this.plugin.settings.BulletPoints = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
     containerEl.createEl("h3", { text: "Wrapper" });
     const descEl = document.createDocumentFragment();
