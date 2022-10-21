@@ -12,7 +12,7 @@ export function capitalizeWord(str: string): string {
 export function capitalizeSentence(s: string): string {
   let lcp = LC + "+"; // LC plus
   var rx = new RegExp(
-    "(^|\\n|(?<=[\"']))" + lcp + "|(?<=[\\.!?~]\\s+)" + lcp + "|(?<=- )" + lcp,
+    '(^|\\n|(?<=["]))' + lcp + "|(?<=[\\.!?~]\\s+)" + lcp + "|(?<=- )" + lcp,
     "g"
   );
   // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {

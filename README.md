@@ -17,13 +17,13 @@ Or you can consider to bind custom hotkeys to those commands.
 
 ### Basic
 
-| Command                                                         | Description                                                                                                             |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                      |
-| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                      |
-| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                       |
-| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                                  |
-| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* (#1) |
+| Command                                                         | Description                                                                                                                                                                        |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                                                                                 |
+| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                                                                                 |
+| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                                                                                  |
+| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                                                                                             |
+| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
 
 
 ### List
@@ -51,7 +51,7 @@ Or you can consider to bind custom hotkeys to those commands.
 | Remove **hyphens**                         | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 | **Split** line(s) by **blanks**            | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
 | Convert to **Chinese character** (,;:!?)   | For OCR use case.                                                                                                                                                                                                                                  |
-| Replace **ligature**                       | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature (#24)                                                                                                                                                         |
+| Replace **ligature**                       | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
 
 ### Others
@@ -62,12 +62,13 @@ Or you can consider to bind custom hotkeys to those commands.
 | Convert single letter into **math** mode             | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                           |
 | Convert **Mathpix** array to markdown table          | Convert latex array generated by Mathpix to markdown table format                                                                      |
 | **Zotero** note format and paste                     | See below ⬇️                                                                                                                            |
-| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph (#8)                                                                                   |
+| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8)                        |
+| Convert selection into Anki card format              | [#32](https://github.com/Benature/obsidian-text-format/pull/32)                                                                        |
 
 #### Wrapper
 e.g.
 - Underline: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>`
-- Font color: #30
+- Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
 
 #### Zotero format
 The format template can refer to https://www.zotero.org/support/note_templates
