@@ -18,6 +18,7 @@ import {
   zoteroNote,
   textWrapper,
   replaceLigature,
+  ankiSelection,
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -60,6 +61,11 @@ export default class TextFormat extends Plugin {
       });
     });
 
+    this.addCommand({
+      id: "text-format-anki-card",
+      name: "Convert selection into Anki card format",
+      callback: () => this.textFormat("anki"),
+    });
     this.addCommand({
       id: "text-format-ligature",
       name: "Replace ligature",
@@ -286,6 +292,9 @@ export default class TextFormat extends Plugin {
 
     // modify selection text
     switch (cmd) {
+      case "anki":
+        replacedText = ankiSelection(selectedText);
+        break;
       case "lowercase":
         replacedText = selectedText.toLowerCase();
         break;
