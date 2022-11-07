@@ -232,6 +232,8 @@ String.prototype.format = function (args: any) {
 };
 
 export function textWrapper(prefix: string, suffix: string, app: App): void {
+  prefix = prefix.replace(/\\n/g, "\n");
+  suffix = suffix.replace(/\\n/g, "\n");
   const PL = prefix.length; // Prefix Length
   const SL = suffix.length; // Suffix Length
 
