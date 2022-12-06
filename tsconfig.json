@@ -14,7 +14,8 @@
       "es5",
       "scripthost",
       "es2015"
-    ]
+    ],
+    "suppressImplicitAnyIndexErrors": true
   },
   "include": [
     "**/*.ts"

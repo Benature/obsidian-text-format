@@ -19,6 +19,7 @@ import {
   textWrapper,
   replaceLigature,
   ankiSelection,
+  sortTodo
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -197,6 +198,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("table2bullet-header"),
     });
     this.addCommand({
+      id: "text-format-todo-sort",
+      name: "Sort to-do list",
+      callback: () => this.textFormat("todo-sort"),
+    });
+    this.addCommand({
       id: "text-format-zotero-note",
       name: "Zotero note format and paste",
       callback: async () => {
@@ -276,6 +282,8 @@ export default class TextFormat extends Plugin {
       case "split-blank":
       case "bullet":
       case "ordered":
+      case "todo-sort":
+        // force to select how paragraph(s)
         let from = editor.getCursor("from");
         let to = editor.getCursor("to");
         from.ch = 0;
@@ -360,14 +368,14 @@ export default class TextFormat extends Plugin {
         let orderedCount = 0;
         var rx = new RegExp(
           String.raw`(^|\s| and )[^\s\(\[\]]\)` +
-            "|" +
-            /* (?<=^|\s)
-              (
-                [0-9]\.
-                |
-                [:;]?\w+[）\)]
-              ) */
-            String.raw`(?<=^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
+          "|" +
+          /* (?<=^|\s)
+            (
+              [0-9]\.
+              |
+              [:;]?\w+[）\)]
+            ) */
+          String.raw`(?<=^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
           "g"
         );
 
@@ -445,6 +453,9 @@ export default class TextFormat extends Plugin {
         break;
       case "ligature":
         replacedText = replaceLigature(selectedText);
+        break;
+      case "todo-sort":
+        replacedText = sortTodo(selectedText);
         break;
       default:
         return;

@@ -33,6 +33,7 @@ Or you can consider to bind custom hotkeys to those commands.
 | Format **ordered** list                  | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
 | Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
+| **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37)                                                                                     |
 ### Links
 
 | Command                                     | Description                                        |
