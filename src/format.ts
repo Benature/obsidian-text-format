@@ -10,19 +10,16 @@ export function capitalizeWord(str: string): string {
 }
 
 export function capitalizeSentence(s: string): string {
-    let lcp = LC + "+"; // LC plus
+    let lcp = "(" + LC + "+)"; // LC plus
     var rx = new RegExp(
-        '(^|\\n|(?<=["“]))' + lcp + "|(?<=[\\.!?~]\\s+)" + lcp + "|(?<=- )" + lcp,
+        String.raw`(?:^|[\n"“]|[\.\!\?\~]\s+|\s*- \s*)` + lcp,
         "g"
     );
-    // return s.replace(/^\S|(?<=[\.!?\n~]\s+)\S/g, function (t) {
-    return s.replace(rx, function (t) {
-        console.log(t);
-        // return t.toUpperCase();
+    return s.replace(rx, function (t0, t) {
         if (/^(ve|t|m|d|ll|s|re)$/.test(t)) {
-            return t;
+            return t0;
         } else {
-            return t.charAt(0).toUpperCase() + t.substr(1);
+            return t0.replace(t, t.charAt(0).toUpperCase() + t.substr(1));
         }
     });
 }
@@ -70,7 +67,7 @@ export function ankiSelection(str: string): string {
 }
 
 export function removeAllSpaces(s: string): string {
-    return s.replace(/(?<![\)\]:#-]) | $/g, "");
+    return s.replace(/(?:[^\)\]\:#\-]) +| +$/g, (t) => t.replace(/ +/g, ""));
 }
 
 export function zoteroNote(
@@ -124,32 +121,37 @@ export function table2bullet(content: string, header: boolean = false): string {
 }
 
 export function array2markdown(content: string): string {
-    let volume = content.match(/(?<=\{)[clr]+(?=\})/)[0].length;
+    let volume = content.match(/\{([clr\|]+)\}/)[1].match(/[clr]/g).length;
 
+    // remove `\test{}`
     content = content
         .replace(/\$|\n/g, ``)
-        .replace(/\\text *\{.*?\}/g, (t) =>
-            t.match(/(?<=\{).*?(?=\})/g)[0].replace(/^ +| +$/g, ``)
+        .replace(/\\text *\{.*?\}/g, (t) => {
+            return t.match(/\{((.*?))\}/g)[0].replace(/^ +| +$|[\{\}]/g, ``)
+        }
         );
+    // return content
 
-    // single line
+    // convert array to single line
     content = content.replace(
         /\\begin\{array\}\{[clr]\}.*?\\end\{array\}/g,
-        (t) =>
-            t
-                .replace(/\\\\begin\{array\}\{[clr]\}/g, "")
+        (t) => {
+            console.log(t)
+            return t
+                .replace(/\\{1,2}begin\{array\}\{[clr]\}/g, "")
                 .replace("\\end{array}", "")
-                .replace(/\\\\ /g, "")
+                .replace(/\\\\ */g, "")
+        }
     );
 
-    // \n
-    content = content.replace(/\\\\ \\hline|\\\\ */g, (t) => t + `\n`);
+    // add `\n`
+    content = content.replace(/\\\\ ?\\hline|\\\\ */g, (t) => t + `\n`);
 
     // convert to table
     let markdown = (
         "|" +
         content
-            .replace(/\\begin\{array\}\{[clr]+\}|\\end\{array\}|\\hline/g, "")
+            .replace(/\\begin\{array\}\{[clr\|]+\}|\\end\{array\}|\\hline/g, "")
             .replace(/&/g, "|")
             .replace(/\n[ ]*$/, "")
             .replace(/\\\\[ ]*?\n/g, "|\n|")
