@@ -250,7 +250,9 @@ export default class TextFormat extends Plugin {
     var selectedText: string, replacedText;
 
     // if nothing is selected, select the whole line.
-    if (!editor.somethingSelected()) {
+    let somethingSelected = editor.somethingSelected()
+    let origin_cursor_from = editor.getCursor("from"), origin_cursor_to = editor.getCursor("to");
+    if (!somethingSelected) {
       let cursor = editor.getCursor();
 
       cursor.ch = 0;
@@ -282,7 +284,6 @@ export default class TextFormat extends Plugin {
       case "split-blank":
       case "bullet":
       case "ordered":
-      case "todo-sort":
         // force to select how paragraph(s)
         let from = editor.getCursor("from");
         let to = editor.getCursor("to");
@@ -298,6 +299,18 @@ export default class TextFormat extends Plugin {
           editor.setSelection(from, to);
         }
         selectedText = editor.getSelection();
+        break;
+      case "todo-sort":
+        // select whole file if nothing selected
+        if (!somethingSelected) {
+          let from = editor.getCursor("from");
+          let to = editor.getCursor("to");
+          from.line = 0;
+          from.ch = 0;
+          to.line = editor.lastLine() + 1;
+          editor.setSelection(from, to);
+          selectedText = editor.getSelection();
+        }
         break;
       default:
         break;
@@ -466,15 +479,25 @@ export default class TextFormat extends Plugin {
       editor.replaceSelection(replacedText);
     }
 
-    if (cmd != "merge") {
-      const tos = editor.posToOffset(editor.getCursor("to")); // to offset
-      editor.setSelection(
-        editor.offsetToPos(tos - replacedText.length),
-        editor.offsetToPos(tos)
-      );
-    } else {
-      let head = editor.getCursor("head");
-      editor.setSelection(editor.offsetToPos(fos), head);
+    // cursor selection
+    switch (cmd) {
+      case "merge":
+        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+        editor.setSelection(
+          editor.offsetToPos(tos - replacedText.length),
+          editor.offsetToPos(tos)
+        );
+        break;
+      case "todo-sort":
+        if (!somethingSelected) {
+          editor.setSelection(origin_cursor_from, origin_cursor_to);
+        } else {
+          editor.setSelection(editor.offsetToPos(fos), editor.getCursor("head"));
+        }
+        break;
+      default:
+        let head = editor.getCursor("head");
+        editor.setSelection(editor.offsetToPos(fos), head);
     }
   }
 
