@@ -1,4 +1,4 @@
-import { MarkdownView, EditorPosition, App, requestUrl, TFile } from "obsidian";
+import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
 
 const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
 
@@ -454,7 +454,7 @@ export function sortTodo(s: string): string {
 }
 
 
-export async function requestAPI(s: string, file: TFile): Promise<string> {
+export async function requestAPI(s: string, file: TFile, url: string): Promise<string> {
     console.log(s)
     try {
         const data = {
@@ -463,17 +463,19 @@ export async function requestAPI(s: string, file: TFile): Promise<string> {
         }
 
         const response = await requestUrl({
-            url: "http://127.0.0.1:7070/obsidian",
+            url: url,
             method: "POST",
             contentType: "application/json",
             body: JSON.stringify(data),
         })
-        console.log(response)
-        console.log(response.json.text)
-        return response.json.text;
+        if (response.json.replace) {
+            return response.json.text;
+        } else {
+            return s;
+        }
     }
     catch (e) {
-        console.log(e);
+        new Notice(`Fail to request API.\n${e}`);
         return s;
     }
 }

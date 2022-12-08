@@ -8,6 +8,7 @@ import {
   Menu,
   ButtonComponent,
   requestUrl,
+  EditorPosition,
 } from "obsidian";
 import { decode } from "querystring";
 import {
@@ -278,6 +279,9 @@ export default class TextFormat extends Plugin {
 
     selectedText = editor.getSelection();
 
+    let from = editor.getCursor("from"),
+      to = editor.getCursor("to");
+
     // adjust selection
     switch (cmd) {
       case "capitalize-word":
@@ -294,8 +298,6 @@ export default class TextFormat extends Plugin {
       case "bullet":
       case "ordered":
         // force to select how paragraph(s)
-        let from = editor.getCursor("from");
-        let to = editor.getCursor("to");
         from.ch = 0;
         to.line += 1;
         to.ch = 0;
@@ -312,8 +314,6 @@ export default class TextFormat extends Plugin {
       case "todo-sort":
         // select whole file if nothing selected
         if (!somethingSelected) {
-          let from = editor.getCursor("from");
-          let to = editor.getCursor("to");
           from.line = 0;
           from.ch = 0;
           to.line = editor.lastLine() + 1;
@@ -465,14 +465,16 @@ export default class TextFormat extends Plugin {
         replacedText = sortTodo(selectedText);
         break;
       case "api-request":
-        let p = requestAPI(selectedText, markdownView.file);
+        let p = requestAPI(selectedText, markdownView.file, this.settings.RequestURL);
         p.then(result => {
-          console.log("result")
-          console.log(result)
-          replacedText = result
+          replacedText = result;
+
+          editor.setSelection(from, to);
+          if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
+          editor.setSelection(from, editor.getCursor("head"));
+          return;
         })
-        console.log(replacedText)
-        break;
+        return;
       default:
         return;
     }

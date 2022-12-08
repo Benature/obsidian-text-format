@@ -24,6 +24,7 @@ export interface FormatSettings {
   ZoteroNoteTemplate: string;
   BulletPoints: string;
   wrapperList: Array<WrapperSetting>;
+  RequestURL: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
   BulletPoints: "•–§",
   wrapperList: [{ name: "", prefix: "", suffix: "" }],
+  RequestURL: "",
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -191,10 +193,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
       .setName("Zotero pdf note (input) RegExp")
       .setDesc(
         "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
-          "Variables: \n" +
-          "<text>: highlight,\n" +
-          "<pdf_url>: comment,\n" +
-          "<item>: citation."
+        "Variables: \n" +
+        "<text>: highlight,\n" +
+        "<pdf_url>: comment,\n" +
+        "<item>: citation."
       )
       .addTextArea((text) =>
         text
@@ -211,9 +213,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
       .setName("Zotero note pasted in Obsidian (output) format")
       .setDesc(
         "Variables: \n" +
-          "{text}: <text>,\n" +
-          "{pdf_url}: <pdf_url>,\n" +
-          "{item}: <item>."
+        "{text}: <text>,\n" +
+        "{pdf_url}: <pdf_url>,\n" +
+        "{item}: <item>."
       )
       .addTextArea((text) =>
         text
@@ -221,6 +223,27 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.ZoteroNoteTemplate)
           .onChange(async (value) => {
             this.plugin.settings.ZoteroNoteTemplate = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    containerEl.createEl("h3", { text: "API Request" });
+
+    new Setting(containerEl)
+      .setName("API Request URL")
+      .setDesc(
+        "The URL that plugin will send a POST and replace with return.\n" +
+        "The return json should have two attribution: `replace` and `text`. " +
+        "Only when `replace` is `true` then `text` will replace the selection."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(
+            "http://127.0.0.1:7070/obsidian"
+          )
+          .setValue(this.plugin.settings.RequestURL)
+          .onChange(async (value) => {
+            this.plugin.settings.RequestURL = value;
             await this.plugin.saveSettings();
           })
       );
