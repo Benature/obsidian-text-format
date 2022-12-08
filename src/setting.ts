@@ -233,8 +233,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
       .setName("API Request URL")
       .setDesc(
         "The URL that plugin will send a POST and replace with return.\n" +
-        "The return json should have two attribution: `replace` and `text`. " +
-        "Only when `replace` is `true` then `text` will replace the selection."
+        "The return json should have two attribution: `text` and `notification`. " +
+        "If `text` exist then `text` will replace the selection, or do nothing.\n" +
+        "If `notification` exist then Send a notice if this string, or do nothing."
       )
       .addTextArea((text) =>
         text

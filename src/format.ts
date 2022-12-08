@@ -468,8 +468,14 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
             contentType: "application/json",
             body: JSON.stringify(data),
         })
-        if (response.json.replace) {
-            return response.json.text;
+
+        const res = response.json;
+        if (res.notification) {
+            new Notice(res.notification);
+        }
+
+        if (res.text) {
+            return res.text;
         } else {
             return s;
         }
