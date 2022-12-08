@@ -156,7 +156,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-latex-single-letter",
-      name: "Convert single letter into math mode",
+      name: "Convert single letter into math mode (latex)",
       callback: () => this.textFormat("latex-letter"),
     });
     this.addCommand({
@@ -166,7 +166,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-paragraph-double-spaces",
-      name: "Add extra double spaces per paragraph for whole file (beta)",
+      name: "Add extra double spaces per paragraph for whole file",
       callback: () => this.extraDoubleSpaces(),
     });
     this.addCommand({
@@ -237,10 +237,12 @@ export default class TextFormat extends Plugin {
     let editor = markdownView.editor;
     let content = editor.getValue();
     content = content.replace(
-      /(?<=(^---\n[\s\S]*?\n---\n|^))[\s\S]+$/g,
-      function (match) {
-        return match.replace(/(?<=\n).*[^-\n]+.*(?=\n)/g, function (t) {
-          return `${t}  `;
+      /^(?:---\n[\s\S]*?\n---\n|)([\s\S]+)$/g, // exclude meta table
+      (whole_content, body: string) => {
+        return whole_content.replace(body, () => {
+          return body.replace(/(?:\n)(.*[^-\n]+.*)(?=\n)/g,
+            (t0, t) => t0.replace(t, `${t.replace(/ +$/g, '')}  `)
+          )
         });
       }
     );
@@ -257,7 +259,9 @@ export default class TextFormat extends Plugin {
     var selectedText: string, replacedText;
 
     // if nothing is selected, select the whole line.
-    if (!editor.somethingSelected()) {
+    let somethingSelected = editor.somethingSelected()
+    let origin_cursor_from = editor.getCursor("from"), origin_cursor_to = editor.getCursor("to");
+    if (!somethingSelected) {
       let cursor = editor.getCursor();
 
       cursor.ch = 0;
@@ -289,7 +293,6 @@ export default class TextFormat extends Plugin {
       case "split-blank":
       case "bullet":
       case "ordered":
-      case "todo-sort":
         // force to select how paragraph(s)
         let from = editor.getCursor("from");
         let to = editor.getCursor("to");
@@ -305,6 +308,18 @@ export default class TextFormat extends Plugin {
           editor.setSelection(from, to);
         }
         selectedText = editor.getSelection();
+        break;
+      case "todo-sort":
+        // select whole file if nothing selected
+        if (!somethingSelected) {
+          let from = editor.getCursor("from");
+          let to = editor.getCursor("to");
+          from.line = 0;
+          from.ch = 0;
+          to.line = editor.lastLine() + 1;
+          editor.setSelection(from, to);
+          selectedText = editor.getSelection();
+        }
         break;
       default:
         break;
@@ -341,8 +356,7 @@ export default class TextFormat extends Plugin {
         replacedText = removeAllSpaces(selectedText);
         break;
       case "merge":
-        replacedText = selectedText.replace(/(?<!\n)\n(?!\n)/g, " ");
-        // console.log(this.settings);
+        replacedText = selectedText.replace(/(?:[^\n])(\n)(?!\n)/g, (t, t1) => t.replace(t1, " "));
         if (this.settings.MergeParagraph_Newlines) {
           replacedText = replacedText.replace(/\n\n+/g, "\n\n");
         }
@@ -360,7 +374,6 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\[\d+\]/g, "").replace(/ +/g, " ");
         break;
       case "bullet":
-        // let r = "•–§";
         let r = this.settings.BulletPoints;
         replacedText = selectedText
           .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
@@ -369,29 +382,18 @@ export default class TextFormat extends Plugin {
           .replace(/\n+/g, "\n")
           .replace(/^\n/, "");
         break;
-      // case "toggle-ordered":
-      //   break;
       case "convert-ordered":
         let orderedCount = 0;
         var rx = new RegExp(
           String.raw`(^|\s| and )[^\s\(\[\]]\)` +
           "|" +
-          /* (?<=^|\s)
-            (
-              [0-9]\.
-              |
-              [:;]?\w+[）\)]
-            ) */
-          String.raw`(?<=^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
+          String.raw`(^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
           "g"
         );
-
         replacedText = selectedText.replace(
           rx,
-          // /(^|\s)[^\s\[\(\]]+\)|[:;]?\w+[）\)]|(?<=^|\s)[0-9]\./g,
           function (t) {
             orderedCount++;
-            // console.log(orderedCount, t);
             let head = "\n"; // if single line, then add newline character.
             if (selectedText.indexOf("\n") > -1) {
               head = "";
@@ -405,16 +407,14 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/ /g, "\n");
         break;
       case "Chinese":
-        if (this.settings.RemoveBlanksWhenChinese) {
-          selectedText = removeAllSpaces(selectedText);
-        }
-        replacedText = selectedText
+        replacedText = this.settings.RemoveBlanksWhenChinese ? removeAllSpaces(selectedText) : selectedText;
+        replacedText = replacedText
           .replace(/ ?, ?/g, "，")
-          .replace(/(?<!\d) ?\. ?/g, "。")
+          .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
           .replace(/ ?、 ?/g, "、")
           .replace(/;/g, "；")
           .replace(/--/g, "——")
-          .replace(/(?<=[^a-zA-Z0-9]):/g, "：")
+          .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
           .replace(/\([^\)]*?[\u4e00-\u9fa5]+?[^\)]*?\)/g, function (t) {
@@ -423,9 +423,9 @@ export default class TextFormat extends Plugin {
         break;
       case "latex-letter":
         replacedText = selectedText.replace(
-          /(?<= )[b-zA-Z](?=[ ,\.?!，。、])/g,
-          function (t) {
-            return `$${t}$`;
+          /(?:\s|^)([a-zA-Z])([\s,\.\?\!，。、]|$)/g,
+          function (t, t1) {
+            return t.replace(t1, `$${t1}$`);
           }
         );
         break;
@@ -476,21 +476,31 @@ export default class TextFormat extends Plugin {
       default:
         return;
     }
-    const fos = editor.posToOffset(editor.getCursor("from"));
     // change text only when two viable is different
     if (replacedText != selectedText) {
       editor.replaceSelection(replacedText);
     }
 
-    if (cmd != "merge") {
-      const tos = editor.posToOffset(editor.getCursor("to")); // to offset
-      editor.setSelection(
-        editor.offsetToPos(tos - replacedText.length),
-        editor.offsetToPos(tos)
-      );
-    } else {
-      let head = editor.getCursor("head");
-      editor.setSelection(editor.offsetToPos(fos), head);
+    const fos = editor.posToOffset(editor.getCursor("from"));
+    // cursor selection
+    switch (cmd) {
+      case "merge":
+        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+        editor.setSelection(
+          editor.offsetToPos(tos - replacedText.length),
+          editor.offsetToPos(tos)
+        );
+        break;
+      case "todo-sort":
+        if (!somethingSelected) {
+          editor.setSelection(origin_cursor_from, origin_cursor_to);
+        } else {
+          editor.setSelection(editor.offsetToPos(fos), editor.getCursor("head"));
+        }
+        break;
+      default:
+        let head = editor.getCursor("head");
+        editor.setSelection(editor.offsetToPos(fos), head);
     }
   }
 
