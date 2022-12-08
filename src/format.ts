@@ -1,4 +1,4 @@
-import { MarkdownView, EditorPosition, App } from "obsidian";
+import { MarkdownView, EditorPosition, App, requestUrl, TFile } from "obsidian";
 
 const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
 
@@ -449,4 +449,29 @@ export function sortTodo(s: string): string {
     whole = whole.filter(item => item != "")
     // console.log(whole.join('\n'));
     return whole.join('\n');
+}
+
+
+export async function requestAPI(s: string, file: TFile): Promise<string> {
+    console.log(s)
+    try {
+        const data = {
+            text: s,
+            path: file.path,
+        }
+
+        const response = await requestUrl({
+            url: "http://127.0.0.1:7070/obsidian",
+            method: "POST",
+            contentType: "application/json",
+            body: JSON.stringify(data),
+        })
+        console.log(response)
+        console.log(response.json.text)
+        return response.json.text;
+    }
+    catch (e) {
+        console.log(e);
+        return s;
+    }
 }

@@ -7,6 +7,7 @@ import {
   App,
   Menu,
   ButtonComponent,
+  requestUrl,
 } from "obsidian";
 import { decode } from "querystring";
 import {
@@ -19,7 +20,8 @@ import {
   textWrapper,
   replaceLigature,
   ankiSelection,
-  sortTodo
+  sortTodo,
+  requestAPI
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -201,6 +203,11 @@ export default class TextFormat extends Plugin {
       id: "text-format-todo-sort",
       name: "Sort to-do list",
       callback: () => this.textFormat("todo-sort"),
+    });
+    this.addCommand({
+      id: "text-format-api-request",
+      name: "Format with API",
+      callback: () => this.textFormat("api-request"),
     });
     this.addCommand({
       id: "text-format-zotero-note",
@@ -456,6 +463,15 @@ export default class TextFormat extends Plugin {
         break;
       case "todo-sort":
         replacedText = sortTodo(selectedText);
+        break;
+      case "api-request":
+        let p = requestAPI(selectedText, markdownView.file);
+        p.then(result => {
+          console.log("result")
+          console.log(result)
+          replacedText = result
+        })
+        console.log(replacedText)
         break;
       default:
         return;
