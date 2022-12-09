@@ -9,6 +9,7 @@ import {
   ButtonComponent,
   requestUrl,
   EditorPosition,
+  Notice,
 } from "obsidian";
 import { decode } from "querystring";
 import {
@@ -99,6 +100,11 @@ export default class TextFormat extends Plugin {
       id: "text-format-upper",
       name: "Uppercase selected text",
       callback: () => this.textFormat("uppercase"),
+    });
+    this.addCommand({
+      id: "text-format-togglecase",
+      name: "togglecase selected text",
+      callback: () => this.textFormat("togglecase"),
     });
     this.addCommand({
       id: "text-format-capitalize-word",
@@ -290,8 +296,6 @@ export default class TextFormat extends Plugin {
         // lower case text if setting is true
         if (this.settings.LowercaseFirst) {
           selectedText = selectedText.toLowerCase();
-        } else {
-          selectedText = selectedText;
         }
         break;
       case "split-blank":
@@ -345,6 +349,31 @@ export default class TextFormat extends Plugin {
       case "titlecase":
         // @ts-ignore
         replacedText = selectedText.toTitleCase();
+        break;
+      case "togglecase":
+        let lowerString = selectedText.toLowerCase();
+        function getNewString(caseCommand: string): string {
+          switch (caseCommand) {
+            // @ts-ignore
+            case "titleCase": return lowerString.toTitleCase();
+            case "lowerCase": return lowerString;
+            case "upperCase": return selectedText.toUpperCase();
+            case "capitalizeWord": return capitalizeWord(lowerString)
+            case "capitalizeSentence": return capitalizeSentence(lowerString)
+            default:
+              new Notice(`Unknown case ${caseCommand}. \nOnly lowerCase, upperCase, capitalizeWord, capitalizeSentence, titleCase supported.`);
+              return null;
+          }
+        }
+        let toggleSeq = this.settings.toggleSequnce.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
+
+        for (let i = 0; i < toggleSeq.length; i++) {
+          if (selectedText == getNewString(toggleSeq[i])) {
+            replacedText = getNewString(toggleSeq[i + 1 == toggleSeq.length ? 0 : i + 1]);
+            break;
+          }
+        }
+        if (!(replacedText)) { return; }
         break;
       case "remove-spaces":
         replacedText = selectedText

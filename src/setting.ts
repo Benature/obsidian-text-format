@@ -25,6 +25,7 @@ export interface FormatSettings {
   BulletPoints: string;
   wrapperList: Array<WrapperSetting>;
   RequestURL: string;
+  toggleSequnce: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -37,6 +38,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   BulletPoints: "•–§",
   wrapperList: [{ name: "", prefix: "", suffix: "" }],
   RequestURL: "",
+  toggleSequnce: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -67,6 +69,22 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    containerEl.createEl("h3", { text: "Toggle case sequence" });
+    new Setting(containerEl)
+      .setName("Sequence (one case in a line)")
+      .setDesc("Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
+        "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
+        "the two cases are not recommended to be used in the same time.")
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("lowerCase\nupperCase")
+          .setValue(this.plugin.settings.toggleSequnce)
+          .onChange(async (value) => {
+            this.plugin.settings.toggleSequnce = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
     containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
 
