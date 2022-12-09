@@ -13,23 +13,28 @@ Install this plugin right now: <obsidian://show-plugin?id=obsidian-text-format>
 
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
-Or you can consider to bind custom hotkeys to those commands.
+Or you can consider to bind custom hotkeys to those commands according to [#29](https://github.com/Benature/obsidian-text-format/issues/29#issuecomment-1279246640).
+
+---
+
+⚙️: There is setting of this command.
 
 ### Basic
 
-| Command                                                         | Description                                                                                                                                                                        |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                     | Lowercase all letters in selection                                                                                                                                                 |
-| **Uppercase** selected text                                     | Uppercase all letters in selection                                                                                                                                                 |
-| **Capitalize** all **words** in selected text                   | Capitalize all words in selection                                                                                                                                                  |
-| **Capitalize** only first word of **sentence** in selected text | Capitalize only first word of sentence(s) in selection                                                                                                                             |
-| **Title case** selected text                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
+| Command                                                           | Description                                                                                                                                                                        |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                                       | Lowercase all letters in selection                                                                                                                                                 |
+| **Uppercase** selected text                                       | Uppercase all letters in selection                                                                                                                                                 |
+| **Capitalize** all **words** in selected text ⚙️                   | Capitalize all words in selection                                                                                                                                                  |
+| **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
+| **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
+| **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
 
 
 ### List
 | Command                                  | Description                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Format **bullet** list                   | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
+| Format **bullet** list ⚙️                 | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
 | Format **ordered** list                  | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
 | Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
@@ -44,26 +49,26 @@ Or you can consider to bind custom hotkeys to those commands.
 
 ### PDF copy / OCR
 
-| Command                                    | Description                                                                                                                                                                                                                                        |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Remove redundant **spaces** in selection   | Ensure only one space between words                                                                                                                                                                                                                |
-| Remove **blank line(s)**                   | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
-| Merge **broken paragraph(s)** in selection | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
-| Remove **hyphens**                         | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
-| **Split** line(s) by **blanks**            | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
-| Convert to **Chinese character** (,;:!?)   | For OCR use case.                                                                                                                                                                                                                                  |
-| Replace **ligature**                       | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
+| Command                                      | Description                                                                                                                                                                                                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Remove redundant **spaces** in selection     | Ensure only one space between words                                                                                                                                                                                                                |
+| Remove **blank line(s)**                     | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
+| Merge **broken paragraph(s)** in selection ⚙️ | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
+| Remove **hyphens**                           | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
+| **Split** line(s) by **blanks**              | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
+| Convert to **Chinese character** (,;:!?) ⚙️   | For OCR use case.                                                                                                                                                                                                                                  |
+| Replace **ligature**                         | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
 
 ### Others
 | Command                                              | Description                                                                                                                                                                                                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Custom **Wrapper**                                   | Add any arbitrary wrapping element in Setting. (https://github.com/Benature/obsidian-underline/issues/5) See below for more examples [⬇️](#wrapper)                                                                                                     |
+| Custom **Wrapper** ⚙️                                 | Add any arbitrary wrapping element in Setting. (https://github.com/Benature/obsidian-underline/issues/5) See below for more examples [⬇️](#wrapper)                                                                                                     |
 | Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                                                                                                                                                         |
 | Convert single letter into **math** mode             | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                                                           |
 | Convert **Mathpix** array to markdown table          | Convert latex array generated by Mathpix to markdown table format                                                                                                                                                                                      |
 | Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8)                                                                                                                                        |
-| Custom **API** Request                               | Replace Selection with the return of custom API request. The selection will be sent to custom API URL with `POST` method. (No user data is collected!) *There is an [example](#convert-citation-index-to-the-file-name-of-paper-note) of my use case.* |
+| Custom **API** Request ⚙️                             | Replace Selection with the return of custom API request. The selection will be sent to custom API URL with `POST` method. (No user data is collected!) *There is an [example](#convert-citation-index-to-the-file-name-of-paper-note) of my use case.* |
 
 
 #### Wrapper
@@ -75,11 +80,11 @@ e.g.
 
 ### Academic/Study
 
-| Command                                 | Description                                                     |
-| --------------------------------------- | --------------------------------------------------------------- |
-| Convert selection into Anki card format | [#32](https://github.com/Benature/obsidian-text-format/pull/32) |
-| Remove citation index                   | e.g., `A research [12] about notes` => `A research about notes` |
-| **Zotero** note format and paste        | See [below ⬇️](#zotero-format)                                   |
+| Command                                     | Description                                                     |
+| ------------------------------------------- | --------------------------------------------------------------- |
+| Convert selection into **Anki** card format | [#32](https://github.com/Benature/obsidian-text-format/pull/32) |
+| Remove citation index                       | e.g., `A research [12] about notes` => `A research about notes` |
+| **Zotero** note format and paste ⚙️          | See [below ⬇️](#zotero-format)                                   |
 
 #### Zotero format
 The format template can refer to https://www.zotero.org/support/note_templates

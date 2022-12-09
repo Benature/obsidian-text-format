@@ -134,7 +134,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       .setDesc("The characters that will be regarded as bullet points.")
       .addTextArea((text) =>
         text
-          // .setPlaceholder("")
+          .setPlaceholder("•–")
           .setValue(this.plugin.settings.BulletPoints)
           .onChange(async (value) => {
             this.plugin.settings.BulletPoints = value;
