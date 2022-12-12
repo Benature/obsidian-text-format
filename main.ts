@@ -414,20 +414,20 @@ export default class TextFormat extends Plugin {
       case "convert-ordered":
         let orderedCount = 0;
         var rx = new RegExp(
-          String.raw`(^|\s| and )[^\s\(\[\]]\)` +
+          String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
           "|" +
-          String.raw`(^|[\s，。])([:;]?(\d|[i]{1,4})[）\)]|[0-9]\.)`,
+          String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
           "g"
         );
         replacedText = selectedText.replace(
           rx,
-          function (t) {
+          function (t, t1) {
             orderedCount++;
             let head = "\n"; // if single line, then add newline character.
             if (selectedText.indexOf("\n") > -1) {
               head = "";
             }
-            return head + String(orderedCount) + ". ";
+            return t.replace(t1, head + String(orderedCount) + ". ");
           }
         );
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");

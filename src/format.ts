@@ -455,7 +455,6 @@ export function sortTodo(s: string): string {
 
 
 export async function requestAPI(s: string, file: TFile, url: string): Promise<string> {
-    console.log(s)
     try {
         const data = {
             text: s,
