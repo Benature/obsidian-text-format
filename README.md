@@ -106,11 +106,7 @@ e.g.
 
 If you find this plugin useful and would like to support its development, you can sponsor me via WeChat or Alipay, thank you!
 
-<a style="width: 300px;">
-
-![support](support.png)
-
-</a>
+<img src="https://raw.githubusercontent.com/Benature/obsidian-text-format/master/support.png" width="300px">
 
 ## Some Example
 
