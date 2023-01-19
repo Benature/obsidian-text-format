@@ -102,6 +102,16 @@ e.g.
 - Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
 
 
+## Support
+
+If you find this plugin useful and would like to support its development, you can sponsor me via WeChat or Alipay, thank you!
+
+<a style="width: 300px;">
+
+![support](support.png)
+
+</a>
+
 ## Some Example
 
 

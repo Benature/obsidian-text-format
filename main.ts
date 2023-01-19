@@ -446,13 +446,15 @@ export default class TextFormat extends Plugin {
           .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
-          .replace(/\([^\)]*?[\u4e00-\u9fa5]+?[^\)]*?\)/g, function (t) {
+          .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, function (t) {
             return `（${t.slice(1, t.length - 1)}）`;
           });
         break;
       case "latex-letter":
+        // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
         replacedText = selectedText.replace(
-          /(?:\s|^)([a-zA-Z])([\s,\.\?\!，。、]|$)/g,
+          // RegExp(String.raw`(?:` + sep + String.raw`|^)([a-zA-Z])(` + sep + `|$)`, "g"),
+          /(?:[\s：（）。，、]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）]|$)/g,
           function (t, t1) {
             return t.replace(t1, `$${t1}$`);
           }
@@ -516,6 +518,7 @@ export default class TextFormat extends Plugin {
     // cursor selection
     switch (cmd) {
       case "merge":
+      case "remove-blank-line":
         const tos = editor.posToOffset(editor.getCursor("to")); // to offset
         editor.setSelection(
           editor.offsetToPos(tos - replacedText.length),
@@ -530,6 +533,7 @@ export default class TextFormat extends Plugin {
         }
         break;
       default:
+        console.log(cmd)
         let head = editor.getCursor("head");
         editor.setSelection(editor.offsetToPos(fos), head);
     }
