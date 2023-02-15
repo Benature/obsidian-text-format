@@ -1,7 +1,7 @@
 export function removeWikiLink(s: string): string {
   let rx = /\[\[.*?\]\]/g;
   return s.replace(rx, function (t) {
-    return t.substring(2, t.length - 2);
+    return t.substring(2, t.length - 2).split('|').slice(-1)[0];
   });
 }
 
