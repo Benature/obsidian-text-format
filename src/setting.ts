@@ -87,6 +87,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
 
     containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
+    containerEl.createEl("div", { text: "...when calling `Merge broken paragraphs(s) in selection`" });
 
     new Setting(containerEl)
       .setName("Remove redundant blank lines")
