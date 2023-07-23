@@ -368,9 +368,13 @@ export default class TextFormat extends Plugin {
         let toggleSeq = this.settings.toggleSequnce.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
 
         for (let i = 0; i < toggleSeq.length; i++) {
+          console.log(toggleSeq[i], selectedText, getNewString(toggleSeq[i]), selectedText == getNewString(toggleSeq[i]))
           if (selectedText == getNewString(toggleSeq[i])) {
             replacedText = getNewString(toggleSeq[i + 1 == toggleSeq.length ? 0 : i + 1]);
             break;
+          }
+          if (i == toggleSeq.length - 1) {
+            replacedText = getNewString(toggleSeq[0]);
           }
         }
         if (!(replacedText)) { return; }
@@ -400,7 +404,7 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\n/g, "\n\n");
         break;
       case "remove-citation":
-        replacedText = selectedText.replace(/\[\d+\]/g, "").replace(/ +/g, " ");
+        replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
         break;
       case "bullet":
         let r = this.settings.BulletPoints;
@@ -466,7 +470,7 @@ export default class TextFormat extends Plugin {
           function (t) {
             return decodeURI(t);
           }
-        ); // .replace(/ /g, "%20");
+        ).replace(/\s/g, "%20");
         break;
       case "hyphen":
         replacedText = selectedText.replace(/(\w)-[ ]/g, "");
