@@ -6,10 +6,14 @@ export function removeWikiLink(s: string): string {
 }
 
 export function removeUrlLink(s: string): string {
-  let rx = /\[.*?\]\(.+?\)/g;
-  return s.replace(rx, function (t) {
-    return t.match(/\[(.*?)\]/)[1];
-  });
+  const regex = /\[(.*?)\]\((https?:\/\/\S+)\)/;
+  const match = s.match(regex);
+
+  if (match && match.length === 3) {
+    return match[2];
+  } else {
+    return s;
+  }
 }
 
 export function url2WikiLink(s: string): string {
