@@ -16,14 +16,16 @@ export function removeWikiLink(s: string): string {
 }
 
 export function removeUrlLink(s: string): string {
-  const regex = /\[(.*?)\]\((https?:\/\/\S+)\)/;
-  const match = s.match(regex);
-
-  if (match && match.length === 3) {
-    return match[2];
-  } else {
-    return s;
-  }
+  const rx = /\[([^\]]*?)\]\(\S+?\)/g;
+  return s.replace(rx, function (t) {
+    const regex = /\[(.*?)\]\((https?:\/\/\S+)\)/;
+    const match = t.match(regex);
+    if (match && match.length === 3) {
+      return match[2];
+    } else {
+      return s;
+    }
+  });
 }
 
 export function url2WikiLink(s: string): string {

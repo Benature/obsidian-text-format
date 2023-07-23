@@ -490,6 +490,9 @@ export default class TextFormat extends Plugin {
         break;
       case "remove-url-link":
         replacedText = removeUrlLink(selectedText);
+        if (this.settings.RemoveWikiURL2) {
+          replacedText = removeWikiLink(replacedText);
+        }
         break;
       case "link-url2wiki":
         replacedText = url2WikiLink(selectedText);

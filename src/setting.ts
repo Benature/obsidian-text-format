@@ -26,6 +26,7 @@ export interface FormatSettings {
   wrapperList: Array<WrapperSetting>;
   RequestURL: string;
   toggleSequnce: string;
+  RemoveWikiURL2: boolean;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   wrapperList: [{ name: "", prefix: "", suffix: "" }],
   RequestURL: "",
   toggleSequnce: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
+  RemoveWikiURL2: false,
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -125,6 +127,19 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
           .onChange(async (value) => {
             this.plugin.settings.RemoveBlanksWhenChinese = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    containerEl.createEl("h3", { text: "Remove URL format" });
+    containerEl.createEl("div", { text: "...when calling `Remove URL links format in selection`" });
+    new Setting(containerEl)
+      .setName("Remove WikiLink as well")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.RemoveWikiURL2)
+          .onChange(async (value) => {
+            this.plugin.settings.RemoveWikiURL2 = value;
             await this.plugin.saveSettings();
           });
       });
