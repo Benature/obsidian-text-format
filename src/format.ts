@@ -308,72 +308,73 @@ export function textWrapper(prefix: string, suffix: string, app: App): void {
 
 export function replaceLigature(s: string): string {
     let ligatures = {
-        Ꜳ: "AA",
-        Æ: "AE",
-        Ꜵ: "AO",
-        Ꜷ: "AU",
-        Ꜹ: "AV",
-        Ꜻ: "AV",
-        Ꜽ: "AY",
-        ꜳ: "aa",
-        æ: "ae",
-        ꜵ: "ao",
-        ꜷ: "au",
-        ꜹ: "av",
-        ꜻ: "av",
-        ꜽ: "ay",
+        "Ꜳ": "AA",
+        "Æ": "AE",
+        "Ꜵ": "AO",
+        "Ꜷ": "AU",
+        "Ꜹ": "AV",
+        "Ꜻ": "AV",
+        "Ꜽ": "AY",
+        "ꜳ": "aa",
+        "æ": "ae",
+        "ꜵ": "ao",
+        "ꜷ": "au",
+        "ꜹ": "av",
+        "ꜻ": "av",
+        "ꜽ": "ay",
         "🙰": "et",
-        ﬀ: "ff",
-        ﬃ: "ffi",
-        ﬄ: "ffl",
-        ﬁ: "fi",
-        ﬂ: "fl",
+        "ﬀ": "ff",
+        "ﬃ": "ffi",
+        "ﬄ": "ffl",
+        "ﬁ": "fi",
+        "ﬂ": "fl",
         "℔": "lb",
-        Ƕ: "Hv",
-        Ỻ: "lL",
-        Œ: "OE",
-        Ꝏ: "OO",
-        ƕ: "hv",
-        ỻ: "ll",
-        œ: "oe",
-        ꝏ: "oo",
-        ꭢ: "ɔe",
-        ﬆ: "st",
-        ﬅ: "ſt",
-        ᵫ: "ue",
-        ꭣ: "uo",
-        ẞ: "ſs",
-        Ꜩ: "TZ",
-        W: "VV",
-        Ꝡ: "VY",
-        ß: "ſz",
-        ꜩ: "tz",
-        w: "vv",
-        ꝡ: "vy",
-        ꬱ: "aə",
-        ꭁ: "əø",
-        ȸ: "db",
-        ʣ: "dz",
+        "Ƕ": "Hv",
+        "Ỻ": "lL",
+        "Œ": "OE",
+        "Ꝏ": "OO",
+        "ƕ": "hv",
+        "ỻ": "ll",
+        "œ": "oe",
+        "ꝏ": "oo",
+        "ꭢ": "ɔe",
+        "ﬆ": "st",
+        "ﬅ": "ſt",
+        "ᵫ": "ue",
+        "ꭣ": "uo",
+        "ẞ": "ſs",
+        "Ꜩ": "TZ",
+        "W": "VV",
+        "Ꝡ": "VY",
+        "ß": "ſz",
+        "ꜩ": "tz",
+        // "w": "vv",
+        "ꝡ": "vy",
+        "ꬱ": "aə",
+        "ꭁ": "əø",
+        "ȸ": "db",
+        "ʣ": "dz",
         "ꭦ": "dʐ",
-        ʥ: "dʑ",
-        ʤ: "dʒ",
-        ʩ: "fŋ",
-        ʪ: "ls",
-        ʫ: "lz",
-        ɮ: "lʒ",
-        ꭀ: "oə",
-        ȹ: "qp[c]",
-        ʨ: "tɕ",
-        ʦ: "ts",
+        "ʥ": "dʑ",
+        "ʤ": "dʒ",
+        "ʩ": "fŋ",
+        "ʪ": "ls",
+        "ʫ": "lz",
+        "ɮ": "lʒ",
+        "ꭀ": "oə",
+        "ȹ": "qp[c]",
+        "ʨ": "tɕ",
+        "ʦ": "ts",
         "ꭧ": "tʂ",
-        ʧ: "tʃ",
-        ꭐ: "ui",
-        ꭑ: "ui",
-        ɯ: "uu",
+        "ʧ": "tʃ",
+        "ꭐ": "ui",
+        "ꭑ": "ui",
+        "ɯ": "uu",
     };
 
     Object.entries(ligatures).forEach(([key, value]) => {
-        s = s.replace(key, value);
+        var rx = new RegExp(key, "g");
+        s = s.replace(rx, value);
     });
     return s;
 }
@@ -390,6 +391,7 @@ export function sortTodo(s: string): string {
         flag: string;
     for (const [i, line] of lines.entries()) {
         let flags = /- \[([ \w])\]/g.exec(line);
+        // console.log(flags);
         if (flags) {
             let head = line.match(/^[ \t]*/g)[0];
             if (!todo_detected) {
@@ -419,6 +421,7 @@ export function sortTodo(s: string): string {
                 last_flag = flag;
             }
         } else {
+            // console.log("else", flags, todo_detected)
             if (todo_detected) {
                 suffix_text_line = i;
                 break;
@@ -438,6 +441,7 @@ export function sortTodo(s: string): string {
         })
     }
     body = body.slice(0, body.length - 1); // remove the last "\n"
+    // console.log(body)
 
     let prefix_text = lines.slice(0, prefix_text_line + 1).join('\n');
     let suffix_text = suffix_text_line == -1 ? "" : lines.slice(suffix_text_line, lines.length).join('\n');
