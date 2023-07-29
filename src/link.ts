@@ -1,16 +1,15 @@
 export function removeWikiLink(s: string): string {
-  const pattern1 = /\[\[([^#|]+)#([^|\]]+)\|([^|\]]+)\]\]/g;
-  const pattern2 = /\[\[([^#|\]]+)#([^|\]]+)\]\]/g;
-
   return s.replace(/\[\[.*?\]\]/g, function (t) {
-    if (pattern1.test(t)) {
-      return t.replace(pattern1, '$3 ($1 > $2)');
-    }
-    else if (pattern2.test(t)) {
-      return t.replace(pattern2, '$1 ($2)');
-    }
-    else {
-      return t.replace(/\[\[(.*?)\]\]/g, '$1');
+    let wiki_exec = /\[\[(?<title>[^\[#|]+)(?<heading>#[^|\]]+)?(?<alias>\|[^|\]]+)?\]\]/g.exec(t);
+    let G = wiki_exec.groups;
+    if (G.heading === undefined && G.alias === undefined) {
+      return G.title;
+    } else if (G.alias !== undefined) {
+      let heading;
+      if (G.heading !== undefined) { heading = ` > ${G.heading.slice(1)}`; } else { heading = ""; }
+      return `${G.alias.slice(1)} (${G.title}${heading})`;
+    } else {
+      return `${G.title} (> ${G.heading.slice(1)})`;
     }
   });
 }
