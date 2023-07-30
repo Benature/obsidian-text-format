@@ -1,5 +1,9 @@
 import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
 
+export function stringFormat(str: string, values: Record<string, string>) {
+    return str.replace(/\{(\w+)\}/g, (match, key) => values[key] || match);
+}
+
 const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
 
 export function capitalizeWord(str: string): string {

@@ -15,6 +15,12 @@ export interface WrapperSetting {
   suffix: string;
 }
 
+export interface WikiLinkFormatGroup {
+  headingOnly: string;
+  aliasOnly: string;
+  both: string;
+}
+
 export interface FormatSettings {
   MergeParagraph_Newlines: boolean;
   MergeParagraph_Spaces: boolean;
@@ -25,8 +31,9 @@ export interface FormatSettings {
   BulletPoints: string;
   wrapperList: Array<WrapperSetting>;
   RequestURL: string;
-  toggleSequnce: string;
+  ToggleSequence: string;
   RemoveWikiURL2: boolean;
+  WikiLinkFormat: WikiLinkFormatGroup;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -39,8 +46,9 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   BulletPoints: "•–§",
   wrapperList: [{ name: "", prefix: "", suffix: "" }],
   RequestURL: "",
-  toggleSequnce: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
+  ToggleSequence: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
   RemoveWikiURL2: false,
+  WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" }
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -81,9 +89,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
       .addTextArea((text) =>
         text
           .setPlaceholder("lowerCase\nupperCase")
-          .setValue(this.plugin.settings.toggleSequnce)
+          .setValue(this.plugin.settings.ToggleSequence)
           .onChange(async (value) => {
-            this.plugin.settings.toggleSequnce = value;
+            this.plugin.settings.ToggleSequence = value;
             await this.plugin.saveSettings();
           })
       );
@@ -131,10 +139,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
 
-    containerEl.createEl("h3", { text: "Remove URL format" });
-    containerEl.createEl("div", { text: "...when calling `Remove URL links format in selection`" });
+    containerEl.createEl("h3", { text: "URL formatting" });
     new Setting(containerEl)
-      .setName("Remove WikiLink as well")
+      .setName("Remove WikiLink as wel when calling `Remove URL links format in selection`")
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.RemoveWikiURL2)
@@ -143,6 +150,50 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+    containerEl.createEl("h6", { text: "WikiLink format while removing" });
+    containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
+    new Setting(containerEl)
+      .setName("WikiLink with heading")
+      .setDesc(
+        "e.g. [[title#heading]]"
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{title} (> {heading})")
+          .setValue(this.plugin.settings.WikiLinkFormat.headingOnly)
+          .onChange(async (value) => {
+            this.plugin.settings.WikiLinkFormat.headingOnly = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
+      .setName("WikiLink with alias")
+      .setDesc(
+        "e.g. [[title|alias]]"
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{alias} ({title})")
+          .setValue(this.plugin.settings.WikiLinkFormat.aliasOnly)
+          .onChange(async (value) => {
+            this.plugin.settings.WikiLinkFormat.aliasOnly = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
+      .setName("WikiLink with both heading and alias")
+      .setDesc(
+        "e.g. [[title#heading|alias]]"
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{alias} ({title})")
+          .setValue(this.plugin.settings.WikiLinkFormat.both)
+          .onChange(async (value) => {
+            this.plugin.settings.WikiLinkFormat.both = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
     containerEl.createEl("h3", { text: "Bullet points list" });
     new Setting(containerEl)

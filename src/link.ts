@@ -1,15 +1,23 @@
-export function removeWikiLink(s: string): string {
+import { stringFormat } from "./format";
+import { WikiLinkFormatGroup } from "./setting";
+
+export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
   return s.replace(/\[\[.*?\]\]/g, function (t) {
     let wiki_exec = /\[\[(?<title>[^\[#|]+)(?<heading>#[^|\]]+)?(?<alias>\|[^|\]]+)?\]\]/g.exec(t);
     let G = wiki_exec.groups;
+    let groupArgs = {
+      title: G.title,
+      heading: G.heading?.slice(1),
+      alias: G.alias?.slice(1)
+    };
     if (G.heading === undefined && G.alias === undefined) {
       return G.title;
-    } else if (G.alias !== undefined) {
-      let heading;
-      if (G.heading !== undefined) { heading = ` > ${G.heading.slice(1)}`; } else { heading = ""; }
-      return `${G.alias.slice(1)} (${G.title}${heading})`;
+    } else if (G.alias !== undefined && G.heading === undefined) {
+      return stringFormat(formatGroup.aliasOnly, groupArgs);
+    } else if (G.alias === undefined && G.heading !== undefined) {
+      return stringFormat(formatGroup.headingOnly, groupArgs);
     } else {
-      return `${G.title} (> ${G.heading.slice(1)})`;
+      return stringFormat(formatGroup.both, groupArgs);
     }
   });
 }

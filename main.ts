@@ -365,7 +365,7 @@ export default class TextFormat extends Plugin {
               return null;
           }
         }
-        let toggleSeq = this.settings.toggleSequnce.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
+        let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
 
         for (let i = 0; i < toggleSeq.length; i++) {
           console.log(toggleSeq[i], selectedText, getNewString(toggleSeq[i]), selectedText == getNewString(toggleSeq[i]))
@@ -486,12 +486,12 @@ export default class TextFormat extends Plugin {
         replacedText = table2bullet(selectedText, true);
         break;
       case "remove-wiki-link":
-        replacedText = removeWikiLink(selectedText);
+        replacedText = removeWikiLink(selectedText, this.settings.WikiLinkFormat)
         break;
       case "remove-url-link":
         replacedText = removeUrlLink(selectedText);
         if (this.settings.RemoveWikiURL2) {
-          replacedText = removeWikiLink(replacedText);
+          replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
         }
         break;
       case "link-url2wiki":
