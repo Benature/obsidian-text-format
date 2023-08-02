@@ -34,6 +34,7 @@ export interface FormatSettings {
   ToggleSequence: string;
   RemoveWikiURL2: boolean;
   WikiLinkFormat: WikiLinkFormatGroup;
+  UrlLinkFormat: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -48,7 +49,8 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   RequestURL: "",
   ToggleSequence: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
   RemoveWikiURL2: false,
-  WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" }
+  WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
+  UrlLinkFormat: "{text}",
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -141,6 +143,18 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     containerEl.createEl("h3", { text: "URL formatting" });
     new Setting(containerEl)
+      .setName("The format of result when calling `Remove URL links format in selection`")
+      .setDesc("Matching with `[{text}]({url})`, use `{text}` if you want to maintain the text, or use `{url}` if you want to maintain the url.")
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{url}")
+          .setValue(this.plugin.settings.UrlLinkFormat)
+          .onChange(async (value) => {
+            this.plugin.settings.UrlLinkFormat = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
       .setName("Remove WikiLink as wel when calling `Remove URL links format in selection`")
       .addToggle((toggle) => {
         toggle
@@ -154,9 +168,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
     new Setting(containerEl)
       .setName("WikiLink with heading")
-      .setDesc(
-        "e.g. [[title#heading]]"
-      )
+      .setDesc("e.g. [[title#heading]]")
       .addTextArea((text) =>
         text
           .setPlaceholder("{title} (> {heading})")
@@ -168,9 +180,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
     new Setting(containerEl)
       .setName("WikiLink with alias")
-      .setDesc(
-        "e.g. [[title|alias]]"
-      )
+      .setDesc("e.g. [[title|alias]]")
       .addTextArea((text) =>
         text
           .setPlaceholder("{alias} ({title})")
@@ -182,9 +192,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
     new Setting(containerEl)
       .setName("WikiLink with both heading and alias")
-      .setDesc(
-        "e.g. [[title#heading|alias]]"
-      )
+      .setDesc("e.g. [[title#heading|alias]]")
       .addTextArea((text) =>
         text
           .setPlaceholder("{alias} ({title})")

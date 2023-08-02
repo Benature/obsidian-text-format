@@ -418,21 +418,22 @@ export default class TextFormat extends Plugin {
         break;
       case "convert-ordered":
         let orderedCount = 0;
-        var rx = new RegExp(
-          String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
-          "|" +
-          String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
-          "g"
-        );
+        // var rx = new RegExp(
+        //   String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
+        //   "|" +
+        //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
+        //   "g"
+        // );
+        const rx = /(\(?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.)]\s|\sand\s|\s?(和|以及)\s?)/g;
         replacedText = selectedText.replace(
           rx,
           function (t, t1) {
             orderedCount++;
             let head = "\n"; // if single line, then add newline character.
-            if (selectedText.indexOf("\n") > -1) {
-              head = "";
-            }
-            return t.replace(t1, head + String(orderedCount) + ". ");
+            // if (selectedText.indexOf("\n") > -1) {
+            //   head = "";
+            // }
+            return t.replace(t1, `${head}${orderedCount}. `);
           }
         );
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
@@ -489,7 +490,7 @@ export default class TextFormat extends Plugin {
         replacedText = removeWikiLink(selectedText, this.settings.WikiLinkFormat)
         break;
       case "remove-url-link":
-        replacedText = removeUrlLink(selectedText);
+        replacedText = removeUrlLink(selectedText, this.settings.UrlLinkFormat);
         if (this.settings.RemoveWikiURL2) {
           replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
         }
@@ -541,7 +542,7 @@ export default class TextFormat extends Plugin {
         }
         break;
       default:
-        console.log(cmd)
+        // console.log(cmd)
         let head = editor.getCursor("head");
         editor.setSelection(editor.offsetToPos(fos), head);
     }

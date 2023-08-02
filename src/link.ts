@@ -22,13 +22,13 @@ export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): str
   });
 }
 
-export function removeUrlLink(s: string): string {
+export function removeUrlLink(s: string, UrlLinkFormat: string): string {
   const rx = /\[([^\]]*?)\]\(\S+?\)/g;
   return s.replace(rx, function (t) {
-    const regex = /\[(.*?)\]\((https?:\/\/\S+)\)/;
+    const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/\S+)\)/;
     const match = t.match(regex);
     if (match && match.length === 3) {
-      return match[2];
+      return stringFormat(UrlLinkFormat, match.groups);
     } else {
       return s;
     }
