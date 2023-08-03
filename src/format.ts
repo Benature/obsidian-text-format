@@ -404,7 +404,7 @@ export function sortTodo(s: string): string {
                 todo_detected = true;
             } else {
                 if (head.length < indent) {
-                    // the level of this line is higher than before, 
+                    // the level of this line is higher than before,
                     // reset the index and consider above lines as prefix text
                     prefix_text_line = i - 1;
                     indent = head.length;
@@ -491,4 +491,41 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
         new Notice(`Fail to request API.\n${e}`);
         return s;
     }
+}
+
+export function slugify(text: string, maxLength: number = 76): string {
+    // Convert to Lowercase
+    text = text.toLowerCase();
+
+    // Remove Special Characters
+    text = text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+
+    // Replace Spaces with Dashes
+    text = text.replace(/\s+/g, "-");
+
+    // Remove Accents and Diacritics
+    text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // Handle Multiple Dashes
+    text = text.replace(/-{2,}/g, "-");
+
+    // Handle Numerals
+    if (/^\d+$/.test(text)) {
+        // If the slug is numeric only, add a suffix to make it unique and descriptive
+        text = `item-${text}`;
+    }
+
+    // Truncate Length if required
+    if (text.length > maxLength) {
+        text = text.substr(0, maxLength);
+        // Handle case where the last character is a hyphen
+        if (text.endsWith("-")) {
+            text = text.substr(0, text.lastIndexOf("-"));
+        }
+    }
+
+    // Handle Hyphens and Dashes
+    text = text.replace(/^-+|-+$/g, "");
+
+    return text;
 }
