@@ -3,7 +3,7 @@
 [![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?color=7e6ad6&labelColor=34208c&label=Obsidian%20Downloads&query=$['obsidian-text-format'].downloads&url=https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/community-plugin-stats.json&)](obsidian://show-plugin?id=obsidian-text-format) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat)
 
 Sometimes I encounter some issues like  
-1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
+1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph broke into several lines.  
 2. I want to lowercase the letters when they are all uppercase, etc.
 
 Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
