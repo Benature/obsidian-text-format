@@ -21,14 +21,15 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ### Basic
 
-| Command                                                           | Description                                                                                                                                                                        |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                       | Lowercase all letters in selection                                                                                                                                                 |
-| **Uppercase** selected text                                       | Uppercase all letters in selection                                                                                                                                                 |
+| Command                                                            | Description                                                                                                                                                                        |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                                        | Lowercase all letters in selection                                                                                                                                                 |
+| **Uppercase** selected text                                        | Uppercase all letters in selection                                                                                                                                                 |
 | **Capitalize** all **words** in selected text ⚙️                   | Capitalize all words in selection                                                                                                                                                  |
 | **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
 | **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
 | **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
+|  **Slugify**selected text ⚙️                                     | convert any input text into a URL-friendly slug                                                                                                                                              |
 
 
 ### List
@@ -140,6 +141,11 @@ If you find this plugin useful and would like to support its development, you ca
   - Obsidian is a good app.
   + Obsidian Is a Good App.
                 ^
+  ```
+- slugify
+  ```diff
+  - Obsidian - a good app.
+  + obsidian-a-good-app
   ```
 - redundant spaces
   ```diff
