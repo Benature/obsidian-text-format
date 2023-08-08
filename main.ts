@@ -198,7 +198,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-table2bullet",
-      name: "Convert table to bullet list",
+      name: "Convert table to bullet list without header",
       callback: () => this.textFormat("table2bullet"),
     });
     this.addCommand({
