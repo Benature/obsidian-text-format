@@ -424,7 +424,7 @@ export default class TextFormat extends Plugin {
         //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
         //   "g"
         // );
-        const rx = /(\(?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.)]\s|\sand\s|\s?(和|以及)\s?)/g;
+        const rx = /(\(?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.)](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(和|以及)\s?)/g;
         replacedText = selectedText.replace(
           rx,
           function (t, t1) {
