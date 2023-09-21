@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-text-format",
 	"name": "Text Format",
-	"version": "2.2.7",
+	"version": "2.2.8",
 	"minAppVersion": "0.9.7",
 	"description": "Format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters.",
 	"author": "Benature",
