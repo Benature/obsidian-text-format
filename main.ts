@@ -473,7 +473,7 @@ export default class TextFormat extends Plugin {
         );
         break;
       case "hyphen":
-        replacedText = selectedText.replace(/(\w)-[ ]/g, "");
+        replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");
         break;
       case "array2table":
         replacedText = array2markdown(selectedText);
