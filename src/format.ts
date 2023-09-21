@@ -1,7 +1,7 @@
 import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
 
 export function stringFormat(str: string, values: Record<string, string>) {
-    return str.replace(/\{(\w+)\}/g, (match, key) => values[key] || match);
+    return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
 }
 
 const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic

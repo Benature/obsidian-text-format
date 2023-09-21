@@ -3,13 +3,15 @@ import { WikiLinkFormatGroup } from "./setting";
 
 export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
   return s.replace(/\[\[.*?\]\]/g, function (t) {
-    let wiki_exec = /\[\[(?<title>[^\[#|]+)(?<heading>#[^|\]]+)?(?<alias>\|[^|\]]+)?\]\]/g.exec(t);
+    let wiki_exec = /\[\[(?<title>[^\[#|]+)?(?<heading>#[^|\]]+)?(?<alias>\|[^|\]]+)?\]\]/g.exec(t);
     let G = wiki_exec.groups;
+    console.log(G)
     let groupArgs = {
-      title: G.title,
+      title: G.title === undefined ? '' : G.title,
       heading: G.heading?.slice(1),
       alias: G.alias?.slice(1)
     };
+    console.log(groupArgs);
     if (G.heading === undefined && G.alias === undefined) {
       return G.title;
     } else if (G.alias !== undefined && G.heading === undefined) {
@@ -17,6 +19,7 @@ export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): str
     } else if (G.alias === undefined && G.heading !== undefined) {
       return stringFormat(formatGroup.headingOnly, groupArgs);
     } else {
+      console.log(groupArgs);
       return stringFormat(formatGroup.both, groupArgs);
     }
   });
