@@ -40,7 +40,7 @@ export interface FormatSettings {
 export const DEFAULT_SETTINGS: FormatSettings = {
   MergeParagraph_Newlines: true,
   MergeParagraph_Spaces: true,
-  LowercaseFirst: false,
+  LowercaseFirst: true,
   RemoveBlanksWhenChinese: false,
   ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
   ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
