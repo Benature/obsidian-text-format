@@ -382,7 +382,7 @@ export default class TextFormat extends Plugin {
       case "remove-spaces":
         console.log(selectedText)
         replacedText = selectedText
-          .replace(/(?<=\S) {2,}/g, "")
+          .replace(/(?<=\S) {2,}/g, " ")
           .replace(/ $| (?=\n)/g, "");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
