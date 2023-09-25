@@ -217,6 +217,11 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("api-request"),
     });
     this.addCommand({
+      id: "text-format-space-word-symbol",
+      name: "Format space between word and symbol",
+      callback: () => this.textFormat("space-word-symbol"),
+    });
+    this.addCommand({
       id: "text-format-zotero-note",
       name: "Zotero note format and paste",
       callback: async () => {
@@ -403,6 +408,9 @@ export default class TextFormat extends Plugin {
         break;
       case "add-line-break":
         replacedText = selectedText.replace(/\n/g, "\n\n");
+        break;
+      case "space-word-symbol":
+        replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
         break;
       case "remove-citation":
         replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
