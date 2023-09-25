@@ -408,13 +408,17 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
         break;
       case "bullet":
-        let r = this.settings.BulletPoints;
+        let r = this.settings.BulletPoints.replace("-", "");
         replacedText = selectedText
           .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
             t.replace(RegExp(`[${r}] *`), "\n- ")
           )
           .replace(/\n+/g, "\n")
           .replace(/^\n/, "");
+        // if "-" in this.settings.BulletPoints
+        if (this.settings.BulletPoints.indexOf("-") > -1) {
+          replacedText = replacedText.replace(/^- /g, "\n- ");
+        }
         break;
       case "convert-ordered":
         let orderedCount = 0;
