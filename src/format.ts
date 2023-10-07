@@ -405,7 +405,7 @@ export function sortTodo(s: string): string {
                 todo_detected = true;
             } else {
                 if (head.length < indent) {
-                    // the level of this line is higher than before, 
+                    // the level of this line is higher than before,
                     // reset the index and consider above lines as prefix text
                     prefix_text_line = i - 1;
                     indent = head.length;
@@ -492,4 +492,10 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
         new Notice(`Fail to request API.\n${e}`);
         return s;
     }
+}
+
+export function snakify(text: string, maxLength: number = 76): string {
+    text = text.toLowerCase();
+    text = text.replace(/\s+/g, "_");
+    return text;
 }

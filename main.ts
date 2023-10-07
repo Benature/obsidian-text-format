@@ -23,7 +23,8 @@ import {
   replaceLigature,
   ankiSelection,
   sortTodo,
-  requestAPI
+  requestAPI,
+  snakify
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -216,6 +217,11 @@ export default class TextFormat extends Plugin {
       name: "Format with API",
       callback: () => this.textFormat("api-request"),
     });
+    this.addCommand({
+      id: "text-format-snakify",
+      name: "Snakify",
+      callback: () => this.textFormat("snakify"),
+    })
     this.addCommand({
       id: "text-format-space-word-symbol",
       name: "Format space between word and symbol",
@@ -513,6 +519,9 @@ export default class TextFormat extends Plugin {
         break;
       case "todo-sort":
         replacedText = sortTodo(selectedText);
+        break;
+      case "snakify":
+        replacedText = snakify(selectedText);
         break;
       case "api-request":
         let p = requestAPI(selectedText, markdownView.file, this.settings.RequestURL);
