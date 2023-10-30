@@ -157,9 +157,14 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("split-blank"),
     });
     this.addCommand({
-      id: "text-format-chinese-character",
-      name: "Convert to Chinese character (,;:!?)",
-      callback: () => this.textFormat("Chinese"),
+      id: "text-format-chinese-punctuation",
+      name: "Convert to Chinese punctuation marks (,;:!?)",
+      callback: () => this.textFormat("Chinese-punctuation"),
+    });
+    this.addCommand({
+      id: "text-format-english-punctuation",
+      name: "Convert to English punctuation marks",
+      callback: () => this.textFormat("English-punctuation"),
     });
     this.addCommand({
       id: "text-format-latex-single-letter",
@@ -305,7 +310,7 @@ export default class TextFormat extends Plugin {
         break;
       case "split-blank":
       case "bullet":
-      case "ordered":
+      case "convert-ordered":
         // force to select how paragraph(s)
         from.ch = 0;
         to.line += 1;
@@ -436,7 +441,7 @@ export default class TextFormat extends Plugin {
         //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
         //   "g"
         // );
-        const rx = /(\(?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.)](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(和|以及)\s?)/g;
+        const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
         replacedText = selectedText.replace(
           rx,
           function (t, t1) {
@@ -453,7 +458,7 @@ export default class TextFormat extends Plugin {
       case "split-blank":
         replacedText = selectedText.replace(/ /g, "\n");
         break;
-      case "Chinese":
+      case "Chinese-punctuation":
         replacedText = this.settings.RemoveBlanksWhenChinese ? removeAllSpaces(selectedText) : selectedText;
         replacedText = replacedText
           .replace(/ ?, ?/g, "，")
@@ -467,6 +472,9 @@ export default class TextFormat extends Plugin {
           .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, function (t) {
             return `（${t.slice(1, t.length - 1)}）`;
           });
+        break;
+      case "English-punctuation":
+        replacedText = selectedText.replace(/[（\(]([a-zA-Z\-0-9]+)[）\)]/g, "($1)");
         break;
       case "latex-letter":
         // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
