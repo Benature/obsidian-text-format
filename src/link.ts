@@ -26,9 +26,9 @@ export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): str
 }
 
 export function removeUrlLink(s: string, UrlLinkFormat: string): string {
-  const rx = /\[([^\]]*?)\]\(\S+?\)/g;
+  const rx = /\[(.+?)\]\((?:[^)]+\([^)]+\)|[^)]+)\)/g;
   return s.replace(rx, function (t) {
-    const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/\S+)\)/;
+    const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/[\S\s]+)\)/;
     const match = t.match(regex);
     if (match && match.length === 3) {
       return stringFormat(UrlLinkFormat, match.groups);
