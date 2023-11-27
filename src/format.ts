@@ -4,7 +4,7 @@ export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
 }
 
-const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
+const LC = "[\\w\\u0400-\\u04FFåäöÅÄÖ]"; // Latin and Cyrillic and Swedish characters
 
 export function capitalizeWord(str: string): string {
     var rx = new RegExp(LC + "\\S*", "g");
