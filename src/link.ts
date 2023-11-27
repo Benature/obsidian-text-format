@@ -25,8 +25,10 @@ export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): str
   });
 }
 
+const markdown_link_regex = /\[(.+?)\]\((?:[^)]+\([^)]+\)[^)]*|[^)]+)\)/g;
+
 export function removeUrlLink(s: string, UrlLinkFormat: string): string {
-  const rx = /\[(.+?)\]\((?:[^)]+\([^)]+\)|[^)]+)\)/g;
+  const rx = markdown_link_regex;
   return s.replace(rx, function (t) {
     const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/[\S\s]+)\)/;
     const match = t.match(regex);
@@ -39,7 +41,7 @@ export function removeUrlLink(s: string, UrlLinkFormat: string): string {
 }
 
 export function url2WikiLink(s: string): string {
-  let rx = /\[.*?\]\(.+?\)/g;
+  let rx = markdown_link_regex;
   return s.replace(rx, function (t) {
     return `[[${t.match(/\[(.*?)\]/)[1]}]]`;
   });
