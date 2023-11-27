@@ -474,7 +474,7 @@ export default class TextFormat extends Plugin {
           });
         break;
       case "English-punctuation":
-        replacedText = selectedText.replace(/[（\(]([a-zA-Z\-0-9]+)[）\)]/g, "($1)");
+        replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
         break;
       case "latex-letter":
         // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
