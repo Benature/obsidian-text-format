@@ -480,7 +480,7 @@ export default class TextFormat extends Plugin {
         // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
         replacedText = selectedText.replace(
           // RegExp(String.raw`(?:` + sep + String.raw`|^)([a-zA-Z])(` + sep + `|$)`, "g"),
-          /(?:[\s：（）。，、]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）]|$)/g,
+          /(?:[\s：（）。，、；]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）；]|$)/g,
           function (t, t1) {
             return t.replace(t1, `$${t1}$`);
           }
