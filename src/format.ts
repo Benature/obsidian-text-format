@@ -494,6 +494,43 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
     }
 }
 
+
+export function slugify(text: string, maxLength: number = 76): string {
+    // Convert to Lowercase
+    text = text.toLowerCase();
+
+    // Remove Special Characters
+    text = text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+
+    // Replace Spaces with Dashes
+    text = text.replace(/\s+/g, "-");
+
+    // Remove Accents and Diacritics
+    text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // Handle Multiple Dashes
+    text = text.replace(/-{2,}/g, "-");
+
+    // Handle Numerals
+    if (/^\d+$/.test(text)) {
+        // If the slug is numeric only, add a suffix to make it unique and descriptive
+        text = `item-${text}`;
+    }
+
+    // Truncate Length if required
+    if (text.length > maxLength) {
+        text = text.substr(0, maxLength);
+        // Handle case where the last character is a hyphen
+        if (text.endsWith("-")) {
+            text = text.substr(0, text.lastIndexOf("-"));
+        }
+    }
+
+    // Handle Hyphens and Dashes
+    text = text.replace(/^-+|-+$/g, "");
+    return text;
+}
+
 export function snakify(text: string, maxLength: number = 76): string {
     text = text.toLowerCase();
     text = text.replace(/\s+/g, "_");

@@ -24,6 +24,7 @@ import {
   ankiSelection,
   sortTodo,
   requestAPI,
+  slugify,
   snakify
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
@@ -198,6 +199,11 @@ export default class TextFormat extends Plugin {
       name: "Sort to-do list",
       callback: () => this.textFormat("todo-sort"),
     });
+    this.addCommand({
+      id: "text-format-slugify",
+      name: "Slugify",
+      callback: () => this.textFormat("slugify"),
+    })
     this.addCommand({
       id: "text-format-api-request",
       name: "Format with API",
@@ -508,6 +514,9 @@ export default class TextFormat extends Plugin {
         break;
       case "todo-sort":
         replacedText = sortTodo(selectedText);
+        break;
+      case "slugify":
+        replacedText = slugify(selectedText);
         break;
       case "snakify":
         replacedText = snakify(selectedText);
