@@ -1,10 +1,10 @@
 import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
 
 export function stringFormat(str: string, values: Record<string, string>) {
-    return str.replace(/\{(\w+)\}/g, (match, key) => values[key] || match);
+    return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
 }
 
-const LC = "[\\w\\u0400-\\u04FF]"; // Latin and Cyrillic
+const LC = "[\\w\\u0400-\\u04FFåäöÅÄÖ]"; // Latin and Cyrillic and Swedish characters
 
 export function capitalizeWord(str: string): string {
     var rx = new RegExp(LC + "\\S*", "g");
@@ -99,10 +99,11 @@ export function zoteroNote(
     }
 }
 
-export function table2bullet(content: string, header: boolean = false): string {
+export function table2bullet(content: string, withHeader: boolean = false): string {
     let header_str = "";
     let output = "";
-    content = content.replace(/[\S ]+\n[:\-\| ]+[:\-]+\|\n/g, (t) => {
+    // remove header from `content` but record the header string
+    content = content.replace(/[\S\s]+\n[:\-\| ]+\|\n/g, (t) => {
         header_str = t
             .match(/^[\S ]+/)[0]
             .replace(/ *\| *$|^ *\| */g, "")
@@ -111,7 +112,7 @@ export function table2bullet(content: string, header: boolean = false): string {
     });
     let headers = header_str.split("|");
     for (let i = 0; i < headers.length; i++) {
-        headers[i] = header ? `${headers[i]}: ` : "";
+        headers[i] = withHeader ? `${headers[i]}: ` : "";
     }
     content.split("\n").forEach((line) => {
         let items = line.replace(/\| *$|^ *\|/g, "").split("|");
@@ -493,6 +494,7 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
     }
 }
 
+
 export function slugify(text: string, maxLength: number = 76): string {
     // Convert to Lowercase
     text = text.toLowerCase();
@@ -526,6 +528,11 @@ export function slugify(text: string, maxLength: number = 76): string {
 
     // Handle Hyphens and Dashes
     text = text.replace(/^-+|-+$/g, "");
+    return text;
+}
 
+export function snakify(text: string, maxLength: number = 76): string {
+    text = text.toLowerCase();
+    text = text.replace(/\s+/g, "_");
     return text;
 }

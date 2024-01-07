@@ -1,12 +1,20 @@
 # Text Format
 
-[![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?color=7e6ad6&labelColor=34208c&label=Obsidian%20Downloads&query=$['obsidian-text-format'].downloads&url=https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/community-plugin-stats.json&)](obsidian://show-plugin?id=obsidian-text-format) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat)
+<div align="center">
+
+![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-text-format%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat)
+
+<!-- ![latest download](https://img.shields.io/github/downloads/Benature/obsidian-text-format/latest/total?style=plastic)  -->
+
+</div>
+
 
 Sometimes I encounter some issues like  
-1. I copy some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph broke into several lines.  
-2. I want to lowercase the letters when they are all uppercase, etc.
+1. I copied some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
+2. Lowercase letters are required while they are all uppercase, etc.
+3. blahblahblash...
 
-Therefore, I wrote this plugin to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
+This plugin is created to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
 Install this plugin right now: <u><obsidian://show-plugin?id=obsidian-text-format></u>
 ## Features
@@ -29,8 +37,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
 | **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
 | **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
-|  **Slugify**selected text ⚙️                                     | convert any input text into a URL-friendly slug                                                                                                                                              |
-
+| **Slugify**selected text                                      | convert any input text into a URL-friendly slug                                                                                                                                              |
+| **Snakify** selected text  | Lowercase all letters in selection *and* replace spaces with underscores |
 
 ### List
 | Command                                  | Description                                                                                                                                           |
@@ -50,15 +58,16 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ### PDF copy / OCR
 
-| Command                                      | Description                                                                                                                                                                                                                                        |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Remove redundant **spaces** in selection     | Ensure only one space between words                                                                                                                                                                                                                |
-| Remove **blank line(s)**                     | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
-| Merge **broken paragraph(s)** in selection ⚙️ | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
-| Remove **hyphens**                           | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
-| **Split** line(s) by **blanks**              | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
-| Convert to **Chinese character** (,;:!?) ⚙️   | For OCR use case. (For who require more custom setting, I would recommend <https://p.gantrol.com/>)                                                                                                                                                |
-| Replace **ligature**                         | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
+| Command                                            | Description                                                                                                                                                                                                                                        |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Remove redundant **spaces** in selection           | Ensure only one space between words                                                                                                                                                                                                                |
+| Remove **blank line(s)**                           | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
+| Merge **broken paragraph(s)** in selection ⚙️       | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
+| Remove **hyphens**                                 | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
+| **Split** line(s) by **blanks**                    | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
+| Convert to **Chinese punctuation** marks (,;:!?) ⚙️ | For OCR use case. (For who require more custom setting, I would recommend <https://p.gantrol.com/>)                                                                                                                                                |
+| Convert to **English punctuation** marks           | Similar to `Convert to Chinese punctuation marks (,;:!?)`                                                                                                                                                                                          |
+| Replace **ligature**                               | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
 
 ### Academic/Study
@@ -146,6 +155,11 @@ If you find this plugin useful and would like to support its development, you ca
   ```diff
   - Obsidian - a good app.
   + obsidian-a-good-app
+  ```
+- snakify
+  ```diff
+  - Obsidian is a good app
+  + obsidian_is_a_good_app
   ```
 - redundant spaces
   ```diff

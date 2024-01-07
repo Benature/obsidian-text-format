@@ -24,7 +24,8 @@ import {
   ankiSelection,
   sortTodo,
   requestAPI,
-  slugify
+  slugify,
+  snakify
 } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import {
@@ -39,25 +40,6 @@ export default class TextFormat extends Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
-
-    /*
-    // https://marcus.se.net/obsidian-plugin-docs/user-interface/context-menus
-    this.app.workspace.on("editor-menu", (menu) => {
-      menu.addSeparator();
-      menu.addItem((item) => {
-        item
-          .setTitle("lowercase selection")
-          .setIcon("documents")
-          .onClick(() => {
-            this.textFormat("lowercase");
-          });
-        // .setSection("danger");
-        console.log("ooooo");
-        console.log(item);
-      });
-      console.log(menu);
-    });
-    */
 
     this.settings.wrapperList.forEach((wrapper, index) => {
       this.addCommand({
@@ -158,9 +140,14 @@ export default class TextFormat extends Plugin {
       callback: () => this.textFormat("split-blank"),
     });
     this.addCommand({
-      id: "text-format-chinese-character",
-      name: "Convert to Chinese character (,;:!?)",
-      callback: () => this.textFormat("Chinese"),
+      id: "text-format-chinese-punctuation",
+      name: "Convert to Chinese punctuation marks (,;:!?)",
+      callback: () => this.textFormat("Chinese-punctuation"),
+    });
+    this.addCommand({
+      id: "text-format-english-punctuation",
+      name: "Convert to English punctuation marks",
+      callback: () => this.textFormat("English-punctuation"),
     });
     this.addCommand({
       id: "text-format-latex-single-letter",
@@ -199,7 +186,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-table2bullet",
-      name: "Convert table to bullet list",
+      name: "Convert table to bullet list without header",
       callback: () => this.textFormat("table2bullet"),
     });
     this.addCommand({
@@ -221,6 +208,16 @@ export default class TextFormat extends Plugin {
       id: "text-format-api-request",
       name: "Format with API",
       callback: () => this.textFormat("api-request"),
+    });
+    this.addCommand({
+      id: "text-format-snakify",
+      name: "Snakify",
+      callback: () => this.textFormat("snakify"),
+    })
+    this.addCommand({
+      id: "text-format-space-word-symbol",
+      name: "Format space between word and symbol",
+      callback: () => this.textFormat("space-word-symbol"),
     });
     this.addCommand({
       id: "text-format-zotero-note",
@@ -306,7 +303,7 @@ export default class TextFormat extends Plugin {
         break;
       case "split-blank":
       case "bullet":
-      case "ordered":
+      case "convert-ordered":
         // force to select how paragraph(s)
         from.ch = 0;
         to.line += 1;
@@ -388,7 +385,7 @@ export default class TextFormat extends Plugin {
       case "remove-spaces":
         console.log(selectedText)
         replacedText = selectedText
-          .replace(/(?<=\S) {2,}/g, "")
+          .replace(/(?<=\S) {2,}/g, " ")
           .replace(/ $| (?=\n)/g, "");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
@@ -410,17 +407,24 @@ export default class TextFormat extends Plugin {
       case "add-line-break":
         replacedText = selectedText.replace(/\n/g, "\n\n");
         break;
+      case "space-word-symbol":
+        replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
+        break;
       case "remove-citation":
         replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
         break;
       case "bullet":
-        let r = this.settings.BulletPoints;
+        let r = this.settings.BulletPoints.replace("-", "");
         replacedText = selectedText
           .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
             t.replace(RegExp(`[${r}] *`), "\n- ")
           )
           .replace(/\n+/g, "\n")
           .replace(/^\n/, "");
+        // if "-" in this.settings.BulletPoints
+        if (this.settings.BulletPoints.indexOf("-") > -1) {
+          replacedText = replacedText.replace(/^- /g, "\n- ");
+        }
         break;
       case "convert-ordered":
         let orderedCount = 0;
@@ -430,7 +434,7 @@ export default class TextFormat extends Plugin {
         //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
         //   "g"
         // );
-        const rx = /(\(?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.)]\s|\sand\s|\s?(和|以及)\s?)/g;
+        const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
         replacedText = selectedText.replace(
           rx,
           function (t, t1) {
@@ -447,7 +451,7 @@ export default class TextFormat extends Plugin {
       case "split-blank":
         replacedText = selectedText.replace(/ /g, "\n");
         break;
-      case "Chinese":
+      case "Chinese-punctuation":
         replacedText = this.settings.RemoveBlanksWhenChinese ? removeAllSpaces(selectedText) : selectedText;
         replacedText = replacedText
           .replace(/ ?, ?/g, "，")
@@ -462,11 +466,14 @@ export default class TextFormat extends Plugin {
             return `（${t.slice(1, t.length - 1)}）`;
           });
         break;
+      case "English-punctuation":
+        replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
+        break;
       case "latex-letter":
         // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
         replacedText = selectedText.replace(
           // RegExp(String.raw`(?:` + sep + String.raw`|^)([a-zA-Z])(` + sep + `|$)`, "g"),
-          /(?:[\s：（）。，、]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）]|$)/g,
+          /(?:[\s：（）。，、；]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）；]|$)/g,
           function (t, t1) {
             return t.replace(t1, `$${t1}$`);
           }
@@ -475,13 +482,11 @@ export default class TextFormat extends Plugin {
       case "decodeURI":
         replacedText = selectedText.replace(
           /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
-          function (t) {
-            return decodeURI(t);
-          }
-        ).replace(/\s/g, "%20");
+          function (t) { return decodeURI(t).replace(/\s/g, "%20"); }
+        );
         break;
       case "hyphen":
-        replacedText = selectedText.replace(/(\w)-[ ]/g, "");
+        replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");
         break;
       case "array2table":
         replacedText = array2markdown(selectedText);
@@ -512,6 +517,9 @@ export default class TextFormat extends Plugin {
         break;
       case "slugify":
         replacedText = slugify(selectedText);
+        break;
+      case "snakify":
+        replacedText = snakify(selectedText);
         break;
       case "api-request":
         let p = requestAPI(selectedText, markdownView.file, this.settings.RequestURL);

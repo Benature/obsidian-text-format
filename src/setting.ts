@@ -40,7 +40,7 @@ export interface FormatSettings {
 export const DEFAULT_SETTINGS: FormatSettings = {
   MergeParagraph_Newlines: true,
   MergeParagraph_Spaces: true,
-  LowercaseFirst: false,
+  LowercaseFirst: true,
   RemoveBlanksWhenChinese: false,
   ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
   ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
@@ -155,7 +155,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(containerEl)
-      .setName("Remove WikiLink as wel when calling `Remove URL links format in selection`")
+      .setName("Remove WikiLink as well when calling `Remove URL links format in selection`")
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.RemoveWikiURL2)
