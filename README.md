@@ -2,17 +2,15 @@
 
 <div align="center">
 
-![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-text-format%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat)
-
-<!-- ![latest download](https://img.shields.io/github/downloads/Benature/obsidian-text-format/latest/total?style=plastic)  -->
+![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-text-format%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat) ![latest download](https://img.shields.io/github/downloads/Benature/obsidian-text-format/latest/total?style=plastic) 
 
 </div>
 
 
-Sometimes I encounter some issues like  
-1. I copied some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
-2. Lowercase letters are required while they are all uppercase, etc.
-3. blahblahblash...
+>When I'm taking notes, sometimes I encounter some issues like  
+>1. I copied some text from pdf or some other source, but the copied content is out of format. For example, there are more than one space between words or one paragraph brokes into several lines.  
+>2. Lowercase letters are required while they are all uppercase, etc.
+>3. blahblahblah...
 
 This plugin is created to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
@@ -29,16 +27,16 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ### Basic
 
-| Command                                                            | Description                                                                                                                                                                        |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                        | Lowercase all letters in selection                                                                                                                                                 |
-| **Uppercase** selected text                                        | Uppercase all letters in selection                                                                                                                                                 |
+| Command                                                           | Description                                                                                                                                                                        |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase** selected text                                       | Lowercase all letters in selection                                                                                                                                                 |
+| **Uppercase** selected text                                       | Uppercase all letters in selection                                                                                                                                                 |
 | **Capitalize** all **words** in selected text ⚙️                   | Capitalize all words in selection                                                                                                                                                  |
 | **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
 | **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
 | **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
-| **Slugify**selected text                                      | convert any input text into a URL-friendly slug                                                                                                                                              |
-| **Snakify** selected text  | Lowercase all letters in selection *and* replace spaces with underscores |
+| **Slugify**selected text                                          | convert any input text into a URL-friendly slug                                                                                                                                    |
+| **Snakify** selected text                                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                           |
 
 ### List
 | Command                                  | Description                                                                                                                                           |
