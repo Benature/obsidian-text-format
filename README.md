@@ -23,6 +23,22 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ---
 
+- [Text Format](#text-format)
+  - [Features](#features)
+    - [Basic](#basic)
+    - [Markdown Grammar](#markdown-grammar)
+      - [List](#list)
+      - [Links](#links)
+    - [PDF copy / OCR](#pdf-copy--ocr)
+    - [Academic/Study](#academicstudy)
+      - [Zotero format](#zotero-format)
+      - [Convert citation index to the file name of paper note](#convert-citation-index-to-the-file-name-of-paper-note)
+    - [Others](#others)
+      - [Wrapper](#wrapper)
+  - [Support](#support)
+  - [Some Examples](#some-examples)
+
+
 ⚙️: There is setting of this command.
 
 ### Basic
@@ -38,7 +54,15 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Slugify**selected text                                          | convert any input text into a URL-friendly slug                                                                                                                                    |
 | **Snakify** selected text                                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                           |
 
-### List
+### Markdown Grammar
+
+| Command       | Description                                                          |
+| ------------- | -------------------------------------------------------------------- |
+| Heading Upper | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`) |
+| Heading Lower | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) |
+
+
+#### List
 | Command                                  | Description                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Format **bullet** list ⚙️                 | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
@@ -46,7 +70,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
 | **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37)                                                                                     |
-### Links
+
+#### Links
 
 | Command                                     | Description                                        |
 | ------------------------------------------- | -------------------------------------------------- |

@@ -1,4 +1,5 @@
 import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
+import { off } from "process";
 
 export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
@@ -27,6 +28,25 @@ export function capitalizeSentence(s: string): string {
         }
     });
 }
+
+export function headingLevel(s: string, upper: boolean = true): { text: string, offset: number } {
+    let offset = 0;
+    if (upper) {
+        let prefix = /^#+\s/.test(s) ? `#` : `# `
+        s = prefix + s;
+        offset = prefix.length;
+    } else {
+        if (/^#\s/.test(s)) {
+            s = s.slice(2);
+            offset = -2;
+        } else if (/^#+\s/.test(s)) {
+            s = s.slice(1);
+            offset = -1;
+        }
+    }
+    return { text: s, offset: offset };
+}
+
 
 export function ankiSelection(str: string): string {
     let sections = str.split(/\r?\n/);

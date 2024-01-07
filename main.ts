@@ -24,6 +24,7 @@ import {
   ankiSelection,
   sortTodo,
   requestAPI,
+  headingLevel,
   slugify,
   snakify
 } from "src/format";
@@ -41,6 +42,28 @@ export default class TextFormat extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
+    this.addCommand({
+      id: "text-format-heading-upper",
+      name: "Heading upper",
+      callback: () => this.textFormat("heading", true),
+      hotkeys: [
+        {
+          modifiers: ["Ctrl", "Shift"],
+          key: "]",
+        },
+      ],
+    });
+    this.addCommand({
+      id: "text-format-heading-lower",
+      name: "Heading lower",
+      callback: () => this.textFormat("heading", false),
+      hotkeys: [
+        {
+          modifiers: ["Ctrl", "Shift"],
+          key: "[",
+        },
+      ],
+    });
     this.settings.WrapperList.forEach((wrapper, index) => {
       this.addCommand({
         id: `text-format-wrapper-${index}`,
@@ -296,6 +319,7 @@ export default class TextFormat extends Plugin {
 
     let from = editor.getCursor("from"),
       to = editor.getCursor("to");
+    let cursorOffset = 0;
 
     // adjust selection
     switch (cmd) {
@@ -310,7 +334,7 @@ export default class TextFormat extends Plugin {
       case "split-blank":
       case "bullet":
       case "convert-ordered":
-        // force to select how paragraph(s)
+        // force to select whole paragraph(s)
         from.ch = 0;
         to.line += 1;
         to.ch = 0;
@@ -340,6 +364,11 @@ export default class TextFormat extends Plugin {
 
     // modify selection text
     switch (cmd) {
+      case "heading":
+        const headingRes = headingLevel(selectedText, args);
+        replacedText = headingRes.text;
+        cursorOffset = headingRes.offset
+        break;
       case "anki":
         replacedText = ankiSelection(selectedText);
         break;
@@ -555,6 +584,11 @@ export default class TextFormat extends Plugin {
           editor.offsetToPos(tos - replacedText.length),
           editor.offsetToPos(tos)
         );
+        break;
+      case "heading":
+        // put cursor back to the original position
+        editor.setSelection(editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
+          editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset));
         break;
       case "todo-sort":
         if (!somethingSelected) {
