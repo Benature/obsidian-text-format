@@ -155,7 +155,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(containerEl)
-      .setName("Remove WikiLink as wel when calling `Remove URL links format in selection`")
+      .setName("Remove WikiLink as well when calling `Remove URL links format in selection`")
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.RemoveWikiURL2)

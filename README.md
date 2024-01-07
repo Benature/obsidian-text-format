@@ -37,7 +37,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
 | **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
 | **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
-
+| **Snakify** selected text ⚙️ | Lowercase all letters in selection *and* replace spaces with underscores |
 
 ### List
 | Command                                  | Description                                                                                                                                           |
@@ -149,6 +149,11 @@ If you find this plugin useful and would like to support its development, you ca
   - Obsidian is a good app.
   + Obsidian Is a Good App.
                 ^
+  ```
+- snakify
+  ```diff
+  - Obsidian is a good app
+  + obsidian_is_a_good_app
   ```
 - redundant spaces
   ```diff
