@@ -39,25 +39,6 @@ export default class TextFormat extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
-    /*
-    // https://marcus.se.net/obsidian-plugin-docs/user-interface/context-menus
-    this.app.workspace.on("editor-menu", (menu) => {
-      menu.addSeparator();
-      menu.addItem((item) => {
-        item
-          .setTitle("lowercase selection")
-          .setIcon("documents")
-          .onClick(() => {
-            this.textFormat("lowercase");
-          });
-        // .setSection("danger");
-        console.log("ooooo");
-        console.log(item);
-      });
-      console.log(menu);
-    });
-    */
-
     this.settings.wrapperList.forEach((wrapper, index) => {
       this.addCommand({
         id: `text-format-wrapper-${index}`,
