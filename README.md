@@ -119,8 +119,7 @@ If you find this plugin useful and would like to support its development, you ca
 </p>
 
 
-## Some Example
-
+## Some Examples
 
 - lowercase
   ```diff

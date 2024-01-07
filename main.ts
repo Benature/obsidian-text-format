@@ -41,14 +41,20 @@ export default class TextFormat extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
-    this.settings.wrapperList.forEach((wrapper, index) => {
+    this.settings.WrapperList.forEach((wrapper, index) => {
       this.addCommand({
         id: `text-format-wrapper-${index}`,
-        name: wrapper.name,
+        name: "Wrapper - " + wrapper.name,
         callback: () => textWrapper(wrapper.prefix, wrapper.suffix, app),
       });
     });
-
+    this.settings.RequestList.forEach((request, index) => {
+      this.addCommand({
+        id: `text-format-request-${index}`,
+        name: "API Request - " + request.name,
+        callback: () => this.textFormat("api-request", request.url),
+      });
+    });
     this.addCommand({
       id: "text-format-anki-card",
       name: "Convert selection into Anki card format",
@@ -259,7 +265,7 @@ export default class TextFormat extends Plugin {
     editor.setValue(content);
   }
 
-  textFormat(cmd: string): void {
+  textFormat(cmd: string, args: any = ""): void {
     let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) {
       return;
@@ -522,10 +528,9 @@ export default class TextFormat extends Plugin {
         replacedText = snakify(selectedText);
         break;
       case "api-request":
-        let p = requestAPI(selectedText, markdownView.file, this.settings.RequestURL);
+        let p = requestAPI(selectedText, markdownView.file, args);
         p.then(result => {
           replacedText = result;
-
           editor.setSelection(from, to);
           if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
           editor.setSelection(from, editor.getCursor("head"));
