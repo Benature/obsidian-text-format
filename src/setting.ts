@@ -52,7 +52,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   BulletPoints: "•–§",
   WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>" }],
   RequestList: [],
-  ToggleSequence: "lowerCase\nupperCase\ncapitalizeSentence\ntitleCase",
+  ToggleSequence: "titleCase\nlowerCase\nupperCase",
   RemoveWikiURL2: false,
   WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
   UrlLinkFormat: "{text}",

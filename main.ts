@@ -230,17 +230,12 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "text-format-slugify",
-      name: "Slugify",
+      name: "Slugify selected text",
       callback: () => this.textFormat("slugify"),
     })
     this.addCommand({
-      id: "text-format-api-request",
-      name: "Format with API",
-      callback: () => this.textFormat("api-request"),
-    });
-    this.addCommand({
       id: "text-format-snakify",
-      name: "Snakify",
+      name: "Snakify selected text",
       callback: () => this.textFormat("snakify"),
     })
     this.addCommand({
@@ -404,15 +399,29 @@ export default class TextFormat extends Plugin {
           }
         }
         let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
-
-        for (let i = 0; i < toggleSeq.length; i++) {
-          console.log(toggleSeq[i], selectedText, getNewString(toggleSeq[i]), selectedText == getNewString(toggleSeq[i]))
-          if (selectedText == getNewString(toggleSeq[i])) {
-            replacedText = getNewString(toggleSeq[i + 1 == toggleSeq.length ? 0 : i + 1]);
-            break;
+        let textHistory = new Array<string>();
+        let i;
+        const L = toggleSeq.length;
+        for (i = 0; i < L; i++) {
+          let resText = getNewString(toggleSeq[i]), duplicated = false;
+          for (let j = 0; j < textHistory.length; j++) {
+            if (textHistory[j] == resText) {
+              duplicated = true;
+              break;
+            }
           }
-          if (i == toggleSeq.length - 1) {
-            replacedText = getNewString(toggleSeq[0]);
+          // console.log(toggleSeq[i], selectedText, resText, selectedText == getNewString(toggleSeq[i]))
+          if (!duplicated) { //: if the converted text is the same as before toggle case, ignore it
+            if (selectedText == resText) { break; }
+          }
+          textHistory.push(resText);
+        }
+        //: find the toggle case that is different from the original text
+        for (i++; i < i + L; i++) {
+          let resText = getNewString(toggleSeq[i % L]);
+          if (selectedText != resText) {
+            replacedText = resText;
+            break;
           }
         }
         if (!(replacedText)) { return; }
