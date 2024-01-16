@@ -1,39 +1,9 @@
 import { wrap } from "module";
-import {
-  MarkdownView,
-  Plugin,
-  Setting,
-  PluginSettingTab,
-  App,
-  Menu,
-  ButtonComponent,
-  requestUrl,
-  EditorPosition,
-  Notice,
-} from "obsidian";
+import { Editor, MarkdownView, Plugin, Setting, PluginSettingTab, App, Menu, ButtonComponent, requestUrl, EditorPosition, Notice } from "obsidian";
 import { decode } from "querystring";
-import {
-  array2markdown,
-  table2bullet,
-  capitalizeWord,
-  capitalizeSentence,
-  removeAllSpaces,
-  zoteroNote,
-  textWrapper,
-  replaceLigature,
-  ankiSelection,
-  sortTodo,
-  requestAPI,
-  headingLevel,
-  slugify,
-  snakify
-} from "src/format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
-import {
-  FormatSettings,
-  DEFAULT_SETTINGS,
-  TextFormatSettingTab,
-} from "src/setting";
+import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -45,7 +15,9 @@ export default class TextFormat extends Plugin {
     this.addCommand({
       id: "text-format-heading-upper",
       name: "Heading upper",
-      callback: () => this.textFormat("heading", true),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "heading", true);
+      },
       hotkeys: [
         {
           modifiers: ["Ctrl", "Shift"],
@@ -56,7 +28,9 @@ export default class TextFormat extends Plugin {
     this.addCommand({
       id: "text-format-heading-lower",
       name: "Heading lower",
-      callback: () => this.textFormat("heading", false),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "heading", false);
+      },
       hotkeys: [
         {
           modifiers: ["Ctrl", "Shift"],
@@ -68,180 +42,250 @@ export default class TextFormat extends Plugin {
       this.addCommand({
         id: `text-format-wrapper-${index}`,
         name: "Wrapper - " + wrapper.name,
-        callback: () => textWrapper(wrapper.prefix, wrapper.suffix, app),
+        editorCallback: (editor: Editor, view: MarkdownView) => {
+          textWrapper(editor, view, wrapper.prefix, wrapper.suffix)
+        },
       });
     });
     this.settings.RequestList.forEach((request, index) => {
       this.addCommand({
         id: `text-format-request-${index}`,
         name: "API Request - " + request.name,
-        callback: () => this.textFormat("api-request", request.url),
+        editorCallback: (editor: Editor, view: MarkdownView) => {
+          this.textFormat(editor, view, "api-request", request.url);
+        },
       });
     });
     this.addCommand({
       id: "text-format-anki-card",
       name: "Convert selection into Anki card format",
-      callback: () => this.textFormat("anki"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "anki");
+      },
     });
     this.addCommand({
       id: "text-format-ligature",
       name: "Replace ligature",
-      callback: () => this.textFormat("ligature"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "ligature");
+      },
     });
     this.addCommand({
       id: "text-format-remove-wiki-link",
       name: "Remove WikiLinks format in selection",
-      callback: () => this.textFormat("remove-wiki-link"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "remove-wiki-link");
+      },
     });
     this.addCommand({
       id: "text-format-remove-url-link",
       name: "Remove URL links format in selection",
-      callback: () => this.textFormat("remove-url-link"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "remove-url-link");
+      },
     });
     this.addCommand({
       id: "text-format-link-url2wiki",
       name: "Convert URL links to WikiLinks in selection",
-      callback: () => this.textFormat("link-url2wiki"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "link-url2wiki");
+      },
     });
     this.addCommand({
       id: "text-format-lower",
       name: "Lowercase selected text",
-      callback: () => this.textFormat("lowercase"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "lowercase");
+      },
     });
     this.addCommand({
       id: "text-format-upper",
       name: "Uppercase selected text",
-      callback: () => this.textFormat("uppercase"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "uppercase");
+      },
     });
     this.addCommand({
       id: "text-format-togglecase",
       name: "Togglecase selected text",
-      callback: () => this.textFormat("togglecase"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "togglecase");
+      },
     });
     this.addCommand({
       id: "text-format-capitalize-word",
       name: "Capitalize all words in selected text",
-      callback: () => this.textFormat("capitalize-word"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "capitalize-word");
+      },
     });
     this.addCommand({
       id: "text-format-capitalize-sentence",
       name: "Capitalize only first word of sentence in selected text",
-      callback: () => this.textFormat("capitalize-sentence"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "capitalize-sentence");
+      },
     });
     this.addCommand({
       id: "text-format-titlecase",
       name: "Title case selected text",
-      callback: () => this.textFormat("titlecase"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "titlecase");
+      },
     });
     this.addCommand({
       id: "text-format-remove-spaces",
       name: "Remove redundant spaces in selection",
-      callback: () => this.textFormat("remove-spaces"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "remove-spaces");
+      },
     });
     this.addCommand({
       id: "text-format-remove-spaces-all",
       name: "Remove all spaces in selection",
-      callback: () => this.textFormat("spaces-all"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "spaces-all");
+      },
     });
     this.addCommand({
       id: "text-format-remove-blank-line",
       name: "Remove blank line(s)",
-      callback: () => this.textFormat("remove-blank-line"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "remove-blank-line");
+      },
     });
     this.addCommand({
       id: "text-format-merge-line",
       name: "Merge broken paragraph(s) in selection",
-      callback: () => this.textFormat("merge"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "merge");
+      },
     });
     this.addCommand({
       id: "text-format-bullet-list",
       name: "Format bullet list",
-      callback: () => this.textFormat("bullet"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "bullet");
+      },
     });
     this.addCommand({
       id: "text-format-convert-ordered-list",
       name: "Format ordered list",
-      callback: () => this.textFormat("convert-ordered"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "convert-ordered");
+      },
     });
     this.addCommand({
       id: "text-format-split-blank",
       name: "Split line(s) by blanks",
-      callback: () => this.textFormat("split-blank"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "split-blank");
+      },
     });
     this.addCommand({
       id: "text-format-chinese-punctuation",
       name: "Convert to Chinese punctuation marks (,;:!?)",
-      callback: () => this.textFormat("Chinese-punctuation"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "Chinese-punctuation");
+      },
     });
     this.addCommand({
       id: "text-format-english-punctuation",
       name: "Convert to English punctuation marks",
-      callback: () => this.textFormat("English-punctuation"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "English-punctuation");
+      },
     });
     this.addCommand({
       id: "text-format-latex-single-letter",
       name: "Convert single letter into math mode (latex)",
-      callback: () => this.textFormat("latex-letter"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "latex-letter");
+      },
     });
     this.addCommand({
       id: "text-format-decodeURI",
       name: "Decode URL",
-      callback: () => this.textFormat("decodeURI"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "decodeURI");
+      },
     });
     this.addCommand({
       id: "text-format-paragraph-double-spaces",
       name: "Add extra double spaces per paragraph for whole file",
-      callback: () => this.extraDoubleSpaces(),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        extraDoubleSpaces(editor, view);
+      },
     });
     this.addCommand({
       id: "text-format-add-line-break",
       name: "Add extra line break to paragraph",
-      callback: () => this.textFormat("add-line-break"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "add-line-break");
+      },
     });
     this.addCommand({
       id: "text-format-hyphen",
       name: "Remove hyphens",
-      callback: () => this.textFormat("hyphen"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "hyphen");
+      },
     });
     this.addCommand({
       id: "text-format-remove-citation-index",
       name: "Remove citation index",
-      callback: () => this.textFormat("remove-citation"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "remove-citation");
+      },
     });
     this.addCommand({
       id: "text-format-mathpix-array2table",
       name: "Convert Mathpix array to markdown table",
-      callback: () => this.textFormat("array2table"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "array2table");
+      },
     });
     this.addCommand({
       id: "text-format-table2bullet",
       name: "Convert table to bullet list without header",
-      callback: () => this.textFormat("table2bullet"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "table2bullet");
+      },
     });
     this.addCommand({
       id: "text-format-table2bullet-head",
       name: "Convert table to bullet list with header",
-      callback: () => this.textFormat("table2bullet-header"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "table2bullet-header");
+      },
     });
     this.addCommand({
       id: "text-format-todo-sort",
       name: "Sort to-do list",
-      callback: () => this.textFormat("todo-sort"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "todo-sort");
+      },
     });
     this.addCommand({
       id: "text-format-slugify",
       name: "Slugify selected text",
-      callback: () => this.textFormat("slugify"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "slugify");
+      },
     })
     this.addCommand({
       id: "text-format-snakify",
       name: "Snakify selected text",
-      callback: () => this.textFormat("snakify"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "snakify");
+      },
     })
     this.addCommand({
       id: "text-format-space-word-symbol",
       name: "Format space between word and symbol",
-      callback: () => this.textFormat("space-word-symbol"),
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "space-word-symbol");
+      },
     });
     this.addCommand({
       id: "text-format-zotero-note",
@@ -263,32 +307,12 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  extraDoubleSpaces(): void {
-    let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+  textFormat(editor: Editor, markdownView: MarkdownView, cmd: string, args: any = ""): void {
+    // let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!markdownView) {
       return;
     }
-    let editor = markdownView.editor;
-    let content = editor.getValue();
-    content = content.replace(
-      /^(?:---\n[\s\S]*?\n---\n|)([\s\S]+)$/g, // exclude meta table
-      (whole_content, body: string) => {
-        return whole_content.replace(body, () => {
-          return body.replace(/(?:\n)(.*[^-\n]+.*)(?=\n)/g,
-            (t0, t) => t0.replace(t, `${t.replace(/ +$/g, '')}  `)
-          )
-        });
-      }
-    );
-    editor.setValue(content);
-  }
-
-  textFormat(cmd: string, args: any = ""): void {
-    let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!markdownView) {
-      return;
-    }
-    let editor = markdownView.editor;
+    // let editor = markdownView.editor;
 
     var selectedText: string, replacedText;
 

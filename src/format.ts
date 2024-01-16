@@ -1,4 +1,4 @@
-import { MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
+import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
 import { off } from "process";
 
 export function stringFormat(str: string, values: Record<string, string>) {
@@ -258,17 +258,15 @@ String.prototype.format = function (args: any) {
     return result;
 };
 
-export function textWrapper(prefix: string, suffix: string, app: App): void {
+export function textWrapper(editor: Editor, view: MarkdownView, prefix: string, suffix: string): void {
     prefix = prefix.replace(/\\n/g, "\n");
     suffix = suffix.replace(/\\n/g, "\n");
     const PL = prefix.length; // Prefix Length
     const SL = suffix.length; // Suffix Length
 
-    let markdownView = app.workspace.getActiveViewOfType(MarkdownView);
-    if (!markdownView) {
+    if (!view) {
         return;
     }
-    let editor = markdownView.editor;
 
     let selectedText = editor.somethingSelected() ? editor.getSelection() : "";
 
@@ -555,4 +553,22 @@ export function snakify(text: string, maxLength: number = 76): string {
     text = text.toLowerCase();
     text = text.replace(/\s+/g, "_");
     return text;
+}
+
+export function extraDoubleSpaces(editor: Editor, view: MarkdownView): void {
+    if (!view) {
+        return;
+    }
+    let content = editor.getValue();
+    content = content.replace(
+        /^(?:---\n[\s\S]*?\n---\n|)([\s\S]+)$/g, // exclude meta table
+        (whole_content: string, body: string) => {
+            return whole_content.replace(body, () => {
+                return body.replace(/(?:\n)(.*[^-\n]+.*)(?=\n)/g,
+                    (t0, t) => t0.replace(t, `${t.replace(/ +$/g, '')}  `)
+                )
+            });
+        }
+    );
+    editor.setValue(content);
 }
