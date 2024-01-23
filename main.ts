@@ -18,6 +18,7 @@ export default class TextFormat extends Plugin {
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "heading", true);
       },
+      repeatable: false,
       hotkeys: [
         {
           modifiers: ["Ctrl", "Shift"],
@@ -31,6 +32,7 @@ export default class TextFormat extends Plugin {
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "heading", false);
       },
+      repeatable: false,
       hotkeys: [
         {
           modifiers: ["Ctrl", "Shift"],
@@ -307,9 +309,9 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  textFormat(editor: Editor, markdownView: MarkdownView, cmd: string, args: any = ""): void {
+  textFormat(editor: Editor, view: MarkdownView, cmd: string, args: any = ""): void {
     // let markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!markdownView) {
+    if (!view) {
       return;
     }
     // let editor = markdownView.editor;
@@ -590,7 +592,7 @@ export default class TextFormat extends Plugin {
         replacedText = snakify(selectedText);
         break;
       case "api-request":
-        let p = requestAPI(selectedText, markdownView.file, args);
+        let p = requestAPI(selectedText, view.file, args);
         p.then(result => {
           replacedText = result;
           editor.setSelection(from, to);
