@@ -1,5 +1,7 @@
 # Changelog
 
+- [feature] New Setting: Proper nouns, which are ignored in title case. e.g., USA, UFO.
+
 ## 2.4.1
 - [fix] support canvas
 

@@ -14,7 +14,8 @@
 
 This plugin is created to format selected text lowercase/uppercase/capitalize/titlecase or remove redundant spaces/newline characters, and other features listed below.
 
-Install this plugin right now: <u><obsidian://show-plugin?id=obsidian-text-format></u>
+[Click to install this plugin right now](https://obsidian.md/plugins?id=obsidian-text-format)
+
 ## Features
 
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇

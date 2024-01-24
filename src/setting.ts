@@ -40,6 +40,7 @@ export interface FormatSettings {
   RemoveWikiURL2: boolean;
   WikiLinkFormat: WikiLinkFormatGroup;
   UrlLinkFormat: string;
+  ProperNoun: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -56,6 +57,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   RemoveWikiURL2: false,
   WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
   UrlLinkFormat: "{text}",
+  ProperNoun: "",
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -71,7 +73,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl("h3", { text: "Lowercase" });
+    containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" });
 
     new Setting(containerEl)
       .setName("Lowercase before capitalize/title case")
@@ -86,10 +88,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-
-    containerEl.createEl("h3", { text: "Toggle case sequence" });
     new Setting(containerEl)
-      .setName("Sequence (one case in a line)")
+      .setName("Toggle case sequence (one case in a line)")
       .setDesc("Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
         "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
         "the two cases are not recommended to be used in the same time.")
@@ -102,10 +102,20 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+    new Setting(containerEl)
+      .setName("Proper noun")
+      .setDesc("The words will be ignore to format in title case. Separated by comma, e.g. `USA, UFO`.")
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("USA, UFO")
+          .setValue(this.plugin.settings.ProperNoun)
+          .onChange(async (value) => {
+            this.plugin.settings.ProperNoun = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
     containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
-    containerEl.createEl("div", { text: "...when calling `Merge broken paragraphs(s) in selection`" });
-
     new Setting(containerEl)
       .setName("Remove redundant blank lines")
       .setDesc(
@@ -132,19 +142,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
 
-    containerEl.createEl("h3", { text: "When converting Chinese characters" });
 
-    new Setting(containerEl)
-      .setName("Remove all spaces")
-      .setDesc("for OCR case")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
-          .onChange(async (value) => {
-            this.plugin.settings.RemoveBlanksWhenChinese = value;
-            await this.plugin.saveSettings();
-          });
-      });
 
     containerEl.createEl("h3", { text: "URL formatting" });
     new Setting(containerEl)
@@ -169,8 +167,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-    containerEl.createEl("h6", { text: "WikiLink format while removing" });
-    containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
+    containerEl.createEl("h4", { text: "Format when removing wikiLink" });
+    // containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
     new Setting(containerEl)
       .setName("WikiLink with heading")
       .setDesc("e.g. [[title#heading]]")
@@ -284,45 +282,6 @@ export class TextFormatSettingTab extends PluginSettingTab {
         });
     });
 
-    containerEl.createEl("h3", { text: "Zotero pdf note format" });
-
-    new Setting(containerEl)
-      .setName("Zotero pdf note (input) RegExp")
-      .setDesc(
-        "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
-        "Variables: \n" +
-        "<text>: highlight,\n" +
-        "<pdf_url>: comment,\n" +
-        "<item>: citation."
-      )
-      .addTextArea((text) =>
-        text
-          .setPlaceholder(
-            String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
-          )
-          .setValue(this.plugin.settings.ZoteroNoteRegExp)
-          .onChange(async (value) => {
-            this.plugin.settings.ZoteroNoteRegExp = value;
-            await this.plugin.saveSettings();
-          })
-      );
-    new Setting(containerEl)
-      .setName("Zotero note pasted in Obsidian (output) format")
-      .setDesc(
-        "Variables: \n" +
-        "{text}: <text>,\n" +
-        "{pdf_url}: <pdf_url>,\n" +
-        "{item}: <item>."
-      )
-      .addTextArea((text) =>
-        text
-          .setPlaceholder("{text} [🔖]({pdf_url})")
-          .setValue(this.plugin.settings.ZoteroNoteTemplate)
-          .onChange(async (value) => {
-            this.plugin.settings.ZoteroNoteTemplate = value;
-            await this.plugin.saveSettings();
-          })
-      );
 
     containerEl.createEl("h3", { text: "API Request" });
     new Setting(containerEl)
@@ -373,6 +332,60 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         });
     });
+
+
+    containerEl.createEl("h3", { text: "Zotero pdf note format" });
+    new Setting(containerEl)
+      .setName("Zotero pdf note (input) RegExp")
+      .setDesc(
+        "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
+        "Variables: \n" +
+        "<text>: highlight,\n" +
+        "<pdf_url>: comment,\n" +
+        "<item>: citation."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(
+            String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
+          )
+          .setValue(this.plugin.settings.ZoteroNoteRegExp)
+          .onChange(async (value) => {
+            this.plugin.settings.ZoteroNoteRegExp = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
+      .setName("Zotero note pasted in Obsidian (output) format")
+      .setDesc(
+        "Variables: \n" +
+        "{text}: <text>,\n" +
+        "{pdf_url}: <pdf_url>,\n" +
+        "{item}: <item>."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder("{text} [🔖]({pdf_url})")
+          .setValue(this.plugin.settings.ZoteroNoteTemplate)
+          .onChange(async (value) => {
+            this.plugin.settings.ZoteroNoteTemplate = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+
+    containerEl.createEl("h3", { text: "When converting Chinese characters" });
+    new Setting(containerEl)
+      .setName("Remove all spaces")
+      .setDesc("for OCR case")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
+          .onChange(async (value) => {
+            this.plugin.settings.RemoveBlanksWhenChinese = value;
+            await this.plugin.saveSettings();
+          });
+      });
 
     const donateELdiv = containerEl.createEl("div");
     donateELdiv.setAttribute("style", "text-align: center;");

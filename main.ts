@@ -1,7 +1,7 @@
 import { wrap } from "module";
 import { Editor, MarkdownView, Plugin, Setting, PluginSettingTab, App, Menu, ButtonComponent, requestUrl, EditorPosition, Notice } from "obsidian";
 import { decode } from "querystring";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces } from "src/format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase } from "src/format";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
 
@@ -346,7 +346,6 @@ export default class TextFormat extends Plugin {
     switch (cmd) {
       case "capitalize-word":
       case "capitalize-sentence":
-      case "titlecase":
         // lower case text if setting is true
         if (this.settings.LowercaseFirst) {
           selectedText = selectedText.toLowerCase();
@@ -406,15 +405,14 @@ export default class TextFormat extends Plugin {
         replacedText = capitalizeSentence(selectedText);
         break;
       case "titlecase":
-        // @ts-ignore
-        replacedText = selectedText.toTitleCase();
+        replacedText = toTitleCase(selectedText, this.settings);
         break;
       case "togglecase":
         let lowerString = selectedText.toLowerCase();
+        const settings = this.settings;
         function getNewString(caseCommand: string): string {
           switch (caseCommand) {
-            // @ts-ignore
-            case "titleCase": return lowerString.toTitleCase();
+            case "titleCase": return toTitleCase(selectedText, settings);
             case "lowerCase": return lowerString;
             case "upperCase": return selectedText.toUpperCase();
             case "capitalizeWord": return capitalizeWord(lowerString)

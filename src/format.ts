@@ -1,4 +1,6 @@
-import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, } from "obsidian";
+import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } from "obsidian";
+import { FormatSettings } from "src/setting";
+
 import { off } from "process";
 
 export function stringFormat(str: string, values: Record<string, string>) {
@@ -190,20 +192,26 @@ export function array2markdown(content: string): string {
     return beautify_markdown;
 }
 
-/* To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case */
-// eslint-disable-next-line no-extend-native
-// @ts-ignore
-String.prototype.toTitleCase = function () {
-    "use strict";
+export function toTitleCase(text: string, settings: FormatSettings): string {
+    // reference: https://github.com/gouch/to-title-case
+    var properNouns = RegExp(`^(` + settings.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
     var smallWords =
         /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
     var alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
-    var wordSeparators = /([ :–—-])/;
+    var wordSeparators = /([\s\:\–\—\-\(\)])/;
 
-    return this.split(wordSeparators)
-        .map(function (current: string, index: number, array: string) {
-            if (
-                /* Check for small words */
+    return text.split(wordSeparators)
+        .map(function (current: string, index: number, array: string[]): string {
+
+            if (current.search(properNouns) > -1) { /* Check for proper nouns */
+                return current;
+            } else {
+                if (settings.LowercaseFirst) {
+                    current = current.toLowerCase();
+                }
+            }
+
+            if (/* Check for small words */
                 current.search(smallWords) > -1 &&
                 /* Skip first and last word */
                 index !== 0 &&
