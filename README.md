@@ -3,6 +3,7 @@
 <div align="center">
 
 ![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-text-format%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat) ![latest download](https://img.shields.io/github/downloads/Benature/obsidian-text-format/latest/total?style=plastic) 
+[[中文](https://github.com/Benature/obsidian-text-format/blob/master/README_ZH.md) | English]
 
 </div>
 
@@ -84,23 +85,26 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 | Command                                            | Description                                                                                                                                                                                                                                        |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Remove redundant **spaces** in selection           | Ensure only one space between words                                                                                                                                                                                                                |
+| Remove **redundant spaces** in selection           | Ensure only one space between words                                                                                                                                                                                                                |
+| Remove **all spaces** in selection                 | Remove all spaces                                                                                                                                                                                                                                  |
 | Remove **blank line(s)**                           | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
 | Merge **broken paragraph(s)** in selection ⚙️       | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
-| Remove **hyphens**                                 | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 | **Split** line(s) by **blanks**                    | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
 | Convert to **Chinese punctuation** marks (,;:!?) ⚙️ | For OCR use case. (For who require more custom setting, I would recommend <https://p.gantrol.com/>)                                                                                                                                                |
 | Convert to **English punctuation** marks           | Similar to `Convert to Chinese punctuation marks (,;:!?)`                                                                                                                                                                                          |
+| Remove **hyphens**                                 | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 | Replace **ligature**                               | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
 
 ### Academic/Study
 
-| Command                                        | Description                                                     |
-| ---------------------------------------------- | --------------------------------------------------------------- |
-| Convert selection into **Anki** card format    | [#32](https://github.com/Benature/obsidian-text-format/pull/32) |
-| Remove citation index                          | e.g., `A research [12] about notes` => `A research about notes` |
-| Get **Zotero** note from clipboard and paste ⚙️ | See [below ⬇️](#zotero-format)                                   |
+| Command                                        | Description                                                                  |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| Convert selection into **Anki** card format    | [#32](https://github.com/Benature/obsidian-text-format/pull/32)              |
+| Remove citation index                          | e.g., `A research [12] about notes` => `A research about notes`              |
+| Get **Zotero** note from clipboard and paste ⚙️ | See [below ⬇️](#zotero-format)                                                |
+| Convert single letter into **math** mode       | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`. |
+| Convert **Mathpix** array to markdown table    | Convert latex array generated by Mathpix to markdown table format            |
 
 #### Zotero format
 The format template can refer to https://www.zotero.org/support/note_templates
@@ -123,12 +127,11 @@ Example of command `Custom API Request`:
 | Command                                              | Description                                                                                                                                                                                                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Custom **Wrapper** ⚙️                                 | Add any arbitrary wrapping element in Setting. (https://github.com/Benature/obsidian-underline/issues/5) See below for more examples [⬇️](#wrapper)                                                                                                     |
-| Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                                                                                                                                                         |
-| Convert single letter into **math** mode             | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`.                                                                                                                                                                           |
-| Convert **Mathpix** array to markdown table          | Convert latex array generated by Mathpix to markdown table format                                                                                                                                                                                      |
-| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8)                                                                                                                                        |
 | Custom **API** Request ⚙️                             | Replace Selection with the return of custom API request. The selection will be sent to custom API URL with `POST` method. (No user data is collected!) *There is an [example](#convert-citation-index-to-the-file-name-of-paper-note) of my use case.* |
-
+| Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                                                                                                                                                         |
+| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8)                                                                                                                                        |
+| Add extra line break to paragraph                    | replace `\n` with `\n\n`                                                                                                                                                                                                                               |
+| Format space between word and symbol                 | add space between words and `(`                                                                                                                                                                                                                        |
 
 #### Wrapper
 e.g.
