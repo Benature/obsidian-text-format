@@ -117,7 +117,7 @@ export function zoteroNote(
             pdf_url: z.pdf_url,
         });
     } else {
-        return ``;
+        return text;
     }
 }
 

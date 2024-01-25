@@ -51,8 +51,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Capitalize** all **words** in selected text ⚙️                   | Capitalize all words in selection                                                                                                                                                  |
 | **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
 | **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
-| **Tooglecase**selected text ⚙️                                     | A custom loop to format the selection                                                                                                                                              |
-| **Slugify**selected text                                          | convert any input text into a URL-friendly slug                                                                                                                                    |
+| **Toggle case** selected text ⚙️                                   | A custom loop to format the selection                                                                                                                                              |
+| **Slugify** selected text                                         | convert any input text into a URL-friendly slug                                                                                                                                    |
 | **Snakify** selected text                                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                           |
 
 ### Markdown Grammar
@@ -66,8 +66,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 #### List
 | Command                                  | Description                                                                                                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Format **bullet** list ⚙️                 | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
-| Format **ordered** list                  | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
+| Detect and format **bullet** list ⚙️      | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
+| Detect and format **ordered** list       | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
 | Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
 | **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37)                                                                                     |
@@ -96,11 +96,11 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ### Academic/Study
 
-| Command                                     | Description                                                     |
-| ------------------------------------------- | --------------------------------------------------------------- |
-| Convert selection into **Anki** card format | [#32](https://github.com/Benature/obsidian-text-format/pull/32) |
-| Remove citation index                       | e.g., `A research [12] about notes` => `A research about notes` |
-| **Zotero** note format and paste ⚙️          | See [below ⬇️](#zotero-format)                                   |
+| Command                                        | Description                                                     |
+| ---------------------------------------------- | --------------------------------------------------------------- |
+| Convert selection into **Anki** card format    | [#32](https://github.com/Benature/obsidian-text-format/pull/32) |
+| Remove citation index                          | e.g., `A research [12] about notes` => `A research about notes` |
+| Get **Zotero** note from clipboard and paste ⚙️ | See [below ⬇️](#zotero-format)                                   |
 
 #### Zotero format
 The format template can refer to https://www.zotero.org/support/note_templates

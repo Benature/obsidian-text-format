@@ -72,6 +72,12 @@ export class TextFormatSettingTab extends PluginSettingTab {
     let { containerEl } = this;
 
     containerEl.empty();
+    containerEl
+      .createEl("p", { text: "More details in Github: " })
+      .createEl("a", {
+        text: "text-format",
+        href: "https://github.com/Benature/obsidian-text-format",
+      });
 
     containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" });
 
