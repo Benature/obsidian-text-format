@@ -1,5 +1,6 @@
 import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } from "obsidian";
 import { FormatSettings } from "src/setting";
+import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
 import { off } from "process";
 
@@ -266,15 +267,19 @@ String.prototype.format = function (args: any) {
     return result;
 };
 
-export function textWrapper(editor: Editor, view: MarkdownView, prefix: string, suffix: string): void {
-    prefix = prefix.replace(/\\n/g, "\n");
-    suffix = suffix.replace(/\\n/g, "\n");
+export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: string, suffix_setting: string): void {
+    // @ts-ignore
+    const metaProperties = view.metadataEditor.properties;
+    let meta: Record<string, any> = {};
+    for (const m of metaProperties) { meta[m.key] = m.value; }
+
+    let prefix_template = compileTemplate(prefix_setting.replace(/\\n/g, "\n"), { noEscape: true })
+    let suffix_template = compileTemplate(suffix_setting.replace(/\\n/g, "\n"), { noEscape: true })
+
+    const prefix = prefix_template(meta);
+    const suffix = suffix_template(meta);
     const PL = prefix.length; // Prefix Length
     const SL = suffix.length; // Suffix Length
-
-    if (!view) {
-        return;
-    }
 
     let selectedText = editor.somethingSelected() ? editor.getSelection() : "";
 

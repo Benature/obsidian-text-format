@@ -229,9 +229,11 @@ export class TextFormatSettingTab extends PluginSettingTab {
     containerEl.createEl("h3", { text: "Wrapper" });
     const wrapperRuleDesc = document.createDocumentFragment();
     wrapperRuleDesc.append(
-      "<Wrapper Name> <Prefix> <Suffix>",
+      "<Wrapper Name> <Prefix Template> <Suffix Template>",
       document.createDocumentFragment().createEl("br"),
-      "Note: To make sure the command is valid in Command Palette, you need to **reload/reopen** Obsidian App."
+      "Template for metadata (file properties) is supported with Handlebars syntax. For example, `{{link}}` will be replaced with the value of current file's property `link`.",
+      document.createDocumentFragment().createEl("br"),
+      `Note: To make sure the command is valid in Command Palette, you need to re-enable the plugin "Text Format" or reload/reopen Obsidian App.`
     );
     new Setting(this.containerEl)
       .setName("Add new wrapper")
@@ -296,7 +298,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
         "The URL that plugin will send a POST and replace with return.\n" +
         "The return json should have two attribution: `text` and `notification`. " +
         "If `text` exist then `text` will replace the selection, or do nothing.\n" +
-        "If `notification` exist then Send a notice if this string, or do nothing."
+        "If `notification` exist then Send a notice if this string, or do nothing.\n" +
+        `(Note: To make sure the command is valid in Command Palette, you need to re-enable the plugin "Text Format" or reload/reopen Obsidian App.)`
       )
       .addButton((button: ButtonComponent) => {
         button.setTooltip("Add new request")

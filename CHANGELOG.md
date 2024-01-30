@@ -1,5 +1,6 @@
 # Changelog
 
+- [feature] Wrapper: support template for metadata (file properties).
 - [feature] New Setting: Proper nouns, which are ignored in title case. e.g., USA, UFO.
 - [updated] paste Zotero note: if regex fail to match, return original text in clipboard.
 - [updated] General: commands support Chinese language. 命令支持中文显示
