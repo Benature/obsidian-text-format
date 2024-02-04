@@ -232,8 +232,6 @@ export class TextFormatSettingTab extends PluginSettingTab {
       "<Wrapper Name> <Prefix Template> <Suffix Template>",
       document.createDocumentFragment().createEl("br"),
       "Template for metadata (file properties) is supported with Handlebars syntax. For example, `{{link}}` will be replaced with the value of current file's property `link`.",
-      document.createDocumentFragment().createEl("br"),
-      `Note: To make sure the command is valid in Command Palette, you need to re-enable the plugin "Text Format" or reload/reopen Obsidian App.`
     );
     new Setting(this.containerEl)
       .setName("Add new wrapper")
@@ -261,6 +259,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].name = newValue;
               await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandWrapper();
             });
         })
         .addSearch((cb) => {
@@ -269,6 +268,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].prefix = newValue;
               await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandWrapper();
             });
         })
         .addSearch((cb) => {
@@ -277,6 +277,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].suffix = newValue;
               await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandWrapper();
             });
         })
         .addExtraButton((cb) => {
@@ -298,8 +299,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
         "The URL that plugin will send a POST and replace with return.\n" +
         "The return json should have two attribution: `text` and `notification`. " +
         "If `text` exist then `text` will replace the selection, or do nothing.\n" +
-        "If `notification` exist then Send a notice if this string, or do nothing.\n" +
-        `(Note: To make sure the command is valid in Command Palette, you need to re-enable the plugin "Text Format" or reload/reopen Obsidian App.)`
+        "If `notification` exist then Send a notice if this string, or do nothing."
       )
       .addButton((button: ButtonComponent) => {
         button.setTooltip("Add new request")
@@ -321,6 +321,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onChange(async (newValue) => {
               this.plugin.settings.RequestList[index].name = newValue;
               await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandRequest();
             });
         })
         .addSearch((cb) => {
@@ -329,6 +330,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onChange(async (newValue) => {
               this.plugin.settings.RequestList[index].url = newValue;
               await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandRequest();
             });
         })
         .addExtraButton((cb) => {

@@ -1,69 +1,77 @@
-import { Editor, MarkdownView, Plugin, Notice } from "obsidian";
+import { Editor, MarkdownView, Plugin, Notice, debounce } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
 import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase } from "src/format";
 
+function getLang() {
+  let lang = window.localStorage.getItem('language');
+  if (["en", "zh", "zh-TW"].indexOf(lang) == -1) { lang = "en"; }
+  return lang;
+}
+
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
+  debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
+  debounceUpdateCommandRequest = debounce(this.updateCommandRequest, 1000, true);
+
 
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
-    let lang = window.localStorage.getItem('language');
-    if (["en", "zh", "zh-TW"].indexOf(lang) == -1) { lang = "en"; }
+    const lang = getLang();
 
     this.addCommand({
-      id: "text-format-lower",
+      id: "lowercase",
       name: { en: "Lowercase selected text", zh: "将选中文本转换为小写", "zh-TW": "將選取文字轉換為小寫" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "lowercase");
       },
     });
     this.addCommand({
-      id: "text-format-upper",
+      id: "uppercase",
       name: { en: "Uppercase selected text", zh: "将选中文本转换为大写", "zh-TW": "將選取文字轉換為大寫" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "uppercase");
       },
     });
     this.addCommand({
-      id: "text-format-capitalize-word",
+      id: "capitalize-word",
       name: { en: "Capitalize all words in selected text", zh: "将选中文本中的所有单词首字母大写", "zh-TW": "將選取文字中的所有單詞首字母大寫" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "capitalize-word");
       },
     });
     this.addCommand({
-      id: "text-format-capitalize-sentence",
+      id: "capitalize-sentence",
       name: { en: "Capitalize only first word of sentence in selected text", zh: "将选中文本中的句子的首字母大写", "zh-TW": "將選取文字中的句子的首字母大寫" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "capitalize-sentence");
       },
     });
     this.addCommand({
-      id: "text-format-titlecase",
+      id: "titlecase",
       name: { en: "Title case selected text", zh: "将选中文本转换为标题格式大小写", "zh-TW": "將選取文字轉換為標題格式大小寫" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "titlecase");
       },
     });
     this.addCommand({
-      id: "text-format-togglecase",
+      id: "togglecase",
       name: { en: "Togglecase selected text", zh: "触发选中文本大小写切换", "zh-TW": "觸發選取文字大小寫切換" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "togglecase");
       },
     });
     this.addCommand({
-      id: "text-format-slugify",
+      id: "slugify",
       name: { en: "Slugify selected text (`-` for space)", zh: "使用 Slugify 格式化选中文本（`-`连字符）", "zh-TW": "使用 Slugify 格式化選取文字（`-`連字符）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "slugify");
       },
     });
     this.addCommand({
-      id: "text-format-snakify",
+      id: "snakify",
       name: { en: "Snakify selected text (`_` for space)", zh: "使用 Snakify 格式化选中文本（`_`连字符）", "zh-TW": "使用 Snakify 格式化選取文字（`_`連字符）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "snakify");
@@ -71,7 +79,7 @@ export default class TextFormat extends Plugin {
     });
 
     this.addCommand({
-      id: "text-format-heading-upper",
+      id: "heading-upper",
       name: { "en": "Heading upper", "zh": "标题上升一级", "zh-TW": "標題上升一級" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "heading", true);
@@ -84,7 +92,7 @@ export default class TextFormat extends Plugin {
         }],
     });
     this.addCommand({
-      id: "text-format-heading-lower",
+      id: "heading-lower",
       name: { "en": "Heading lower", "zh": "标题下降一级", "zh-TW": "標題下降一級" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "heading", false);
@@ -98,35 +106,35 @@ export default class TextFormat extends Plugin {
     });
 
     this.addCommand({
-      id: "text-format-bullet-list",
+      id: "bullet-list",
       name: { en: "Detect and format bullet list", zh: "识别并格式化无序列表", "zh-TW": "識別並格式化無序清單" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "bullet");
       },
     });
     this.addCommand({
-      id: "text-format-convert-ordered-list",
+      id: "convert-ordered-list",
       name: { en: "Detect and format ordered list", zh: "识别并格式化有序列表", "zh-TW": "識別並格式化有序清單" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "convert-ordered");
       },
     });
     this.addCommand({
-      id: "text-format-table2bullet",
+      id: "table2bullet",
       name: { en: "Convert table to bullet list without header", zh: "将表格转换为无序列表（不含标题）", "zh-TW": "將表格轉換為無序清單（不含標題）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "table2bullet");
       },
     });
     this.addCommand({
-      id: "text-format-table2bullet-head",
+      id: "table2bullet-head",
       name: { en: "Convert table to bullet list with header", zh: "将表格转换为无序列表（含标题）", "zh-TW": "將表格轉換為無序清單（含標題）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "table2bullet-header");
       },
     });
     this.addCommand({
-      id: "text-format-todo-sort",
+      id: "todo-sort",
       name: { en: "Sort to-do list", zh: "将待办事项列表排序", "zh-TW": "將待辦事項列表排序" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "todo-sort");
@@ -134,21 +142,21 @@ export default class TextFormat extends Plugin {
     });
 
     this.addCommand({
-      id: "text-format-remove-wiki-link",
+      id: "remove-wiki-link",
       name: { "en": "Remove WikiLinks format in selection", "zh": "移除选中文本中的 WikiLinks 格式", "zh-TW": "移除選取文字中的 WikiLinks 格式" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "remove-wiki-link");
       },
     });
     this.addCommand({
-      id: "text-format-remove-url-link",
+      id: "remove-url-link",
       name: { "en": "Remove URL links format in selection", "zh": "移除选中文本中的 URL 链接格式", "zh-TW": "移除選取文字中的 URL 鏈接格式" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "remove-url-link");
       },
     });
     this.addCommand({
-      id: "text-format-link-url2wiki",
+      id: "link-url2wiki",
       name: { en: "Convert URL links to WikiLinks in selection", zh: "将选中文本中的 URL 链接转换为 WikiLinks 格式", "zh-TW": "將選取文字中的 URL 鏈接轉換為 WikiLinks 格式" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "link-url2wiki");
@@ -157,63 +165,63 @@ export default class TextFormat extends Plugin {
 
 
     this.addCommand({
-      id: "text-format-remove-spaces",
+      id: "remove-spaces",
       name: { en: "Remove redundant spaces in selection", zh: "将选中文本中的多余空格移除", "zh-TW": "將選取文字中的多餘空格移除" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "remove-spaces");
       },
     });
     this.addCommand({
-      id: "text-format-remove-spaces-all",
+      id: "remove-spaces-all",
       name: { en: "Remove all spaces in selection", zh: "将选中文本中的所有空格移除", "zh-TW": "將選取文字中的所有空格移除" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "spaces-all");
       },
     });
     this.addCommand({
-      id: "text-format-remove-blank-line",
+      id: "remove-blank-line",
       name: { en: "Remove blank line(s)", zh: "将选中文本中的空行移除", "zh-TW": "將選取文字中的空行移除" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "remove-blank-line");
       },
     });
     this.addCommand({
-      id: "text-format-merge-line",
+      id: "merge-line",
       name: { en: "Merge broken paragraph(s) in selection", zh: "将选中文本中的断行合并", "zh-TW": "將選取文字中的斷行合併" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "merge");
       },
     });
     this.addCommand({
-      id: "text-format-split-blank",
+      id: "split-blank",
       name: { en: "Split line(s) by blanks", zh: "将选中文本按空格分行", "zh-TW": "將選取文字按空格分行" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "split-blank");
       },
     });
     this.addCommand({
-      id: "text-format-chinese-punctuation",
+      id: "chinese-punctuation",
       name: { en: "Convert to Chinese punctuation marks (,;:!?)", zh: "转换为中文标点符号（,;:!?）", "zh-TW": "轉換為中文標點符號（,;:!?）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "Chinese-punctuation");
       },
     });
     this.addCommand({
-      id: "text-format-english-punctuation",
+      id: "english-punctuation",
       name: { en: "Convert to English punctuation marks", zh: "转换为英文标点符号", "zh-TW": "轉換為英文標點符號" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "English-punctuation");
       },
     });
     this.addCommand({
-      id: "text-format-hyphen",
+      id: "hyphen",
       name: { en: "Remove hyphens", zh: "移除连字符", "zh-TW": "移除連字符" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "hyphen");
       },
     });
     this.addCommand({
-      id: "text-format-ligature",
+      id: "ligature",
       name: { "en": "Replace ligature", "zh": "替换连字", "zh-TW": "取代連字" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "ligature");
@@ -222,21 +230,21 @@ export default class TextFormat extends Plugin {
 
 
     this.addCommand({
-      id: "text-format-anki-card",
+      id: "anki-card",
       name: { "en": "Convert selection into Anki card format", "zh": "将选中内容转换为 Anki 卡片格式", "zh-TW": "將選取內容轉換為 Anki 卡片格式" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "anki");
       },
     });
     this.addCommand({
-      id: "text-format-remove-citation-index",
+      id: "remove-citation-index",
       name: { en: "Remove citation index", zh: "移除引用索引编号", "zh-TW": "移除引用索引編號" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "remove-citation");
       },
     });
     this.addCommand({
-      id: "text-format-zotero-note",
+      id: "zotero-note",
       name: { en: "Get Zotero note from clipboard and paste", zh: "从剪贴板获取 Zotero 笔记并粘贴", "zh-TW": "從剪貼板獲取 Zotero 筆記並粘貼" }[lang],
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         const clipboardText = await navigator.clipboard.readText();
@@ -249,14 +257,14 @@ export default class TextFormat extends Plugin {
       },
     });
     this.addCommand({
-      id: "text-format-latex-single-letter",
+      id: "latex-single-letter",
       name: { en: "Convert single letter into math mode (LaTeX)", zh: "将单个字母转换为数学模式（LaTeX）", "zh-TW": "將單個字母轉換為數學模式（LaTeX）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "latex-letter");
       },
     });
     this.addCommand({
-      id: "text-format-mathpix-array2table",
+      id: "mathpix-array2table",
       name: {
         en: "Convert Mathpix's LaTeX array to markdown table", zh: "将 Mathpix 的 LaTeX 数组转换为 Markdown 表格", "zh-TW": "將 Mathpix 的 LaTeX 陣列轉換為 Markdown 表格"
       }[lang],
@@ -266,51 +274,61 @@ export default class TextFormat extends Plugin {
     });
 
 
-    this.settings.WrapperList.forEach((wrapper, index) => {
-      this.addCommand({
-        id: `text-format-wrapper-${index}`,
-        name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
-        editorCallback: (editor: Editor, view: MarkdownView) => {
-          textWrapper(editor, view, wrapper.prefix, wrapper.suffix)
-        },
-      });
-    });
-    this.settings.RequestList.forEach((request, index) => {
-      this.addCommand({
-        id: `text-format-request-${index}`,
-        name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
-        editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.textFormat(editor, view, "api-request", request.url);
-        },
-      });
-    });
+    this.debounceUpdateCommandWrapper();
+    this.debounceUpdateCommandRequest();
     this.addCommand({
-      id: "text-format-decodeURI",
+      id: "decodeURI",
       name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "decodeURI");
       },
     });
     this.addCommand({
-      id: "text-format-paragraph-double-spaces",
+      id: "paragraph-double-spaces",
       name: { en: "Add extra double spaces per paragraph for whole file", zh: "全文为每段段末添加双空格", "zh-TW": "全文為每段段末添加雙空格" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         extraDoubleSpaces(editor, view);
       },
     });
     this.addCommand({
-      id: "text-format-add-line-break",
+      id: "add-line-break",
       name: { en: "Add extra line break to paragraph", zh: "在段落末添加额外换行", "zh-TW": "在段落末添加額外換行" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "add-line-break");
       },
     });
     this.addCommand({
-      id: "text-format-space-word-symbol",
+      id: "space-word-symbol",
       name: { en: "Format space between word and symbol", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "space-word-symbol");
       },
+    });
+    console.log(this)
+  }
+
+  updateCommandWrapper() {
+    const lang = getLang();
+    this.settings.WrapperList.forEach((wrapper, index) => {
+      this.addCommand({
+        id: `wrapper-${index}`,
+        name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
+        editorCallback: (editor: Editor, view: MarkdownView) => {
+          textWrapper(editor, view, wrapper.prefix, wrapper.suffix)
+        },
+      });
+    });
+  }
+  updateCommandRequest() {
+    const lang = getLang();
+    this.settings.RequestList.forEach((request, index) => {
+      this.addCommand({
+        id: `request-${index}`,
+        name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
+        editorCallback: (editor: Editor, view: MarkdownView) => {
+          this.textFormat(editor, view, "api-request", request.url);
+        },
+      });
     });
   }
 
