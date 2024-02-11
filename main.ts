@@ -519,15 +519,20 @@ export default class TextFormat extends Plugin {
         //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
         //   "g"
         // );
-        const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
+        let sepCustom = "";
+        if (this.settings.OrderedListOtherSeparator.length > 0) {
+          sepCustom = "|" + this.settings.OrderedListOtherSeparator;
+        }
+
+        const rx = new RegExp(
+          String.raw`([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))` + sepCustom + `)`,
+          "g");
+        // const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
         replacedText = selectedText.replace(
           rx,
           function (t, t1) {
             orderedCount++;
             let head = "\n"; // if single line, then add newline character.
-            // if (selectedText.indexOf("\n") > -1) {
-            //   head = "";
-            // }
             return t.replace(t1, `${head}${orderedCount}. `);
           }
         );

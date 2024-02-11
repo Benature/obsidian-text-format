@@ -41,6 +41,7 @@ export interface FormatSettings {
   WikiLinkFormat: WikiLinkFormatGroup;
   UrlLinkFormat: string;
   ProperNoun: string;
+  OrderedListOtherSeparator: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -58,6 +59,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
   UrlLinkFormat: "{text}",
   ProperNoun: "",
+  OrderedListOtherSeparator: String.raw``,
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -212,9 +214,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Bullet points list" });
+    containerEl.createEl("h3", { text: "Format bullet/ordered list" });
     new Setting(containerEl)
-      .setName("Possible bullet points")
+      .setName("Possible bullet point characters")
       .setDesc("The characters that will be regarded as bullet points.")
       .addTextArea((text) =>
         text
@@ -222,6 +224,22 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.BulletPoints)
           .onChange(async (value) => {
             this.plugin.settings.BulletPoints = value;
+            await this.plugin.saveSettings();
+          })
+      );
+    new Setting(containerEl)
+      .setName("Format ordered list custom separator RegExp")
+      .setDesc(
+        "Separated by `|`. e.g.: `\sand\s|\s?AND\s?`. Default as empty."
+      )
+      .addTextArea((text) =>
+        text
+          .setPlaceholder(
+            String.raw``
+          )
+          .setValue(this.plugin.settings.OrderedListOtherSeparator)
+          .onChange(async (value) => {
+            this.plugin.settings.OrderedListOtherSeparator = value;
             await this.plugin.saveSettings();
           })
       );
@@ -385,9 +403,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
 
 
-    containerEl.createEl("h3", { text: "When converting Chinese characters" });
+    containerEl.createEl("h3", { text: "Convert Chinese punctuation marks" });
     new Setting(containerEl)
-      .setName("Remove all spaces")
+      .setName("Remove all spaces when converting Chinese punctuation marks")
       .setDesc("for OCR case")
       .addToggle((toggle) => {
         toggle
