@@ -142,10 +142,10 @@ e.g.
 
 ## Support
 
-If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat or Alipay, thank you!
+If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.net/a/Benature-K). Any amount is welcome, thank you!
 
 <p align="center">
-<img src="https://github.com/p4lang/behavioral-model/assets/35028647/d8471ebe-a9fb-471e-a312-0d93b8ca9a12" width="500px">
+<img src="https://s2.loli.net/2024/01/30/jQ9fTSyBxvXRoOM.png" width="500px">
 </p>
 
 
