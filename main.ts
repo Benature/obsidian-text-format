@@ -542,7 +542,10 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/ /g, "\n");
         break;
       case "Chinese-punctuation":
-        replacedText = this.settings.RemoveBlanksWhenChinese ? removeAllSpaces(selectedText) : selectedText;
+        replacedText = selectedText;
+        if (this.settings.RemoveBlanksWhenChinese) {
+          replacedText = removeAllSpaces(selectedText).replace(/[\u4e00-\u9fa5【】（）「」《》：“？‘、](\s+)[\u4e00-\u9fa5【】（）「」《》：“？‘、]/g, "");
+        }
         replacedText = replacedText
           .replace(/ ?, ?/g, "，")
           .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))

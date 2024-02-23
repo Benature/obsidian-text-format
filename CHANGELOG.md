@@ -1,7 +1,11 @@
 # Changelog
 
+- [fix] `Chinese-punctuation`: remove blanks beside punctuation marks
+
 ## 2.5.1
 - [updated] Wrapper & Request API commands not need to re-enable plugin
+- [updated] Custom separator RegExp for "Detect and format ordered list"
+- [fix] #79
 
 ## 2.5.0
 - [feature] Wrapper: support template for metadata (file properties).
