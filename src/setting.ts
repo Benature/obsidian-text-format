@@ -43,6 +43,7 @@ export interface FormatSettings {
   ProperNoun: string;
   OrderedListOtherSeparator: string;
   isWikiLink2mdRelativePath: boolean;
+  calloutType: string;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -62,6 +63,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   ProperNoun: "",
   OrderedListOtherSeparator: String.raw``,
   isWikiLink2mdRelativePath: true,
+  calloutType: "NOTE",
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -83,8 +85,23 @@ export class TextFormatSettingTab extends PluginSettingTab {
         href: "https://github.com/Benature/obsidian-text-format",
       });
 
-    containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" });
+    new Setting(containerEl)
+      .setName("Callout type")
+      .setDesc(["Set the callout type for command `Callout format`. ",
+        "New callout block will use the last callout type in the current file by default. ",
+        "To disable this continuity, make the type begins with `!`, e.g. `!NOTE`."].join(""))
+      .addText((text) =>
+        text
+          .setPlaceholder("Callout type")
+          .setValue(this.plugin.settings.calloutType)
+          .onChange(async (value) => {
+            this.plugin.settings.calloutType = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
+
+    containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" });
     new Setting(containerEl)
       .setName("Lowercase before capitalize/title case")
       .setDesc(
@@ -284,7 +301,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       });
     this.plugin.settings.WrapperList.forEach((wrapperSetting, index) => {
       const s = new Setting(this.containerEl)
-        .addSearch((cb) => {
+        .addText((cb) => {
           cb.setPlaceholder("Wrapper Name (command name)")
             .setValue(wrapperSetting.name)
             .onChange(async (newValue) => {
@@ -293,7 +310,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.plugin.debounceUpdateCommandWrapper();
             });
         })
-        .addSearch((cb) => {
+        .addText((cb) => {
           cb.setPlaceholder("Prefix")
             .setValue(wrapperSetting.prefix)
             .onChange(async (newValue) => {
@@ -302,7 +319,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.plugin.debounceUpdateCommandWrapper();
             });
         })
-        .addSearch((cb) => {
+        .addText((cb) => {
           cb.setPlaceholder("Suffix")
             .setValue(wrapperSetting.suffix)
             .onChange(async (newValue) => {
@@ -346,7 +363,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       })
     this.plugin.settings.RequestList.forEach((requestSetting, index) => {
       const s = new Setting(this.containerEl)
-        .addSearch((cb) => {
+        .addText((cb) => {
           cb.setPlaceholder("Request Name (command name)")
             .setValue(requestSetting.name)
             .onChange(async (newValue) => {
@@ -355,7 +372,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.plugin.debounceUpdateCommandRequest();
             });
         })
-        .addSearch((cb) => {
+        .addText((cb) => {
           cb.setPlaceholder("Request URL")
             .setValue(requestSetting.url)
             .onChange(async (newValue) => {

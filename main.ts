@@ -286,6 +286,13 @@ export default class TextFormat extends Plugin {
         this.textFormat(editor, view, "array2table");
       },
     });
+    this.addCommand({
+      id: "callout",
+      name: { en: "Callout format", zh: "Callout 格式", "zh-TW": "Callout 格式" }[lang],
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "callout");
+      },
+    });
 
 
     this.debounceUpdateCommandWrapper();
@@ -647,7 +654,25 @@ export default class TextFormat extends Plugin {
           return;
         })
         return;
-
+      case "callout":
+        const wholeContent = editor.getValue();
+        let type = this.settings.calloutType;
+        if (type.startsWith("!")) {
+          type = type.substring(1, type.length);
+        } else {
+          const preCallouts = wholeContent.match(/(?<=\n\>\s*\[\!)\w+(?=\])/gm);
+          if (preCallouts) {
+            type = preCallouts[preCallouts.length - 1];
+          }
+        }
+        const lines = selectedText.replace(/$\n>/g, "").split("\n");
+        replacedText = `> [!${type}] ${lines[0]}`
+        if (lines.length > 1) {
+          for (let idx = 1; idx < lines.length; idx++) {
+            replacedText += `\n> ` + lines[idx];
+          }
+        }
+        break;
       default:
         return;
     }
