@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, Plugin, Notice, debounce } from "obsidian";
-import { removeWikiLink, removeUrlLink, url2WikiLink } from "src/link";
+import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase } from "src/format";
 
@@ -162,6 +162,13 @@ export default class TextFormat extends Plugin {
         this.textFormat(editor, view, "link-url2wiki");
       },
     });
+    this.addCommand({
+      id: "link-wiki2md",
+      name: { en: "Convert wikiLinks to plain markdown links in selection", zh: "将选中文本中的 WikiLinks 转换为普通 Markdown 链接格式", "zh-TW": "將選取文字中的 WikiLinks 轉換為普通 Markdown 鏈接格式" }[lang],
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "link-wiki2md");
+      },
+    });
 
 
     this.addCommand({
@@ -311,7 +318,6 @@ export default class TextFormat extends Plugin {
         this.textFormat(editor, view, "space-word-symbol");
       },
     });
-    console.log(this)
   }
 
   updateCommandWrapper() {
@@ -616,6 +622,9 @@ export default class TextFormat extends Plugin {
       case "link-url2wiki":
         replacedText = url2WikiLink(selectedText);
         break;
+      case "link-wiki2md":
+        replacedText = convertWikiLinkToMarkdown(selectedText, this);
+        break;
       case "ligature":
         replacedText = replaceLigature(selectedText);
         break;
@@ -638,6 +647,7 @@ export default class TextFormat extends Plugin {
           return;
         })
         return;
+
       default:
         return;
     }

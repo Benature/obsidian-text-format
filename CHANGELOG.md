@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.6.0
+
+- [feature] Convert wikiLinks to plain markdown links in selection ([#40](https://github.com/Benature/obsidian-text-format/issues/40))
 - [feature] remove trailing spaces ([#61](https://github.com/Benature/obsidian-text-format/issues/61))
 - [updated] decodeURI
   - `%2F` -> `/`

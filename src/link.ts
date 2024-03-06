@@ -1,5 +1,6 @@
 import { stringFormat } from "./format";
 import { WikiLinkFormatGroup } from "./setting";
+import TextFormat from "../main";
 
 export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
   return s.replace(/\[\[.*?\]\]/g, function (t) {
@@ -45,4 +46,27 @@ export function url2WikiLink(s: string): string {
   return s.replace(rx, function (t) {
     return `[[${t.match(/\[(.*?)\]/)[1]}]]`;
   });
+}
+
+export function convertWikiLinkToMarkdown(wikiLink: string, plugin: TextFormat): string {
+  const regex = /\[\[([^|\]]+)\|?([^\]]+)?\]\]/g;
+
+  const markdown = wikiLink.replace(regex, (match, p1, p2) => {
+    const linkText = p2 ? p2.trim() : p1.trim();
+    let linkTarget = p1.trim().replace(/#.*$/g, "") + ".md";
+
+    const note = plugin.app.vault.getAllLoadedFiles().find(file => file.name === linkTarget);
+    if (note) {
+      linkTarget = note.path.replace(/\s/g, "%20");
+      if (!plugin.settings.isWikiLink2mdRelativePath) {
+        // @ts-ignore
+        linkTarget = plugin.app.vault.adapter.basePath + "/" + linkTarget;
+      }
+    } else {
+      // return wikiLink;
+    }
+    return `[${linkText}](${linkTarget})`;
+  });
+
+  return markdown;
 }

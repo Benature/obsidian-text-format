@@ -76,11 +76,12 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 #### Links
 
-| Command                                     | Description                                        |
-| ------------------------------------------- | -------------------------------------------------- |
-| Remove WikiLinks format in selection        | Convert `[[WikiLinks]]` to `WikiLinks` (#28)       |
-| Remove URL links format in selection        | Convert `[Google](www.google.com)` to `Google`     |
-| Convert URL links to WikiLinks in selection | Convert `[Google](www.google.com)` to `[[Google]]` |
+| Command                                                  | Description                                                                                                            |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Remove WikiLinks format in selection                     | e.g. Convert `[[WikiLinks]]` to `WikiLinks` (#28)                                                                      |
+| Remove URL links format in selection                     | e.g. Convert `[Google](www.google.com)` to `Google`                                                                    |
+| Convert URL links to WikiLinks in selection              | e.g. Convert `[Google](www.google.com)` to `[[Google]]`                                                                |
+| Convert wikiLinks to plain markdown links in selection ⚙️ | e.g. Convert `[[Google]]` to `[Google](Google.md)` ([#40](https://github.com/Benature/obsidian-text-format/issues/40)) |
 
 ### PDF copy / OCR
 

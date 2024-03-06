@@ -42,6 +42,7 @@ export interface FormatSettings {
   UrlLinkFormat: string;
   ProperNoun: string;
   OrderedListOtherSeparator: string;
+  isWikiLink2mdRelativePath: boolean;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   UrlLinkFormat: "{text}",
   ProperNoun: "",
   OrderedListOtherSeparator: String.raw``,
+  isWikiLink2mdRelativePath: true,
 };
 
 export class TextFormatSettingTab extends PluginSettingTab {
@@ -153,6 +155,17 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
     containerEl.createEl("h3", { text: "URL formatting" });
+    new Setting(containerEl)
+      .setName("Use relative path when covering wikilinks to plain markdown links.")
+      .setDesc("Or will use absolute path instead.")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.isWikiLink2mdRelativePath)
+          .onChange(async (value) => {
+            this.plugin.settings.isWikiLink2mdRelativePath = value;
+            await this.plugin.saveSettings();
+          });
+      });
     new Setting(containerEl)
       .setName("The format of result when calling `Remove URL links format in selection`")
       .setDesc("Matching with `[{text}]({url})`, use `{text}` if you want to maintain the text, or use `{url}` if you want to maintain the url.")
