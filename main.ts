@@ -179,6 +179,13 @@ export default class TextFormat extends Plugin {
       },
     });
     this.addCommand({
+      id: "remove-trailing-all",
+      name: { en: "Remove trailing spaces in selection", zh: "将选中文本中的所有行末空格移除", "zh-TW": "將選取文字中的所有行尾空格移除" }[lang],
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.textFormat(editor, view, "trailing-spaces");
+      },
+    });
+    this.addCommand({
       id: "remove-blank-line",
       name: { en: "Remove blank line(s)", zh: "将选中文本中的空行移除", "zh-TW": "將選取文字中的空行移除" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
@@ -476,6 +483,9 @@ export default class TextFormat extends Plugin {
         break;
       case "spaces-all":
         replacedText = removeAllSpaces(selectedText);
+        break;
+      case "trailing-spaces":
+        replacedText = selectedText.replace(/(\s*)(?=\n)|(\s*)$/g, "")
         break;
       case "merge":
         replacedText = selectedText.replace(/(?:[^\n])(\n)(?!\n)/g, (t, t1) => t.replace(t1, " "));

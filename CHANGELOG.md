@@ -1,5 +1,6 @@
 # Changelog
 
+- [feature] remove trailing spaces ([#61](https://github.com/Benature/obsidian-text-format/issues/61))
 - [updated] decodeURI
   - `%2F` -> `/`
   - support more schemes, not only http, https, ftp, etc.
