@@ -574,8 +574,12 @@ export default class TextFormat extends Plugin {
         break;
       case "decodeURI":
         replacedText = selectedText.replace(
-          /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
-          function (t) { return decodeURI(t).replace(/\s/g, "%20"); }
+          /(\w+):\/\/[-\w+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
+          function (t) {
+            return decodeURI(t)
+              .replace(/\s/g, "%20")
+              .replace(/%2F/g, "/");
+          }
         );
         break;
       case "hyphen":

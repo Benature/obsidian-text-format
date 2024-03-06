@@ -1,5 +1,8 @@
 # Changelog
 
+- [updated] decodeURI
+  - `%2F` -> `/`
+  - support more schemes, not only http, https, ftp, etc.
 - [fix] `Chinese-punctuation`: remove blanks beside punctuation marks
 
 ## 2.5.1
