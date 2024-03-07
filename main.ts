@@ -271,8 +271,8 @@ export default class TextFormat extends Plugin {
       },
     });
     this.addCommand({
-      id: "latex-single-letter",
-      name: { en: "Convert single letter into math mode (LaTeX)", zh: "将单个字母转换为数学模式（LaTeX）", "zh-TW": "將單個字母轉換為數學模式（LaTeX）" }[lang],
+      id: "latex-letter",
+      name: { en: "Detect and convert characters to math mode (LaTeX)", zh: "识别并转换字符为数学模式（LaTeX）", "zh-TW": "識別並轉換字符為數學模式（LaTeX）" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.textFormat(editor, view, "latex-letter");
       },
@@ -379,11 +379,11 @@ export default class TextFormat extends Plugin {
       to = editor.getCursor("to");
     let cursorOffset = 0;
 
-    // adjust selection
+    //： Adjust Selection
     switch (cmd) {
       case "capitalize-word":
       case "capitalize-sentence":
-        // lower case text if setting is true
+        //: Lower case text if setting is true
         if (this.settings.LowercaseFirst) {
           selectedText = selectedText.toLowerCase();
         }
@@ -391,7 +391,8 @@ export default class TextFormat extends Plugin {
       case "split-blank":
       case "bullet":
       case "convert-ordered":
-        // force to select whole paragraph(s)
+      case "callout":
+        //: Force to select whole paragraph(s)
         from.ch = 0;
         to.line += 1;
         to.ch = 0;
@@ -406,7 +407,7 @@ export default class TextFormat extends Plugin {
         selectedText = editor.getSelection();
         break;
       case "todo-sort":
-        // select whole file if nothing selected
+        //: Select whole file if nothing selected
         if (!somethingSelected) {
           from.line = 0;
           from.ch = 0;
@@ -587,13 +588,37 @@ export default class TextFormat extends Plugin {
         break;
       case "latex-letter":
         // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
-        replacedText = selectedText.replace(
-          // RegExp(String.raw`(?:` + sep + String.raw`|^)([a-zA-Z])(` + sep + `|$)`, "g"),
-          /(?:[\s：（）。，、；]|^)([a-zA-Z])([\s\,\:\.\?\!，。、（）；]|$)/g,
-          function (t, t1) {
-            return t.replace(t1, `$${t1}$`);
-          }
-        );
+        const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
+        const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
+        replacedText = selectedText
+          // single character
+          .replace(
+            RegExp(pre + String.raw`([(͠]?[a-zA-Z])` + suf, "g"),
+            (t, t1) => {
+              // console.log(t1, t1.length, t1[0]) //2
+              // t1 = t1.replace(//g, String.raw`\tilde `);
+              return `$${t1}$`;
+            })
+          // double character
+          .replace(
+            RegExp(pre + String.raw`([a-z])([a-zA-Z0-9])` + suf, "g"),
+            (t, t1, t2) => {
+              if (/is|or|as|to/g.test(t)) { return t; }
+              return `$${t1}_${t2}$`;
+            })
+          .replace(
+            RegExp(pre + String.raw`([a-z])(\*)` + suf, "g"),
+            (t, t1, t2) => {
+              return `$${t1}^${t2}$`;
+            })
+          // calculator
+          .replace(
+            RegExp(pre + String.raw`(\w{1,3}[\+\-\*\/<>]\w{1,3})` + suf, "g"),
+            (t, t1) => {
+              let content = t1.replace(/([a-z])([a-zA-Z0-9])/g, `$1_$2`)
+              return `$${content}$`
+            })
+          ;
         break;
       case "decodeURI":
         replacedText = selectedText.replace(
