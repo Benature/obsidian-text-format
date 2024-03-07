@@ -1,5 +1,5 @@
 import { stringFormat } from "./format";
-import { WikiLinkFormatGroup } from "./setting";
+import { WikiLinkFormatGroup, Wikilink2mdPathMode } from "./settings/types";
 import TextFormat from "../main";
 
 export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
@@ -56,17 +56,48 @@ export function convertWikiLinkToMarkdown(wikiLink: string, plugin: TextFormat):
     let linkTarget = p1.trim().replace(/#.*$/g, "") + ".md";
 
     const note = plugin.app.vault.getAllLoadedFiles().find(file => file.name === linkTarget);
+    let linkURL = linkTarget;
     if (note) {
-      linkTarget = note.path.replace(/\s/g, "%20");
-      if (!plugin.settings.isWikiLink2mdRelativePath) {
-        // @ts-ignore
-        linkTarget = plugin.app.vault.adapter.basePath + "/" + linkTarget;
+      linkURL = note.path;
+      switch (plugin.settings.Wikilink2mdRelativePath) {
+        case Wikilink2mdPathMode.absolute:
+          // @ts-ignore
+          linkURL = plugin.app.vault.adapter.basePath + "/" + linkURL;
+          break;
+        case Wikilink2mdPathMode.relativeFile:
+          const currentFilePath = plugin.app.workspace.getActiveFile().path;
+          linkURL = relativePath(linkURL, currentFilePath)
+          break;
       }
-    } else {
-      // return wikiLink;
+      linkURL = linkURL.replace(/\s/g, "%20")
     }
-    return `[${linkText}](${linkTarget})`;
+    return `[${linkText}](${linkURL})`;
   });
 
   return markdown;
+}
+
+function relativePath(pathA: string, pathB: string): string {
+  const splitPathA = pathA.split('/');
+  const splitPathB = pathB.split('/');
+
+  // 找到共同根路径
+  let commonRootIndex = 0;
+  while (commonRootIndex < Math.min(splitPathA.length - 1, splitPathB.length - 1)
+    && splitPathA[commonRootIndex] === splitPathB[commonRootIndex]) {
+    commonRootIndex++;
+  }
+
+  // 构建相对路径
+  let relativePath = '';
+  for (let i = commonRootIndex; i < splitPathB.length - 1; i++) {
+    relativePath += '../';
+  }
+
+  // 将路径 A 的剩余部分添加到相对路径中
+  for (let i = commonRootIndex; i < splitPathA.length; i++) {
+    relativePath += splitPathA[i] + '/';
+  }
+
+  return relativePath.slice(0, -1); // 去除末尾的斜杠
 }

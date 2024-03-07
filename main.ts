@@ -1,6 +1,7 @@
 import { Editor, MarkdownView, Plugin, Notice, debounce } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
-import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
+import { TextFormatSettingTab } from "src/settings/settingTab";
+import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace } from "src/format";
 
 function getLang() {

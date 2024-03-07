@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } from "obsidian";
-import { FormatSettings, customReplaceSetting } from "src/setting";
+import { FormatSettings, customReplaceSetting } from "src/settings/types";
 import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
 import { off } from "process";
