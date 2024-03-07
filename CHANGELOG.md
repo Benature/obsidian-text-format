@@ -5,6 +5,12 @@
 ## 🏗️ developed
 > to be updated in the next version
 
+# 2.7.0
+- [updated] Convert wikiLinks to plain markdown links in selection: Three path modes
+  - absolute
+  - relative to Obsidian
+  - relative to file
+- [feature] collapsible heading in settings
 - [feature] custom replacement
 - [updated] callout format: auto select whole paragraph
 - [feature] math mode:

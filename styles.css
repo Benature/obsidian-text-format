@@ -1,0 +1,23 @@
+.tf-collapsible-content.is-active {
+  display: block;
+}
+
+.tf-collapsible-content {
+  display: none;
+}
+
+.tf-collapsible-header:hover {
+  background-color: var(--interactive-hover, #363636);
+  border-radius: var(--button-radius, 5px);
+}
+
+.tf-collapsible-header {
+  padding-bottom: 8px;
+  padding-top: 4px;
+}
+
+.tf-collapsible-icon {
+  position: relative;
+  top: 4px;
+  left: 16px;
+}

@@ -6,80 +6,15 @@ import {
   App,
   Menu,
   ButtonComponent,
+  setIcon,
 } from "obsidian";
-import TextFormat from "../main";
+import TextFormat from "../../main";
+import { FormatSettings, DEFAULT_SETTINGS, Wikilink2mdPathMode } from './types';
 
-export interface WrapperSetting {
-  name: string;
-  prefix: string;
-  suffix: string;
-}
-
-export interface APIRequestSetting {
-  name: string;
-  url: string;
-}
-
-export interface WikiLinkFormatGroup {
-  headingOnly: string;
-  aliasOnly: string;
-  both: string;
-}
-
-export interface customReplaceSettingPair {
-  search: string;
-  replace: string;
-}
-
-export interface customReplaceSetting {
-  name: string;
-  data: Array<customReplaceSettingPair>;
-}
-
-export interface FormatSettings {
-  MergeParagraph_Newlines: boolean;
-  MergeParagraph_Spaces: boolean;
-  LowercaseFirst: boolean;
-  RemoveBlanksWhenChinese: boolean;
-  ZoteroNoteRegExp: string;
-  ZoteroNoteTemplate: string;
-  BulletPoints: string;
-  WrapperList: Array<WrapperSetting>;
-  RequestList: Array<APIRequestSetting>;
-  customReplaceList: Array<customReplaceSetting>;
-  ToggleSequence: string;
-  RemoveWikiURL2: boolean;
-  WikiLinkFormat: WikiLinkFormatGroup;
-  UrlLinkFormat: string;
-  ProperNoun: string;
-  OrderedListOtherSeparator: string;
-  isWikiLink2mdRelativePath: boolean;
-  calloutType: string;
-}
-
-export const DEFAULT_SETTINGS: FormatSettings = {
-  MergeParagraph_Newlines: true,
-  MergeParagraph_Spaces: true,
-  LowercaseFirst: true,
-  RemoveBlanksWhenChinese: false,
-  ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
-  ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
-  BulletPoints: "•–§",
-  WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>" }],
-  RequestList: [],
-  customReplaceList: [],
-  ToggleSequence: "titleCase\nlowerCase\nupperCase",
-  RemoveWikiURL2: false,
-  WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
-  UrlLinkFormat: "{text}",
-  ProperNoun: "",
-  OrderedListOtherSeparator: String.raw``,
-  isWikiLink2mdRelativePath: true,
-  calloutType: "NOTE",
-};
 
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
+  contentEl: HTMLElement;
 
   constructor(app: App, plugin: TextFormat) {
     super(app, plugin);
@@ -89,6 +24,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
   display(): void {
     let { containerEl } = this;
 
+    let headerEl;
+
     containerEl.empty();
     containerEl
       .createEl("p", { text: "More details in Github: " })
@@ -97,24 +34,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
         href: "https://github.com/Benature/obsidian-text-format",
       });
 
-    new Setting(containerEl)
-      .setName("Callout type")
-      .setDesc(["Set the callout type for command `Callout format`. ",
-        "New callout block will use the last callout type in the current file by default. ",
-        "To disable this continuity, make the type begins with `!`, e.g. `!NOTE`."].join(""))
-      .addText((text) =>
-        text
-          .setPlaceholder("Callout type")
-          .setValue(this.plugin.settings.calloutType)
-          .onChange(async (value) => {
-            this.plugin.settings.calloutType = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-
-    containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" })
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("Lowercase before capitalize/title case")
       .setDesc(
         "When running the capitalize or title case command, the plugin will lowercase the selection at first."
@@ -127,7 +50,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Toggle case sequence (one case in a line)")
       .setDesc("Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
         "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
@@ -141,7 +64,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Proper noun")
       .setDesc("The words will be ignore to format in title case. Separated by comma, e.g. `USA, UFO`.")
       .addTextArea((text) =>
@@ -154,8 +77,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("Remove redundant blank lines")
       .setDesc(
         'change blank lines into single blank lines, e.g. "\\n\\n\\n" will be changed to "\\n\\n"'
@@ -169,7 +94,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
 
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Remove redundant blank spaces")
       .setDesc("ensure only one space between words")
       .addToggle((toggle) => {
@@ -183,19 +108,23 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
 
-    containerEl.createEl("h3", { text: "URL formatting" });
-    new Setting(containerEl)
-      .setName("Use relative path when covering wikilinks to plain markdown links.")
-      .setDesc("Or will use absolute path instead.")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.isWikiLink2mdRelativePath)
+    headerEl = containerEl.createEl("h3", { text: "URL formatting" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
+      .setName("Path mode when covering wikilinks to plain markdown links.")
+      // .setDesc("Or will use absolute path instead.")
+      .addDropdown(dropDown =>
+        dropDown
+          .addOption(Wikilink2mdPathMode.absolute, 'Absolute')
+          .addOption(Wikilink2mdPathMode.relativeObsidian, 'Relative to Obsidian Vault')
+          .addOption(Wikilink2mdPathMode.relativeFile, 'Relative to current file')
+          .setValue(this.plugin.settings.Wikilink2mdRelativePath || Wikilink2mdPathMode.relativeObsidian)
           .onChange(async (value) => {
-            this.plugin.settings.isWikiLink2mdRelativePath = value;
+            this.plugin.settings.Wikilink2mdRelativePath = value as Wikilink2mdPathMode;
             await this.plugin.saveSettings();
-          });
-      });
-    new Setting(containerEl)
+          }));
+    new Setting(this.contentEl)
       .setName("The format of result when calling `Remove URL links format in selection`")
       .setDesc("Matching with `[{text}]({url})`, use `{text}` if you want to maintain the text, or use `{url}` if you want to maintain the url.")
       .addTextArea((text) =>
@@ -207,7 +136,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Remove WikiLink as well when calling `Remove URL links format in selection`")
       .addToggle((toggle) => {
         toggle
@@ -217,9 +146,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-    containerEl.createEl("h4", { text: "Format when removing wikiLink" });
+    this.contentEl.createEl("h4", { text: "Format when removing wikiLink" });
     // containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("WikiLink with heading")
       .setDesc("e.g. [[title#heading]]")
       .addTextArea((text) =>
@@ -231,7 +160,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("WikiLink with alias")
       .setDesc("e.g. [[title|alias]]")
       .addTextArea((text) =>
@@ -243,7 +172,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("WikiLink with both heading and alias")
       .setDesc("e.g. [[title#heading|alias]]")
       .addTextArea((text) =>
@@ -256,8 +185,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Format bullet/ordered list" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Format bullet/ordered list" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("Possible bullet point characters")
       .setDesc("The characters that will be regarded as bullet points.")
       .addTextArea((text) =>
@@ -269,7 +200,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Format ordered list custom separator RegExp")
       .setDesc(
         "Separated by `|`. e.g.: `\sand\s|\s?AND\s?`. Default as empty."
@@ -286,14 +217,16 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Wrapper" });
+    headerEl = containerEl.createEl("h3", { text: "Wrapper" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
     const wrapperRuleDesc = document.createDocumentFragment();
     wrapperRuleDesc.append(
       "<Wrapper Name> <Prefix Template> <Suffix Template>",
       document.createDocumentFragment().createEl("br"),
       "Template for metadata (file properties) is supported with Handlebars syntax. For example, `{{link}}` will be replaced with the value of current file's property `link`.",
     );
-    new Setting(this.containerEl)
+    new Setting(this.contentEl)
       .setName("Add new wrapper")
       .setDesc(wrapperRuleDesc)
       .addButton((button: ButtonComponent) => {
@@ -312,7 +245,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
     this.plugin.settings.WrapperList.forEach((wrapperSetting, index) => {
-      const s = new Setting(this.containerEl)
+      const s = new Setting(this.contentEl)
         .addText((cb) => {
           cb.setPlaceholder("Wrapper Name (command name)")
             .setValue(wrapperSetting.name)
@@ -352,8 +285,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
     });
 
 
-    containerEl.createEl("h3", { text: "API Request" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "API Request" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("API Request URL")
       .setDesc(
         "The URL that plugin will send a POST and replace with return.\n" +
@@ -374,7 +309,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       })
     this.plugin.settings.RequestList.forEach((requestSetting, index) => {
-      const s = new Setting(this.containerEl)
+      const s = new Setting(this.contentEl)
         .addText((cb) => {
           cb.setPlaceholder("Request Name (command name)")
             .setValue(requestSetting.name)
@@ -404,8 +339,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
         });
     });
 
-    containerEl.createEl("h3", { text: "Custom replacement" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Custom replacement" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("Add custom replacement")
       .setDesc("The plugin will replace the `search` string with the `replace` string in the selection. RegExp is supported.")
       .addButton((button: ButtonComponent) => {
@@ -424,7 +361,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       })
     this.plugin.settings.customReplaceList.forEach((replaceSetting, index) => {
-      const s = new Setting(this.containerEl)
+      const s = new Setting(this.contentEl)
         .addText((cb) => {
           cb.setPlaceholder("Command name")
             .setValue(replaceSetting.name)
@@ -464,8 +401,10 @@ export class TextFormatSettingTab extends PluginSettingTab {
     });
 
 
-    containerEl.createEl("h3", { text: "Zotero pdf note format" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Zotero pdf note format" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl);
+    new Setting(this.contentEl)
       .setName("Zotero pdf note (input) RegExp")
       .setDesc(
         "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
@@ -485,7 +424,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(containerEl)
+    new Setting(this.contentEl)
       .setName("Zotero note pasted in Obsidian (output) format")
       .setDesc(
         "Variables: \n" +
@@ -504,8 +443,26 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
 
 
-    containerEl.createEl("h3", { text: "Convert Chinese punctuation marks" });
-    new Setting(containerEl)
+    headerEl = containerEl.createEl("h3", { text: "Others" });
+    this.contentEl = containerEl.createDiv();
+    makeCollapsible(headerEl, this.contentEl, true);
+
+    new Setting(this.contentEl)
+      .setName("Callout type")
+      .setDesc(["Set the callout type for command `Callout format`. ",
+        "New callout block will use the last callout type in the current file by default. ",
+        "To disable this continuity, make the type begins with `!`, e.g. `!NOTE`."].join(""))
+      .addText((text) =>
+        text
+          .setPlaceholder("Callout type")
+          .setValue(this.plugin.settings.calloutType)
+          .onChange(async (value) => {
+            this.plugin.settings.calloutType = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(this.contentEl)
       .setName("Remove all spaces when converting Chinese punctuation marks")
       .setDesc("for OCR case")
       .addToggle((toggle) => {
@@ -518,7 +475,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       });
 
     const donateELdiv = containerEl.createEl("div");
-    donateELdiv.setAttribute("style", "text-align: center;");
+    donateELdiv.setAttribute("style", "text-align: center; margin-top: 5rem; border-top: 0.2px solid grey");
     const donateELa1 = document.createElement('p');
     donateELa1.appendText("If you find this plugin useful and would like to support its development, you can sponsor me by the button below.");
     donateELa1.setAttribute("style", "color: gray;");
@@ -555,3 +512,45 @@ const buyMeACoffee = `
 <path fill-rule="evenodd" clip-rule="evenodd" d="M162.887 36.0434C162.81 36.4918 162.707 36.986 162.578 37.525C162.448 38.0646 162.284 38.623 162.086 39.2004C161.888 39.7779 161.644 40.2984 161.354 40.7616C161.064 41.2254 160.733 41.5935 160.359 41.8671C159.985 42.1406 159.555 42.2546 159.066 42.2089C158.822 42.1788 158.635 42.0117 158.506 41.7075C158.376 41.4038 158.308 41.0161 158.3 40.545C158.292 40.0743 158.334 39.5575 158.426 38.9951C158.517 38.4333 158.658 37.8821 158.849 37.3426C159.04 36.8036 159.272 36.3056 159.547 35.8496C159.821 35.3939 160.138 35.0405 160.496 34.7898C160.854 34.5391 161.247 34.4217 161.674 34.4365C162.101 34.4518 162.559 34.6643 163.047 35.0747C163.016 35.2725 162.963 35.5954 162.887 36.0434ZM171.019 37.787C170.782 37.6656 170.538 37.6392 170.287 37.7075C170.035 37.7757 169.856 38.0076 169.749 38.4026C169.688 38.8283 169.551 39.3294 169.338 39.9069C169.124 40.4843 168.861 41.0317 168.548 41.5478C168.236 42.0646 167.877 42.494 167.473 42.8358C167.069 43.1778 166.638 43.3337 166.181 43.3028C165.799 43.2727 165.532 43.079 165.38 42.7218C165.227 42.3647 165.147 41.9168 165.14 41.3769C165.132 40.838 165.186 40.2301 165.3 39.5538C165.414 38.8777 165.552 38.2054 165.712 37.5363C165.872 36.868 166.036 36.2258 166.204 35.6105C166.371 34.9951 166.508 34.4747 166.616 34.0493C166.738 33.6693 166.699 33.3466 166.501 33.0803C166.303 32.8149 166.055 32.6246 165.758 32.5107C165.46 32.3967 165.159 32.3664 164.854 32.4196C164.549 32.4728 164.351 32.6362 164.259 32.9094C163.359 32.1345 162.494 31.7166 161.663 31.6559C160.831 31.5952 160.065 31.7776 159.364 32.203C158.662 32.6284 158.041 33.2437 157.5 34.0493C156.958 34.8549 156.52 35.7322 156.184 36.6818C155.849 37.6314 155.639 38.6004 155.555 39.5879C155.471 40.5757 155.536 41.4761 155.75 42.289C155.963 43.1018 156.34 43.7669 156.882 44.283C157.423 44.7998 158.159 45.0583 159.089 45.0583C159.501 45.0583 159.898 44.9747 160.279 44.8076C160.66 44.6401 161.011 44.4426 161.331 44.2148C161.651 43.9869 161.933 43.7475 162.178 43.4968C162.421 43.2461 162.612 43.0373 162.749 42.8699C162.856 43.417 163.032 43.8808 163.276 44.2605C163.519 44.6401 163.798 44.9521 164.111 45.1948C164.423 45.4376 164.751 45.6164 165.094 45.7306C165.437 45.8445 165.769 45.9015 166.089 45.9015C166.806 45.9015 167.477 45.6583 168.102 45.1719C168.727 44.6861 169.288 44.0893 169.784 43.3829C170.279 42.6762 170.687 41.9319 171.007 41.1491C171.328 40.3666 171.541 39.6715 171.648 39.0634C171.755 38.8355 171.735 38.5964 171.591 38.3457C171.446 38.095 171.255 37.909 171.019 37.787Z" fill="#0D0C23"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M212.194 50.3701C212.064 50.8866 211.862 51.3238 211.587 51.6806C211.313 52.0377 210.97 52.2239 210.558 52.2393C210.299 52.2543 210.101 52.1175 209.963 51.8289C209.826 51.5401 209.731 51.1679 209.678 50.7122C209.624 50.2562 209.601 49.747 209.609 49.1849C209.616 48.6227 209.639 48.0681 209.678 47.521C209.715 46.9742 209.761 46.4647 209.815 45.9939C209.868 45.5226 209.91 45.1586 209.94 44.9C210.459 44.9608 210.89 45.1846 211.233 45.5723C211.576 45.9598 211.839 46.4193 212.022 46.9514C212.205 47.4831 212.312 48.0568 212.343 48.6722C212.373 49.2875 212.323 49.8534 212.194 50.3701ZM203.913 50.3701C203.783 50.8866 203.581 51.3238 203.307 51.6806C203.032 52.0377 202.689 52.2239 202.277 52.2393C202.018 52.2543 201.82 52.1175 201.683 51.8289C201.545 51.5401 201.45 51.1679 201.397 50.7122C201.343 50.2562 201.32 49.747 201.328 49.1849C201.336 48.6227 201.358 48.0681 201.397 47.521C201.434 46.9742 201.48 46.4647 201.534 45.9939C201.587 45.5226 201.629 45.1586 201.66 44.9C202.178 44.9608 202.609 45.1846 202.952 45.5723C203.295 45.9598 203.558 46.4193 203.741 46.9514C203.924 47.4831 204.031 48.0568 204.062 48.6722C204.092 49.2875 204.042 49.8534 203.913 50.3701ZM195.415 37.4241C195.399 37.7884 195.365 38.1114 195.312 38.3925C195.258 38.6741 195.186 38.8522 195.095 38.9283C194.927 38.8369 194.721 38.6018 194.477 38.2216C194.233 37.8419 194.042 37.4122 193.905 36.9336C193.768 36.4551 193.725 35.9843 193.779 35.5205C193.832 35.0573 194.073 34.6967 194.5 34.4379C194.667 34.3468 194.812 34.3809 194.934 34.5405C195.056 34.7001 195.155 34.9318 195.232 35.2357C195.308 35.5399 195.361 35.8892 195.392 36.2842C195.422 36.6795 195.43 37.0591 195.415 37.4241ZM193.39 41.9711C193.154 42.2215 192.89 42.4381 192.601 42.6206C192.311 42.803 192.014 42.9398 191.709 43.0309C191.404 43.1223 191.129 43.1448 190.885 43.0991C190.199 42.9627 189.673 42.666 189.307 42.2103C188.941 41.7545 188.708 41.219 188.609 40.6037C188.51 39.9881 188.521 39.3308 188.644 38.6319C188.765 37.933 188.971 37.2835 189.261 36.6832C189.551 36.0829 189.902 35.5662 190.313 35.1333C190.725 34.7001 191.175 34.4306 191.663 34.3239C191.48 35.0989 191.419 35.9007 191.48 36.7286C191.541 37.5568 191.739 38.3355 192.075 39.0648C192.288 39.506 192.544 39.9082 192.841 40.2729C193.139 40.6378 193.501 40.9492 193.928 41.2075C193.806 41.466 193.626 41.7204 193.39 41.9711ZM218.702 37.6519C218.747 37.3026 218.816 36.9336 218.908 36.5462C218.999 36.159 219.114 35.7828 219.251 35.4181C219.388 35.0532 219.548 34.738 219.731 34.4723C219.914 34.2065 220.108 34.0163 220.314 33.9024C220.52 33.7884 220.73 33.7997 220.943 33.9365C221.172 34.0735 221.313 34.3621 221.367 34.8025C221.42 35.2435 221.367 35.7142 221.207 36.2159C221.046 36.7173 220.761 37.1884 220.349 37.6288C219.937 38.07 219.38 38.3583 218.679 38.4951C218.648 38.2826 218.656 38.0015 218.702 37.6519ZM227.921 37.6519C227.966 37.3026 228.035 36.9336 228.126 36.5462C228.218 36.159 228.332 35.7828 228.47 35.4181C228.607 35.0532 228.767 34.738 228.95 34.4723C229.133 34.2065 229.328 34.0163 229.533 33.9024C229.739 33.7884 229.949 33.7997 230.162 33.9365C230.391 34.0735 230.532 34.3621 230.586 34.8025C230.639 35.2435 230.586 35.7142 230.425 36.2159C230.265 36.7173 229.979 37.1884 229.568 37.6288C229.156 38.07 228.599 38.3583 227.898 38.4951C227.867 38.2826 227.875 38.0015 227.921 37.6519ZM236.488 38.9852C236.312 38.7955 236.099 38.6625 235.847 38.5862C235.595 38.5104 235.355 38.5029 235.126 38.5636C234.897 38.6244 234.752 38.784 234.692 39.0422C234.57 39.5286 234.375 40.0262 234.108 40.5349C233.841 41.0444 233.514 41.5267 233.125 41.9824C232.736 42.4381 232.297 42.8412 231.81 43.1905C231.321 43.5401 230.81 43.7908 230.277 43.9423C229.743 44.1101 229.301 44.1289 228.95 43.9996C228.599 43.8706 228.321 43.6503 228.115 43.3389C227.909 43.0271 227.761 42.6512 227.669 42.2103C227.578 41.7699 227.524 41.3142 227.509 40.8428C228.378 40.9038 229.152 40.7483 229.831 40.3755C230.509 40.0034 231.085 39.5092 231.558 38.8939C232.031 38.2788 232.389 37.5874 232.633 36.82C232.877 36.0526 233.014 35.2892 233.045 34.5293C233.06 33.815 232.953 33.211 232.724 32.7171C232.496 32.2235 232.187 31.8395 231.798 31.5662C231.409 31.2924 230.963 31.133 230.46 31.0874C229.957 31.0417 229.445 31.1105 228.927 31.2924C228.302 31.5055 227.772 31.851 227.338 32.3296C226.903 32.8085 226.54 33.3634 226.251 33.9934C225.961 34.6244 225.732 35.3039 225.564 36.0335C225.396 36.7627 225.274 37.481 225.199 38.1874C225.124 38.873 225.084 39.5292 225.075 40.1572C225.017 40.2824 224.956 40.4082 224.889 40.5349C224.622 41.0444 224.295 41.5267 223.906 41.9824C223.517 42.4381 223.078 42.8412 222.591 43.1905C222.102 43.5401 221.592 43.7908 221.058 43.9423C220.524 44.1101 220.082 44.1289 219.731 43.9996C219.38 43.8706 219.102 43.6503 218.896 43.3389C218.691 43.0271 218.542 42.6512 218.45 42.2103C218.359 41.7699 218.305 41.3142 218.29 40.8428C219.159 40.9038 219.933 40.7483 220.612 40.3755C221.29 40.0034 221.866 39.5092 222.339 38.8939C222.811 38.2788 223.17 37.5874 223.414 36.82C223.658 36.0526 223.795 35.2892 223.826 34.5293C223.841 33.815 223.734 33.211 223.506 32.7171C223.277 32.2235 222.968 31.8395 222.579 31.5662C222.19 31.2924 221.744 31.133 221.241 31.0874C220.738 31.0417 220.227 31.1105 219.708 31.2924C219.083 31.5055 218.553 31.851 218.119 32.3296C217.684 32.8085 217.321 33.3634 217.032 33.9934C216.742 34.6244 216.513 35.3039 216.346 36.0335C216.178 36.7627 216.056 37.481 215.98 38.1874C215.936 38.5859 215.907 38.9722 215.886 39.3516C215.739 39.4765 215.595 39.6023 215.442 39.7258C214.916 40.1514 214.363 40.5349 213.784 40.8769C213.204 41.219 212.601 41.5001 211.977 41.7204C211.351 41.9408 210.71 42.0738 210.055 42.1192L211.473 26.9847C211.565 26.6655 211.519 26.3847 211.336 26.1415C211.153 25.8983 210.916 25.7312 210.627 25.6401C210.337 25.5488 210.028 25.5566 209.7 25.6627C209.372 25.7694 209.102 26.0126 208.888 26.3919C208.781 26.9697 208.671 27.7597 208.557 28.7625C208.442 29.7653 208.328 30.8595 208.213 32.0448C208.099 33.23 207.985 34.4532 207.87 35.7142C207.756 36.9759 207.657 38.1533 207.573 39.2472C207.569 39.2958 207.566 39.3398 207.562 39.3878C207.429 39.5005 207.299 39.6142 207.161 39.7258C206.635 40.1514 206.082 40.5349 205.503 40.8769C204.923 41.219 204.321 41.5001 203.696 41.7204C203.07 41.9408 202.429 42.0738 201.774 42.1192L203.192 26.9847C203.284 26.6655 203.238 26.3847 203.055 26.1415C202.872 25.8983 202.635 25.7312 202.346 25.6401C202.056 25.5488 201.747 25.5566 201.419 25.6627C201.091 25.7694 200.821 26.0126 200.607 26.3919C200.501 26.9697 200.39 27.7597 200.276 28.7625C200.161 29.7653 200.047 30.8595 199.933 32.0448C199.818 33.23 199.704 34.4532 199.589 35.7142C199.475 36.9759 199.376 38.1533 199.292 39.2472C199.29 39.2692 199.289 39.2891 199.287 39.3111C199.048 39.4219 198.786 39.519 198.503 39.6006C198.213 39.6844 197.885 39.7339 197.519 39.7489C197.58 39.4751 197.63 39.1712 197.668 38.8369C197.706 38.5029 197.737 38.1533 197.76 37.7884C197.782 37.4241 197.79 37.0591 197.782 36.6945C197.774 36.3296 197.755 35.9956 197.725 35.6914C197.649 35.0385 197.508 34.4191 197.302 33.8338C197.096 33.2491 196.818 32.7593 196.467 32.3637C196.116 31.9687 195.678 31.7027 195.151 31.5662C194.626 31.4294 194.012 31.4748 193.31 31.7027C192.273 31.5662 191.339 31.6613 190.508 31.9878C189.677 32.3149 188.956 32.7894 188.346 33.4122C187.736 34.0357 187.237 34.7684 186.848 35.6119C186.459 36.4551 186.2 37.3214 186.07 38.21C186.015 38.5868 185.988 38.9618 185.98 39.336C185.744 39.8177 185.486 40.2388 185.201 40.5921C184.797 41.0935 184.377 41.5038 183.943 41.8228C183.508 42.142 183.077 42.3852 182.65 42.5523C182.223 42.7198 181.842 42.8337 181.507 42.8941C181.11 42.9702 180.729 42.978 180.363 42.917C179.997 42.8565 179.661 42.6816 179.357 42.3927C179.112 42.1802 178.925 41.8381 178.796 41.3671C178.666 40.896 178.59 40.3608 178.567 39.7602C178.544 39.1599 178.567 38.533 178.636 37.8798C178.705 37.2266 178.822 36.6072 178.99 36.0222C179.158 35.4372 179.371 34.913 179.631 34.4492C179.89 33.9862 180.195 33.6554 180.546 33.4579C180.744 33.4886 180.866 33.606 180.912 33.811C180.958 34.0163 180.969 34.2595 180.946 34.5405C180.923 34.8219 180.889 35.1105 180.843 35.4066C180.797 35.703 180.775 35.9502 180.775 36.1474C180.851 36.5577 180.999 36.877 181.221 37.1048C181.441 37.3327 181.69 37.466 181.964 37.5036C182.239 37.5417 182.509 37.4773 182.776 37.3098C183.043 37.143 183.26 36.877 183.428 36.512C183.443 36.5274 183.466 36.5349 183.497 36.5349L183.817 33.6404C183.909 33.2451 183.847 32.8958 183.634 32.5919C183.42 32.288 183.138 32.113 182.788 32.0676C182.345 31.4294 181.747 31.0914 180.992 31.0532C180.237 31.0154 179.463 31.2623 178.67 31.7941C178.182 32.144 177.751 32.626 177.378 33.2413C177.004 33.857 176.699 34.5405 176.463 35.2926C176.226 36.0448 176.058 36.8391 175.959 37.6748C175.86 38.5104 175.841 39.3236 175.902 40.1133C175.963 40.9038 176.104 41.6484 176.325 42.347C176.546 43.0462 176.855 43.6312 177.252 44.102C177.587 44.5123 177.968 44.8127 178.395 45.0027C178.822 45.1927 179.268 45.3101 179.734 45.3558C180.199 45.4012 180.66 45.3821 181.118 45.2988C181.575 45.2155 182.01 45.0978 182.421 44.9454C182.955 44.7482 183.505 44.4972 184.069 44.1933C184.633 43.8897 185.174 43.5248 185.693 43.0991C185.966 42.8753 186.228 42.6313 186.482 42.3696C186.598 42.6553 186.727 42.9317 186.882 43.1905C187.294 43.8741 187.85 44.429 188.552 44.8544C189.253 45.2797 190.115 45.4844 191.137 45.4697C192.235 45.4544 193.249 45.1774 194.18 44.6378C195.11 44.0988 195.872 43.3042 196.467 42.256C197.358 42.256 198.234 42.1096 199.096 41.819C199.089 41.911 199.081 42.0079 199.075 42.0966C199.014 42.9019 198.983 43.4487 198.983 43.7376C198.968 44.239 198.934 44.8581 198.88 45.5949C198.827 46.332 198.793 47.1069 198.778 47.9198C198.763 48.7326 198.793 49.5532 198.869 50.3817C198.945 51.2096 199.105 51.962 199.349 52.6383C199.593 53.3141 199.94 53.8878 200.39 54.3591C200.84 54.8299 201.431 55.1112 202.163 55.2023C202.941 55.3084 203.612 55.1717 204.176 54.792C204.74 54.412 205.198 53.8918 205.549 53.2308C205.899 52.5695 206.147 51.8061 206.292 50.9401C206.437 50.074 206.479 49.2039 206.418 48.3301C206.357 47.4562 206.196 46.6321 205.937 45.8575C205.678 45.0822 205.319 44.444 204.862 43.9423C205.137 43.8669 205.465 43.7226 205.846 43.5095C206.227 43.2969 206.62 43.0575 207.024 42.7915C207.123 42.7261 207.221 42.6573 207.32 42.5902C207.283 43.1286 207.264 43.5126 207.264 43.7376C207.249 44.239 207.215 44.8581 207.161 45.5949C207.108 46.332 207.073 47.1069 207.058 47.9198C207.043 48.7326 207.073 49.5532 207.15 50.3817C207.226 51.2096 207.386 51.962 207.63 52.6383C207.874 53.3141 208.221 53.8878 208.671 54.3591C209.121 54.8299 209.712 55.1112 210.444 55.2023C211.221 55.3084 211.892 55.1717 212.457 54.792C213.021 54.412 213.478 53.8918 213.83 53.2308C214.18 52.5695 214.428 51.8061 214.573 50.9401C214.718 50.074 214.759 49.2039 214.699 48.3301C214.637 47.4562 214.477 46.6321 214.218 45.8575C213.959 45.0822 213.601 44.444 213.143 43.9423C213.418 43.8669 213.745 43.7226 214.127 43.5095C214.508 43.2969 214.9 43.0575 215.305 42.7915C215.515 42.6533 215.724 42.5107 215.932 42.3641C216.01 43.1072 216.179 43.759 216.448 44.3073C216.776 44.9761 217.222 45.4925 217.787 45.8575C218.351 46.2218 219.014 46.4234 219.777 46.4612C220.539 46.4988 221.37 46.3586 222.271 46.0393C222.941 45.7965 223.525 45.4925 224.02 45.1279C224.516 44.763 224.962 44.3185 225.358 43.7946C225.381 43.7642 225.403 43.7313 225.425 43.7006C225.496 43.9134 225.574 44.1179 225.667 44.3073C225.995 44.9761 226.441 45.4925 227.006 45.8575C227.569 46.2218 228.233 46.4234 228.996 46.4612C229.758 46.4988 230.589 46.3586 231.489 46.0393C232.16 45.7965 232.744 45.4925 233.239 45.1279C233.735 44.763 234.181 44.3185 234.577 43.7946C234.974 43.27 235.336 42.666 235.664 41.9824C235.992 41.2985 236.323 40.5164 236.659 39.6347C236.72 39.3918 236.663 39.1752 236.488 38.9852Z" fill="#0D0C23"/>
 </svg>`;
+
+export function makeCollapsible(foldClickElement: HTMLElement, content: HTMLElement, startOpened?: boolean) {
+  // Credits go to: https://github.com/Mocca101/obsidian-plugin-groups/tree/main
+  if (!content.hasClass('tf-collapsible-content')) {
+    content.addClass('tf-collapsible-content');
+  }
+
+  if (!foldClickElement.hasClass('tf-collapsible-header')) {
+    foldClickElement.addClass('tf-collapsible-header');
+  }
+
+  toggleCollapsibleIcon(foldClickElement);
+
+  if (startOpened) {
+    content.addClass('is-active');
+    toggleCollapsibleIcon(foldClickElement);
+  }
+
+  foldClickElement.onclick = () => {
+    content.hasClass('is-active')
+      ? content.removeClass('is-active')
+      : content.addClass('is-active');
+
+    toggleCollapsibleIcon(foldClickElement);
+  };
+}
+
+function toggleCollapsibleIcon(parentEl: HTMLElement) {
+  let foldable: HTMLElement | null = parentEl.querySelector(
+    ':scope > .tf-collapsible-icon'
+  );
+  if (!foldable) {
+    foldable = parentEl.createSpan({ cls: 'tf-collapsible-icon' });
+  }
+  if (foldable.dataset.togglestate === 'up') {
+    setIcon(foldable, 'chevron-down');
+    foldable.dataset.togglestate = 'down';
+  } else {
+    setIcon(foldable, 'chevron-up');
+    foldable.dataset.togglestate = 'up';
+  }
+}
