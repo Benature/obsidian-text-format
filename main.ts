@@ -1,7 +1,7 @@
 import { Editor, MarkdownView, Plugin, Notice, debounce } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { FormatSettings, DEFAULT_SETTINGS, TextFormatSettingTab } from "src/setting";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase } from "src/format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace } from "src/format";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');
@@ -297,6 +297,7 @@ export default class TextFormat extends Plugin {
 
     this.debounceUpdateCommandWrapper();
     this.debounceUpdateCommandRequest();
+    this.debounceUpdateCommandCustomReplace();
     this.addCommand({
       id: "decodeURI",
       name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang],
@@ -347,6 +348,18 @@ export default class TextFormat extends Plugin {
         name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
           this.textFormat(editor, view, "api-request", request.url);
+        },
+      });
+    });
+  }
+  debounceUpdateCommandCustomReplace() {
+    const lang = getLang();
+    this.settings.customReplaceList.forEach((customReplace, index) => {
+      this.addCommand({
+        id: `custom-replace-${index}`,
+        name: { "en": "Custom Replace", "zh": "自定义替换", "zh-TW": "自定義取代" }[lang] + " - " + customReplace.name,
+        editorCallback: (editor: Editor, view: MarkdownView) => {
+          this.textFormat(editor, view, "custom-replace", customReplace);
         },
       });
     });
@@ -593,9 +606,8 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText
           // single character
           .replace(
-            RegExp(pre + String.raw`([(͠]?[a-zA-Z])` + suf, "g"),
+            RegExp(pre + String.raw`([a-zA-Z])` + suf, "g"),
             (t, t1) => {
-              // console.log(t1, t1.length, t1[0]) //2
               // t1 = t1.replace(//g, String.raw`\tilde `);
               return `$${t1}$`;
             })
@@ -603,7 +615,8 @@ export default class TextFormat extends Plugin {
           .replace(
             RegExp(pre + String.raw`([a-z])([a-zA-Z0-9])` + suf, "g"),
             (t, t1, t2) => {
-              if (/is|or|as|to/g.test(t)) { return t; }
+              // ignore cases
+              if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g.test(t)) { return t; }
               return `$${t1}_${t2}$`;
             })
           .replace(
@@ -679,6 +692,9 @@ export default class TextFormat extends Plugin {
           return;
         })
         return;
+      case "custom-replace":
+        replacedText = customReplace(selectedText, args);
+        break;
       case "callout":
         const wholeContent = editor.getValue();
         let type = this.settings.calloutType;

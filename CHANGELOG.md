@@ -1,7 +1,20 @@
 # Changelog
 
-## 2.6.0
+🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
+## 🏗️ developed
+> to be updated in the next version
+
+- [feature] custom replacement
+- [updated] callout format: auto select whole paragraph
+- [feature] math mode:
+  - rename: Detect and convert characters to math mode (LaTeX)
+  - two characters (sub case): e.g. `a0` -> `$a_0$`
+    - [ ] More ignore case should be considered. For now: `/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g`
+  - simple calculation: e.g. `ab+cd` -> `$a_b+c_d$`
+  - sup case for `*`: e.g. `a*` -> `$a^*$`
+
+## 2.6.0
 - [feature] Convert wikiLinks to plain markdown links in selection ([#40](https://github.com/Benature/obsidian-text-format/issues/40))
 - [feature] remove trailing spaces ([#61](https://github.com/Benature/obsidian-text-format/issues/61))
 - [updated] decodeURI

@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } from "obsidian";
-import { FormatSettings } from "src/setting";
+import { FormatSettings, customReplaceSetting } from "src/setting";
 import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
 import { off } from "process";
@@ -584,4 +584,11 @@ export function extraDoubleSpaces(editor: Editor, view: MarkdownView): void {
         }
     );
     editor.setValue(content);
+}
+
+export function customReplace(text: string, s: customReplaceSetting): string {
+    s.data.forEach(data => {
+        text = text.replace(new RegExp(JSON.parse(`"${data.search}"`), "g"), JSON.parse(`"${data.replace}"`))
+    })
+    return text;
 }

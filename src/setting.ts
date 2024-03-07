@@ -26,6 +26,16 @@ export interface WikiLinkFormatGroup {
   both: string;
 }
 
+export interface customReplaceSettingPair {
+  search: string;
+  replace: string;
+}
+
+export interface customReplaceSetting {
+  name: string;
+  data: Array<customReplaceSettingPair>;
+}
+
 export interface FormatSettings {
   MergeParagraph_Newlines: boolean;
   MergeParagraph_Spaces: boolean;
@@ -36,6 +46,7 @@ export interface FormatSettings {
   BulletPoints: string;
   WrapperList: Array<WrapperSetting>;
   RequestList: Array<APIRequestSetting>;
+  customReplaceList: Array<customReplaceSetting>;
   ToggleSequence: string;
   RemoveWikiURL2: boolean;
   WikiLinkFormat: WikiLinkFormatGroup;
@@ -56,6 +67,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
   BulletPoints: "•–§",
   WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>" }],
   RequestList: [],
+  customReplaceList: [],
   ToggleSequence: "titleCase\nlowerCase\nupperCase",
   RemoveWikiURL2: false,
   WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
@@ -386,6 +398,65 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .setTooltip("Delete")
             .onClick(async () => {
               this.plugin.settings.RequestList.splice(index, 1);
+              await this.plugin.saveSettings();
+              this.display();
+            });
+        });
+    });
+
+    containerEl.createEl("h3", { text: "Custom replacement" });
+    new Setting(containerEl)
+      .setName("Add custom replacement")
+      .setDesc("The plugin will replace the `search` string with the `replace` string in the selection. RegExp is supported.")
+      .addButton((button: ButtonComponent) => {
+        button.setTooltip("Add new replacement")
+          .setButtonText("+")
+          .setCta().onClick(async () => {
+            this.plugin.settings.customReplaceList.push({
+              name: "",
+              data: [{
+                search: "",
+                replace: "",
+              }]
+            });
+            await this.plugin.saveSettings();
+            this.display();
+          });
+      })
+    this.plugin.settings.customReplaceList.forEach((replaceSetting, index) => {
+      const s = new Setting(this.containerEl)
+        .addText((cb) => {
+          cb.setPlaceholder("Command name")
+            .setValue(replaceSetting.name)
+            .onChange(async (newValue) => {
+              this.plugin.settings.customReplaceList[index].name = newValue;
+              await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandCustomReplace();
+            });
+        })
+        .addText((cb) => {
+          cb.setPlaceholder("Search")
+            .setValue(replaceSetting.data[0].search)
+            .onChange(async (newValue) => {
+              this.plugin.settings.customReplaceList[index].data[0].search = newValue;
+              await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandCustomReplace();
+            });
+        })
+        .addText((cb) => {
+          cb.setPlaceholder("Replace")
+            .setValue(replaceSetting.data[0].replace)
+            .onChange(async (newValue) => {
+              this.plugin.settings.customReplaceList[index].data[0].replace = newValue;
+              await this.plugin.saveSettings();
+              this.plugin.debounceUpdateCommandCustomReplace();
+            });
+        })
+        .addExtraButton((cb) => {
+          cb.setIcon("cross")
+            .setTooltip("Delete")
+            .onClick(async () => {
+              this.plugin.settings.customReplaceList.splice(index, 1);
               await this.plugin.saveSettings();
               this.display();
             });
