@@ -592,3 +592,99 @@ export function customReplace(text: string, s: customReplaceSetting): string {
     })
     return text;
 }
+
+export function convertLatex(selectedText: string): string {
+    const greekLetters: { [key: string]: string } = {
+        'α': '\\alpha',
+        'β': '\\beta',
+        'γ': '\\gamma',
+        'δ': '\\delta',
+        'ε': '\\epsilon',
+        'ζ': '\\zeta',
+        'η': '\\eta',
+        'θ': '\\theta',
+        'ι': '\\iota',
+        'κ': '\\kappa',
+        'λ': '\\lambda',
+        'μ': '\\mu',
+        'ν': '\\nu',
+        'ξ': '\\xi',
+        'ο': '\\omicron',
+        'π': '\\pi',
+        'ρ': '\\rho',
+        'σ': '\\sigma',
+        'τ': '\\tau',
+        'υ': '\\upsilon',
+        'φ': '\\phi',
+        'χ': '\\chi',
+        'ψ': '\\psi',
+        'ω': '\\omega',
+        'Α': '\\Alpha',
+        'Β': '\\Beta',
+        'Γ': '\\Gamma',
+        'Δ': '\\Delta',
+        'Ε': '\\Epsilon',
+        'Ζ': '\\Zeta',
+        'Η': '\\Eta',
+        'Θ': '\\Theta',
+        'Ι': '\\Iota',
+        'Κ': '\\Kappa',
+        'Λ': '\\Lambda',
+        'Μ': '\\Mu',
+        'Ν': '\\Nu',
+        'Ξ': '\\Xi',
+        'Ο': '\\Omicron',
+        'Π': '\\Pi',
+        'Ρ': '\\Rho',
+        'Σ': '\\Sigma',
+        'Τ': '\\Tau',
+        'Υ': '\\Upsilon',
+        'Φ': '\\Phi',
+        'Χ': '\\Chi',
+        'Ψ': '\\Psi',
+        'Ω': '\\Omega'
+    };
+    function G(str: string): string {
+        return greekLetters[str] || str;
+    }
+
+    const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; // 匹配所有希腊字母
+
+
+    const patternChar2 = String.raw`([\u03B1-\u03C9\u0391-\u03A9a-z])([\u03B1-\u03C9\u0391-\u03A9a-zA-Z0-9])`;
+
+    // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
+    const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
+    const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
+    let replacedText = selectedText
+        // single character
+        .replace(
+            RegExp(pre + String.raw`([a-zA-Z\u03B1-\u03C9\u0391-\u03A9])` + suf, "g"),
+            (t, t1) => {
+                return `$${G(t1)}$`;
+            })
+        // double character
+        .replace(
+            RegExp(pre + patternChar2 + suf, "g"),
+            (t, t1, t2) => {
+                // ignore cases
+                if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g.test(t)) { return t; }
+                return `$${G(t1)}_${G(t2)}$`;
+            })
+        .replace(
+            RegExp(pre + String.raw`([a-z\u03B1-\u03C9\u0391-\u03A9])([\*])` + suf, "g"),
+            (t, t1, t2) => {
+                return `$${t1}^${t2}$`;
+            })
+        // calculator
+        .replace(
+            RegExp(pre + String.raw`(\w{1,3}[\+\-\*\/<>]\w{1,3})` + suf, "g"),
+            (t, t1) => {
+                // let content = t1.replace(/([a-z])([a-zA-Z0-9])/g, `$1_$2`)
+                let content = t1.replace(RegExp(patternChar2, "g"),
+                    (t: string, t1: string, t2: string) => `${G(t1)}_${G(t2)}`)
+                return `$${content}$`
+            })
+        ;
+    return replacedText;
+}

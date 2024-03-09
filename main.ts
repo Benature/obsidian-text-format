@@ -2,7 +2,7 @@ import { Editor, MarkdownView, Plugin, Notice, debounce } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace } from "src/format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');
@@ -601,38 +601,7 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
         break;
       case "latex-letter":
-        // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
-        const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
-        const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
-        replacedText = selectedText
-          // single character
-          .replace(
-            RegExp(pre + String.raw`([a-zA-Z])` + suf, "g"),
-            (t, t1) => {
-              // t1 = t1.replace(//g, String.raw`\tilde `);
-              return `$${t1}$`;
-            })
-          // double character
-          .replace(
-            RegExp(pre + String.raw`([a-z])([a-zA-Z0-9])` + suf, "g"),
-            (t, t1, t2) => {
-              // ignore cases
-              if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g.test(t)) { return t; }
-              return `$${t1}_${t2}$`;
-            })
-          .replace(
-            RegExp(pre + String.raw`([a-z])(\*)` + suf, "g"),
-            (t, t1, t2) => {
-              return `$${t1}^${t2}$`;
-            })
-          // calculator
-          .replace(
-            RegExp(pre + String.raw`(\w{1,3}[\+\-\*\/<>]\w{1,3})` + suf, "g"),
-            (t, t1) => {
-              let content = t1.replace(/([a-z])([a-zA-Z0-9])/g, `$1_$2`)
-              return `$${content}$`
-            })
-          ;
+        replacedText = convertLatex(selectedText);
         break;
       case "decodeURI":
         replacedText = selectedText.replace(
