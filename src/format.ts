@@ -2,7 +2,7 @@ import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } 
 import { FormatSettings, customReplaceSetting } from "src/settings/types";
 import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
-import { off } from "process";
+import { Ligatures, GreekLetters } from "./presets";
 
 export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
@@ -343,72 +343,7 @@ export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: 
 }
 
 export function replaceLigature(s: string): string {
-    let ligatures = {
-        "Ꜳ": "AA",
-        "Æ": "AE",
-        "Ꜵ": "AO",
-        "Ꜷ": "AU",
-        "Ꜹ": "AV",
-        "Ꜻ": "AV",
-        "Ꜽ": "AY",
-        "ꜳ": "aa",
-        "æ": "ae",
-        "ꜵ": "ao",
-        "ꜷ": "au",
-        "ꜹ": "av",
-        "ꜻ": "av",
-        "ꜽ": "ay",
-        "🙰": "et",
-        "ﬀ": "ff",
-        "ﬃ": "ffi",
-        "ﬄ": "ffl",
-        "ﬁ": "fi",
-        "ﬂ": "fl",
-        "℔": "lb",
-        "Ƕ": "Hv",
-        "Ỻ": "lL",
-        "Œ": "OE",
-        "Ꝏ": "OO",
-        "ƕ": "hv",
-        "ỻ": "ll",
-        "œ": "oe",
-        "ꝏ": "oo",
-        "ꭢ": "ɔe",
-        "ﬆ": "st",
-        "ﬅ": "ſt",
-        "ᵫ": "ue",
-        "ꭣ": "uo",
-        "ẞ": "ſs",
-        "Ꜩ": "TZ",
-        "W": "VV",
-        "Ꝡ": "VY",
-        "ß": "ſz",
-        "ꜩ": "tz",
-        // "w": "vv",
-        "ꝡ": "vy",
-        "ꬱ": "aə",
-        "ꭁ": "əø",
-        "ȸ": "db",
-        "ʣ": "dz",
-        "ꭦ": "dʐ",
-        "ʥ": "dʑ",
-        "ʤ": "dʒ",
-        "ʩ": "fŋ",
-        "ʪ": "ls",
-        "ʫ": "lz",
-        "ɮ": "lʒ",
-        "ꭀ": "oə",
-        "ȹ": "qp[c]",
-        "ʨ": "tɕ",
-        "ʦ": "ts",
-        "ꭧ": "tʂ",
-        "ʧ": "tʃ",
-        "ꭐ": "ui",
-        "ꭑ": "ui",
-        "ɯ": "uu",
-    };
-
-    Object.entries(ligatures).forEach(([key, value]) => {
+    Object.entries(Ligatures).forEach(([key, value]) => {
         var rx = new RegExp(key, "g");
         s = s.replace(rx, value);
     });
@@ -529,19 +464,14 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
 export function slugify(text: string, maxLength: number = 76): string {
     // Convert to Lowercase
     text = text.toLowerCase();
-
     // Remove Special Characters
     text = text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
-
     // Replace Spaces with Dashes
     text = text.replace(/\s+/g, "-");
-
     // Remove Accents and Diacritics
     text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
     // Handle Multiple Dashes
     text = text.replace(/-{2,}/g, "-");
-
     // Handle Numerals
     if (/^\d+$/.test(text)) {
         // If the slug is numeric only, add a suffix to make it unique and descriptive
@@ -594,58 +524,9 @@ export function customReplace(text: string, s: customReplaceSetting): string {
 }
 
 export function convertLatex(selectedText: string): string {
-    const greekLetters: { [key: string]: string } = {
-        'α': '\\alpha',
-        'β': '\\beta',
-        'γ': '\\gamma',
-        'δ': '\\delta',
-        'ε': '\\epsilon',
-        'ζ': '\\zeta',
-        'η': '\\eta',
-        'θ': '\\theta',
-        'ι': '\\iota',
-        'κ': '\\kappa',
-        'λ': '\\lambda',
-        'μ': '\\mu',
-        'ν': '\\nu',
-        'ξ': '\\xi',
-        'ο': '\\omicron',
-        'π': '\\pi',
-        'ρ': '\\rho',
-        'σ': '\\sigma',
-        'τ': '\\tau',
-        'υ': '\\upsilon',
-        'φ': '\\phi',
-        'χ': '\\chi',
-        'ψ': '\\psi',
-        'ω': '\\omega',
-        'Α': '\\Alpha',
-        'Β': '\\Beta',
-        'Γ': '\\Gamma',
-        'Δ': '\\Delta',
-        'Ε': '\\Epsilon',
-        'Ζ': '\\Zeta',
-        'Η': '\\Eta',
-        'Θ': '\\Theta',
-        'Ι': '\\Iota',
-        'Κ': '\\Kappa',
-        'Λ': '\\Lambda',
-        'Μ': '\\Mu',
-        'Ν': '\\Nu',
-        'Ξ': '\\Xi',
-        'Ο': '\\Omicron',
-        'Π': '\\Pi',
-        'Ρ': '\\Rho',
-        'Σ': '\\Sigma',
-        'Τ': '\\Tau',
-        'Υ': '\\Upsilon',
-        'Φ': '\\Phi',
-        'Χ': '\\Chi',
-        'Ψ': '\\Psi',
-        'Ω': '\\Omega'
-    };
+
     function G(str: string): string {
-        return greekLetters[str] || str;
+        return GreekLetters[str] || str;
     }
 
     const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; // 匹配所有希腊字母
