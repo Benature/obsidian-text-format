@@ -6,16 +6,17 @@
 > to be updated in the next version
 
 # 2.7.0
+- [updated] `Format bullet list`: keep selecting whole paragraphs after formatting rather than set cursor at the end.
 - [notice] refactoring i18n, but zh-tw language will be deprecated later becasue of the limitation of developing time.
 - [feature] support [#68](https://github.com/Benature/obsidian-text-format/issues/68)
-- [updated] Convert wikiLinks to plain markdown links in selection: Three path modes
+- [updated] `Convert wikiLinks to plain markdown links in selection`: Three path modes
   - absolute
   - relative to Obsidian
   - relative to file
 - [feature] collapsible heading in settings
 - [feature] custom replacement
 - [updated] callout format: auto select whole paragraph
-- [feature] math mode:
+- [feature] `math mode`:
   - rename: Detect and convert characters to math mode (LaTeX)
   - two characters (sub case): e.g. `a0` -> `$a_0$`
     - [ ] More ignore case should be considered. For now: `/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g`

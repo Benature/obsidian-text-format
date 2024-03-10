@@ -659,12 +659,10 @@ export default class TextFormat extends Plugin {
   }
 
   editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, args: any = ""): void {
-    let selectedText: string;
-
     // if nothing is selected, select the whole line.
-    let somethingSelected = editor.somethingSelected();
-    let origin_cursor_from = editor.getCursor("from");
-    let origin_cursor_to = editor.getCursor("to");
+    const somethingSelected = editor.somethingSelected();
+    const origin_cursor_from = editor.getCursor("from");
+    const origin_cursor_to = editor.getCursor("to");
     if (!somethingSelected) {
       let cursor = editor.getCursor();
 
@@ -680,7 +678,7 @@ export default class TextFormat extends Plugin {
       editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos));
     }
 
-    selectedText = editor.getSelection();
+    let selectedText = editor.getSelection();
 
     let from = editor.getCursor("from"),
       to = editor.getCursor("to");
@@ -727,7 +725,7 @@ export default class TextFormat extends Plugin {
         break;
     }
 
-    // modify selection text
+    //: Modify selected text
     let replacedText = this.textFormat(selectedText, cmd, args);
     if (replacedText === null) {
       switch (cmd) {
@@ -776,11 +774,13 @@ export default class TextFormat extends Plugin {
       editor.replaceSelection(replacedText);
     }
 
+    //: Set cursor selection
     const fos = editor.posToOffset(editor.getCursor("from"));
-    // cursor selection
     switch (cmd) {
       case "merge":
       case "remove-blank-line":
+      case "bullet":
+        //: Select whole modifications 
         const tos = editor.posToOffset(editor.getCursor("to")); // to offset
         editor.setSelection(
           editor.offsetToPos(tos - replacedText.length),
@@ -800,7 +800,6 @@ export default class TextFormat extends Plugin {
         }
         break;
       default:
-        // console.log(cmd)
         let head = editor.getCursor("head");
         editor.setSelection(editor.offsetToPos(fos), head);
     }
