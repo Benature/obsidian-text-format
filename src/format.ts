@@ -524,19 +524,16 @@ export function customReplace(text: string, s: customReplaceSetting): string {
 }
 
 export function convertLatex(selectedText: string): string {
+    const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
+    const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
 
     function G(str: string): string {
         return GreekLetters[str] || str;
     }
-
     const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; // 匹配所有希腊字母
 
+    const patternChar2 = String.raw`([\u03B1-\u03C9\u0391-\u03A9a-zA-Z])([\u03B1-\u03C9\u0391-\u03A9a-zA-Z0-9])`;
 
-    const patternChar2 = String.raw`([\u03B1-\u03C9\u0391-\u03A9a-z])([\u03B1-\u03C9\u0391-\u03A9a-zA-Z0-9])`;
-
-    // const sep = String.raw`[\s\,\.\?\!\:，。、（）：]`;
-    const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
-    const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
     let replacedText = selectedText
         // single character
         .replace(
