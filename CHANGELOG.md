@@ -6,6 +6,8 @@
 > to be updated in the next version
 
 # 2.7.0
+- [notice] refactoring i18n, but zh-tw language will be deprecated later becasue of the limitation of developing time.
+- [feature] support [#68](https://github.com/Benature/obsidian-text-format/issues/68)
 - [updated] Convert wikiLinks to plain markdown links in selection: Three path modes
   - absolute
   - relative to Obsidian

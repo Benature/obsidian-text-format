@@ -1,8 +1,7 @@
 export const LetterCaseCommands = [
     {
         id: "lowercase",
-    },
-    {
+    }, {
         id: "uppercase",
     }, {
         id: "capitalize-word",

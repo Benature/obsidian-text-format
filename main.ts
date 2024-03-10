@@ -132,20 +132,20 @@ export default class TextFormat extends Plugin {
     //     this.editorTextFormat(editor, view, "togglecase");
     //   },
     // });
-    // this.addCommand({
-    //   id: "slugify",
-    //   name: { en: "Slugify selected text (`-` for space)", zh: "使用 Slugify 格式化选中文本（`-`连字符）", "zh-TW": "使用 Slugify 格式化選取文字（`-`連字符）" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "slugify");
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "snakify",
-    //   name: { en: "Snakify selected text (`_` for space)", zh: "使用 Snakify 格式化选中文本（`_`连字符）", "zh-TW": "使用 Snakify 格式化選取文字（`_`連字符）" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "snakify");
-    //   },
-    // });
+    this.addCommand({
+      id: "slugify",
+      name: { en: "Slugify selected text (`-` for space)", zh: "使用 Slugify 格式化选中文本（`-`连字符）", "zh-TW": "使用 Slugify 格式化選取文字（`-`連字符）" }[lang],
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.editorTextFormat(editor, view, "slugify");
+      },
+    });
+    this.addCommand({
+      id: "snakify",
+      name: { en: "Snakify selected text (`_` for space)", zh: "使用 Snakify 格式化选中文本（`_`连字符）", "zh-TW": "使用 Snakify 格式化選取文字（`_`連字符）" }[lang],
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.editorTextFormat(editor, view, "snakify");
+      },
+    });
 
     this.addCommand({
       id: "heading-upper",
