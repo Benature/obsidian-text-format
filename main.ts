@@ -73,65 +73,6 @@ export default class TextFormat extends Plugin {
         },
       });
     })
-
-    // this.addCommand({
-    //   id: "lowercase",
-    //   name: { en: "Lowercase selected text", zh: "将选中文本转换为小写", "zh-TW": "將選取文字轉換為小寫" }[lang],
-    //   callback: () => {
-    //     this.formatEditorOrTitle("lowercase");
-    //   },
-    // });
-    // this.addCommand({
-    //   id: ":private:lowercase",
-    //   name: "Lowercase in editor",
-    //   editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
-    //     if (!checking) { this.textFormat(editor, view, "lowercase"); }
-    //     return !checking;
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "uppercase",
-    //   name: { en: "Uppercase selected text", zh: "将选中文本转换为大写", "zh-TW": "將選取文字轉換為大寫" }[lang],
-    //   callback: () => {
-    //     this.formatEditorOrTitle("uppercase");
-    //   }
-    // })
-    // this.addCommand({
-    //   id: ":private:uppercase",
-    //   name: "Uppercase in editor",
-    //   editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
-    //     if (!checking) { this.textFormat(editor, view, "uppercase"); }
-    //     return !checking;
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "capitalize-word",
-    //   name: { en: "Capitalize all words in selected text", zh: "将选中文本中的所有单词首字母大写", "zh-TW": "將選取文字中的所有單詞首字母大寫" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "capitalize-word");
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "capitalize-sentence",
-    //   name: { en: "Capitalize only first word of sentence in selected text", zh: "将选中文本中的句子的首字母大写", "zh-TW": "將選取文字中的句子的首字母大寫" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "capitalize-sentence");
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "titlecase",
-    //   name: { en: "Title case selected text", zh: "将选中文本转换为标题格式大小写", "zh-TW": "將選取文字轉換為標題格式大小寫" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "titlecase");
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "togglecase",
-    //   name: { en: "Togglecase selected text", zh: "触发选中文本大小写切换", "zh-TW": "觸發選取文字大小寫切換" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "togglecase");
-    //   },
-    // });
     this.addCommand({
       id: "slugify",
       name: { en: "Slugify selected text (`-` for space)", zh: "使用 Slugify 格式化选中文本（`-`连字符）", "zh-TW": "使用 Slugify 格式化選取文字（`-`連字符）" }[lang],
@@ -532,20 +473,6 @@ export default class TextFormat extends Plugin {
       case "remove-citation":
         replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
         break;
-      case "bullet":
-        let r = this.settings.BulletPoints.replace("-", "");
-        replacedText = selectedText
-          .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-            t.replace(RegExp(`[${r}] *`), "\n- ")
-          )
-          .replace(/\n[~\/Vv] /g, "\n- ")
-          .replace(/\n+/g, "\n")
-          .replace(/^\n/, "");
-        // if "-" in this.settings.BulletPoints
-        if (this.settings.BulletPoints.indexOf("-") > -1) {
-          replacedText = replacedText.replace(/^- /g, "\n- ");
-        }
-        break;
       case "convert-ordered":
         let orderedCount = 0;
         // var rx = new RegExp(
@@ -578,9 +505,6 @@ export default class TextFormat extends Plugin {
         break;
       case "Chinese-punctuation":
         replacedText = selectedText;
-        if (this.settings.RemoveBlanksWhenChinese) {
-          replacedText = removeAllSpaces(selectedText).replace(/[\u4e00-\u9fa5【】（）「」《》：“？‘、](\s+)[\u4e00-\u9fa5【】（）「」《》：“？‘、]/g, "");
-        }
         replacedText = replacedText
           .replace(/ ?, ?/g, "，")
           .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
@@ -590,9 +514,11 @@ export default class TextFormat extends Plugin {
           .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
-          .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, function (t) {
-            return `（${t.slice(1, t.length - 1)}）`;
-          });
+          .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
+        if (this.settings.RemoveBlanksWhenChinese) {
+          replacedText = replacedText.replace(
+            /(?<=[\u4e00-\u9fa5【】（）「」《》：“？‘、；])(\s+)(?=[\u4e00-\u9fa5【】（）「」《》：“？‘、；])/g, "");
+        }
         break;
       case "English-punctuation":
         replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
@@ -725,7 +651,7 @@ export default class TextFormat extends Plugin {
         break;
     }
 
-    //: Modify selected text
+    //: MODIFY SELECTION
     let replacedText = this.textFormat(selectedText, cmd, args);
     if (replacedText === null) {
       switch (cmd) {
@@ -761,6 +687,24 @@ export default class TextFormat extends Plugin {
             for (let idx = 1; idx < lines.length; idx++) {
               replacedText += `\n> ` + lines[idx];
             }
+          }
+          break;
+        case "bullet":
+          let r = this.settings.BulletPoints.replace("-", "");
+          replacedText = selectedText
+            .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+              t.replace(RegExp(`[${r}] *`), "\n- ")
+            )
+            .replace(/\n[~\/Vv] /g, "\n- ")
+            .replace(/\n+/g, "\n")
+            .replace(/^\n/, "");
+          // if "-" in this.settings.BulletPoints
+          if (this.settings.BulletPoints.indexOf("-") > -1) {
+            replacedText = replacedText.replace(/^- /g, "\n- ");
+          }
+          // if select multi-paragraphs, add `- ` to the beginning
+          if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+            replacedText = "- " + replacedText;
           }
           break;
         default:

@@ -111,5 +111,8 @@ export const GreekLetters: { [key: string]: string } = {
     'Φ': '\\Phi',
     'Χ': '\\Chi',
     'Ψ': '\\Psi',
-    'Ω': '\\Omega'
+    'Ω': '\\Omega',
+    ' ̃': '\\tilde ',
+    '∞': '\\infty',
+    '≠': '\\neq',
 };

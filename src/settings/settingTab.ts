@@ -463,7 +463,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       );
 
     new Setting(this.contentEl)
-      .setName("Remove all spaces when converting Chinese punctuation marks")
+      .setName("Remove spaces when converting Chinese punctuation marks")
       .setDesc("for OCR case")
       .addToggle((toggle) => {
         toggle
