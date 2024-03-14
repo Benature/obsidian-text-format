@@ -523,9 +523,7 @@ export default class TextFormat extends Plugin {
       case "English-punctuation":
         replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
         break;
-      case "latex-letter":
-        replacedText = convertLatex(selectedText);
-        break;
+
       case "decodeURI":
         replacedText = selectedText.replace(
           /(\w+):\/\/[-\w+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
@@ -707,6 +705,9 @@ export default class TextFormat extends Plugin {
             replacedText = "- " + replacedText;
           }
           break;
+        case "latex-letter":
+          replacedText = convertLatex(editor, selectedText);
+          break;
         default:
           Error("Unknown command")
           return;
@@ -724,6 +725,7 @@ export default class TextFormat extends Plugin {
       case "merge":
       case "remove-blank-line":
       case "bullet":
+      case "Chinese-punctuation":
         //: Select whole modifications 
         const tos = editor.posToOffset(editor.getCursor("to")); // to offset
         editor.setSelection(

@@ -84,7 +84,7 @@ export const GreekLetters: { [key: string]: string } = {
     'σ': '\\sigma',
     'τ': '\\tau',
     'υ': '\\upsilon',
-    'φ': '\\phi',
+    'φ': '\\varphi',
     'χ': '\\chi',
     'ψ': '\\psi',
     'ω': '\\omega',
@@ -115,4 +115,6 @@ export const GreekLetters: { [key: string]: string } = {
     ' ̃': '\\tilde ',
     '∞': '\\infty',
     '≠': '\\neq',
+    '≤': '\\leq',
+    '≥': '\\geq',
 };

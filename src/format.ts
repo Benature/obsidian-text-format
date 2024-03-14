@@ -303,10 +303,10 @@ export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: 
     const tos = editor.posToOffset(editor.getCursor("to")); // to offset
     const len = selectedText.length;
 
-    var beforeText = editor.getRange(Cursor(fos - PL), Cursor(tos - len));
-    var afterText = editor.getRange(Cursor(fos + len), Cursor(tos + SL));
-    var startText = editor.getRange(Cursor(fos), Cursor(fos + PL));
-    var endText = editor.getRange(Cursor(tos - SL), Cursor(tos));
+    const beforeText = editor.getRange(Cursor(fos - PL), Cursor(tos - len));
+    const afterText = editor.getRange(Cursor(fos + len), Cursor(tos + SL));
+    const startText = editor.getRange(Cursor(fos), Cursor(fos + PL));
+    const endText = editor.getRange(Cursor(tos - SL), Cursor(tos));
 
     if (beforeText === prefix && afterText === suffix) {
         //=> undo underline (inside selection)
@@ -523,14 +523,42 @@ export function customReplace(text: string, s: customReplaceSetting): string {
     return text;
 }
 
-export function convertLatex(selectedText: string): string {
-    const pre = String.raw`(?<=[\s：（）。，、；\(\)]|^)`;
-    const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；\(\)]|$)`;
+export function convertLatex(editor: Editor, selectedText: string): string {
+
+
+    //: If selectedText is surrounded by `$`, convert unicode Greek letters to latex commands
+    const fos = editor.posToOffset(editor.getCursor("from")); // from offset
+    const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+    const beforeText = editor.getRange(editor.offsetToPos(fos - 1), editor.offsetToPos(fos));
+    const afterText = editor.getRange(editor.offsetToPos(tos), editor.offsetToPos(tos + 1));
+    if (beforeText === "$" && afterText === "$") {
+        let result = "";
+        let lastGreek = false;
+        for (let i = 0; i < selectedText.length; i++) {
+            let char = GreekLetters[selectedText[i]];
+            if (char) {
+                result += char;
+                lastGreek = true;
+            } else {
+                if (lastGreek && !/\d/.test(selectedText[i])) {
+                    result += " ";
+                }
+                result += selectedText[i];
+                lastGreek = false;
+            }
+        }
+        return result.replace(/\s*$/g, "");
+    }
 
     function G(str: string): string {
         return GreekLetters[str] || str;
     }
-    const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; // 匹配所有希腊字母
+    // const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; 
+
+    //: Or, find math text and surround it with `$`
+    const pre = String.raw`(?<=[\s：（）。，、；—\(\)]|^)`;
+    const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；—\(\)]|$)`;
+
 
     const patternChar2 = String.raw`([\u03B1-\u03C9\u0391-\u03A9a-zA-Z])([\u03B1-\u03C9\u0391-\u03A9a-zA-Z0-9])`;
 
@@ -541,7 +569,7 @@ export function convertLatex(selectedText: string): string {
             (t, t1) => {
                 return `$${G(t1)}$`;
             })
-        // double character
+        // two characters
         .replace(
             RegExp(pre + patternChar2 + suf, "g"),
             (t, t1, t2) => {
@@ -556,7 +584,7 @@ export function convertLatex(selectedText: string): string {
             })
         // calculator
         .replace(
-            RegExp(pre + String.raw`(\w{1,3}[\+\-\*\/<>]\w{1,3})` + suf, "g"),
+            RegExp(pre + String.raw`([\w\u03B1-\u03C9\u0391-\u03A9]{1,3}[\+\-\*\/<>=][\w\u03B1-\u03C9\u0391-\u03A9]{1,3})` + suf, "g"),
             (t, t1) => {
                 // let content = t1.replace(/([a-z])([a-zA-Z0-9])/g, `$1_$2`)
                 let content = t1.replace(RegExp(patternChar2, "g"),

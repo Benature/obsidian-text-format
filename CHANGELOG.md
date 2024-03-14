@@ -5,14 +5,18 @@
 ## 🏗️ developed
 > to be updated in the next version
 
-## 2.7.0
+- [updated] `Chinese-punctuation`: select modification at last
+- [updated] `math mode`: 
+  - calculation support `=` and Greek letters
+  - if selectedText is surrounded by `$`, convert unicode Greek letters to latex commands
 
+## 2.7.0
 - [updated] `Chinese-punctuation`: only remove spaces between Chinese characters and punctuations rather than all spaces
 - [updated] `Format bullet list`
   - Keep selecting whole paragraphs after formatting rather than set cursor at the end.
   - Ensure first line starts with `- ` if multiple lines are selected
 
-*2.7.0-b1*
+### *2.7.0-b1*
 
 - [notice] refactoring i18n, but zh-tw language will be deprecated later because of the limitation of developing time.
 - [feature] support [#68](https://github.com/Benature/obsidian-text-format/issues/68)
