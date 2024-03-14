@@ -5,6 +5,7 @@
 ## 🏗️ developed
 > to be updated in the next version
 
+- [fix] `customReplace()`: error when search contains like `\.\!\?` 
 - [updated] `Chinese-punctuation`: select modification at last
 - [updated] `math mode`: 
   - calculation support `=` and Greek letters
