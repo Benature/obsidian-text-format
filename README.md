@@ -34,28 +34,31 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
       - [Links](#links)
     - [PDF copy / OCR](#pdf-copy--ocr)
     - [Academic/Study](#academicstudy)
-      - [Zotero format](#zotero-format)
-      - [Convert citation index to the file name of paper note](#convert-citation-index-to-the-file-name-of-paper-note)
+    - [Custom](#custom)
     - [Others](#others)
-      - [Wrapper](#wrapper)
   - [Support](#support)
   - [Some Examples](#some-examples)
+    - [Zotero format](#zotero-format)
+    - [Replacements](#replacements)
+    - [Wrapper](#wrapper)
+    - [Convert citation index to the file name of paper note](#convert-citation-index-to-the-file-name-of-paper-note)
+    - [Basic](#basic-1)
 
 
 ⚙️: There is setting of this command.
 
 ### Basic
 
-| Command                                                           | Description                                                                                                                                                                        |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Lowercase** selected text                                       | Lowercase all letters in selection                                                                                                                                                 |
-| **Uppercase** selected text                                       | Uppercase all letters in selection                                                                                                                                                 |
-| **Capitalize** all **words** in selected text ⚙️                   | Capitalize all words in selection                                                                                                                                                  |
-| **Capitalize** only first word of **sentence** in selected text ⚙️ | Capitalize only first word of sentence(s) in selection                                                                                                                             |
-| **Title case** selected text ⚙️                                    | Capitalize words but leave certain words in lower case in selection *(Note: not support Cyrillic strings for now)* [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
-| **Toggle case** selected text ⚙️                                   | A custom loop to format the selection                                                                                                                                              |
-| **Slugify** selected text                                         | convert any input text into a URL-friendly slug                                                                                                                                    |
-| **Snakify** selected text                                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                           |
+| Command                                           | Description                                                                                                                                                                             |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lowercase**                                     | Lowercase all letters in selection or the whole title (when cursor focus inline tile)                                                                                                   |
+| **Uppercase**                                     | Uppercase all letters in selection  or the whole title (when cursor focus inline tile)                                                                                                  |
+| **Capitalize** all **words**  ⚙️                   | Capitalize all words in selection  or the whole title (when cursor focus inline tile)                                                                                                   |
+| **Capitalize** only first word of **sentence**  ⚙️ | Capitalize only first word of sentence(s) in selection  or the whole title (when cursor focus inline tile)                                                                              |
+| **Title case**  ⚙️                                 | Capitalize words but leave certain words in lower case in selection  or the whole title (when cursor focus inline tile) [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
+| **Toggle case**  ⚙️                                | A custom loop to format the selection or the whole title (when cursor focus inline tile)                                                                                                |
+| **Slugify** selected text                         | convert any input text into a URL-friendly slug                                                                                                                                         |
+| **Snakify** selected text                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                                |
 
 ### Markdown Grammar
 
@@ -64,6 +67,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Heading Upper | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`) |
 | Heading Lower | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) |
 
+*discussions in [#83](https://github.com/Benature/obsidian-text-format/issues/83)*
 
 #### List
 | Command                                  | Description                                                                                                                                           |
@@ -72,13 +76,13 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Detect and format **ordered** list       | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
 | Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
-| **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37)                                                                                     |
+| **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37), [#46](https://github.com/Benature/obsidian-text-format/issues/46)                  |
 
 #### Links
 
 | Command                                                  | Description                                                                                                            |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Remove WikiLinks format in selection                     | e.g. Convert `[[WikiLinks]]` to `WikiLinks` (#28)                                                                      |
+| Remove WikiLinks format in selection                     | e.g. Convert `[[WikiLinks]]` to `WikiLinks` ([#28](https://github.com/Benature/obsidian-text-format/issues/28))        |
 | Remove URL links format in selection                     | e.g. Convert `[Google](www.google.com)` to `Google`                                                                    |
 | Convert URL links to WikiLinks in selection              | e.g. Convert `[Google](www.google.com)` to `[[Google]]`                                                                |
 | Convert wikiLinks to plain markdown links in selection ⚙️ | e.g. Convert `[[Google]]` to `[Google](Google.md)` ([#40](https://github.com/Benature/obsidian-text-format/issues/40)) |
@@ -109,37 +113,25 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Convert single letter into **math** mode       | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`. |
 | Convert **Mathpix** array to markdown table    | Convert latex array generated by Mathpix to markdown table format            |
 
-#### Zotero format
-The format template can refer to https://www.zotero.org/support/note_templates
-- default
-  - zotero: `<p>{{highlight quotes='true'}} {{citation}} {{comment}}</p>`
-  - plugin config: `“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
-  - result: `{text} [🔖]({pdf_url})`
 
-#### Convert citation index to the file name of paper note
-With [bib-cacher](https://github.com/Benature/bib-catcher), I can connect to Zotero database by python, building a simple Flask server.
 
-Example of command `Custom API Request`:
+### Custom
 
-```diff
-- A survey concludes that obsidian is a good app [12]. Furthermore, The note taking...
-+ A survey concludes that obsidian is a good app ([[File Name of the Reference]]). Furthermore, The note taking...
-```
+| Command                  | Description                                                                                                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Custom **Replace** ⚙️     | Custom replace `<search>` to `<replace>`. See below for more examples [⬇️](#replacements)                                                                                                                                                               |
+| Custom **Wrapper** ⚙️     | Add any arbitrary wrapping element in Setting. (https://github.com/Benature/obsidian-underline/issues/5) See below for more examples [⬇️](#wrapper)                                                                                                     |
+| Custom **API** Request ⚙️ | Replace Selection with the return of custom API request. The selection will be sent to custom API URL with `POST` method. (No user data is collected!) *There is an [example](#convert-citation-index-to-the-file-name-of-paper-note) of my use case.* |
+
+
 
 ### Others
-| Command                                              | Description                                                                                                                                                                                                                                            |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Custom **Wrapper** ⚙️                                 | Add any arbitrary wrapping element in Setting. (https://github.com/Benature/obsidian-underline/issues/5) See below for more examples [⬇️](#wrapper)                                                                                                     |
-| Custom **API** Request ⚙️                             | Replace Selection with the return of custom API request. The selection will be sent to custom API URL with `POST` method. (No user data is collected!) *There is an [example](#convert-citation-index-to-the-file-name-of-paper-note) of my use case.* |
-| Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                                                                                                                                                         |
-| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8)                                                                                                                                        |
-| Add extra line break to paragraph                    | replace `\n` with `\n\n`                                                                                                                                                                                                                               |
-| Format space between word and symbol                 | add space between words and `(`                                                                                                                                                                                                                        |
-
-#### Wrapper
-e.g.
-- Underline: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>`
-- Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
+| Command                                              | Description                                                                                                     |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                  |
+| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8) |
+| Add extra line break to paragraph                    | replace `\n` with `\n\n`                                                                                        |
+| Format space between word and symbol                 | add space between words and `(`                                                                                 |
 
 
 ## Support
@@ -152,6 +144,36 @@ If you find this plugin useful and would like to support its development, you ca
 
 
 ## Some Examples
+
+### Zotero format
+The format template can refer to https://www.zotero.org/support/note_templates
+- default
+  - zotero: `<p>{{highlight quotes='true'}} {{citation}} {{comment}}</p>`
+  - plugin config: `“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
+  - result: `{text} [🔖]({pdf_url})`
+
+
+### Replacements
+use cases:
+- Split paragraph into sentences: [#78](https://github.com/Benature/obsidian-text-format/issues/78#issuecomment-1999198698)
+
+### Wrapper
+use cases:
+- Underline: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>`
+- Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
+
+### Convert citation index to the file name of paper note
+With [bib-cacher](https://github.com/Benature/bib-catcher), I can connect to Zotero database by python, building a simple Flask server.
+
+Example of command `Custom API Request`:
+
+```diff
+- A survey concludes that obsidian is a good app [12]. Furthermore, The note taking...
++ A survey concludes that obsidian is a good app ([[File Name of the Reference]]). Furthermore, The note taking...
+```
+
+
+### Basic
 
 - lowercase
   ```diff

@@ -32,14 +32,20 @@ export function capitalizeSentence(s: string): string {
     });
 }
 
-export function headingLevel(s: string, upper: boolean = true): { text: string, offset: number } {
+export function headingLevel(s: string, upper: boolean = true, ignorePlain: boolean = false): { text: string, offset: number } {
     let offset = 0;
     if (upper) {
-        let prefix = /^#+\s/.test(s) ? `#` : `# `
+        let prefix = `#`;
+        if (!/^#+\s/.test(s)) {
+            if (ignorePlain) { return { text: s, offset: offset }; }
+            prefix = `# `;
+        }
+        // let prefix = /^#+\s/.test(s) ? `#` : `# `
         s = prefix + s;
         offset = prefix.length;
     } else {
         if (/^#\s/.test(s)) {
+            if (ignorePlain) { return { text: s, offset: offset }; }
             s = s.slice(2);
             offset = -2;
         } else if (/^#+\s/.test(s)) {

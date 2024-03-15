@@ -32,16 +32,6 @@ export default class TextFormat extends Plugin {
         Error("Unknown command " + cmd);
         newName = file.basename;
       }
-      // switch (cmd) {
-      //   case "uppercase":
-      //     newName = newName.toUpperCase();
-      //     break;
-      //   case "lowercase":
-      //     newName = newName.toLowerCase();
-      //     break;
-      //   default:
-      //     Error("Unknown command")
-      // }
       const newPath = normalizePath(file.parent.path + "/" + newName + "." + file.extension)
       this.app.vault.adapter.rename(file.path, newPath);
     } else {
@@ -608,6 +598,8 @@ export default class TextFormat extends Plugin {
       to = editor.getCursor("to");
     let cursorOffset = 0;
 
+    let adjustSelection = "none";
+
     //： Adjust Selection
     switch (cmd) {
       case "capitalize-word":
@@ -617,23 +609,17 @@ export default class TextFormat extends Plugin {
           selectedText = selectedText.toLowerCase();
         }
         break;
+      case "heading":
+        if (origin_cursor_from.line != origin_cursor_to.line) {
+          adjustSelection = "whole-paragraph";
+        }
+        break;
       case "split-blank":
       case "bullet":
       case "convert-ordered":
       case "callout":
         //: Force to select whole paragraph(s)
-        from.ch = 0;
-        to.line += 1;
-        to.ch = 0;
-        if (to.line <= editor.lastLine()) {
-          editor.setSelection(
-            from,
-            editor.offsetToPos(editor.posToOffset(to) - 1)
-          );
-        } else {
-          editor.setSelection(from, to);
-        }
-        selectedText = editor.getSelection();
+        adjustSelection = "whole-paragraph";
         break;
       case "todo-sort":
         //: Select whole file if nothing selected
@@ -649,14 +635,45 @@ export default class TextFormat extends Plugin {
         break;
     }
 
+    switch (adjustSelection) {
+      case "whole-paragraph":
+        //: Force to select whole paragraph(s)
+        from.ch = 0;
+        to.line += 1;
+        to.ch = 0;
+        if (to.line <= editor.lastLine()) {
+          editor.setSelection(
+            from,
+            editor.offsetToPos(editor.posToOffset(to) - 1)
+          );
+        } else {
+          editor.setSelection(from, to);
+        }
+        selectedText = editor.getSelection();
+        break;
+      default:
+        break;
+    }
+
     //: MODIFY SELECTION
     let replacedText = this.textFormat(selectedText, cmd, args);
     if (replacedText === null) {
       switch (cmd) {
         case "heading":
-          const headingRes = headingLevel(selectedText, args);
-          replacedText = headingRes.text;
-          cursorOffset = headingRes.offset
+          if (origin_cursor_from.line == origin_cursor_to.line) {
+            const headingRes = headingLevel(selectedText, args);
+            replacedText = headingRes.text;
+            cursorOffset = headingRes.offset
+          } else {
+            replacedText = "";
+            cursorOffset = 0;
+            selectedText.split("\n").forEach((line, index) => {
+              const headingRes = headingLevel(line, args, true);
+              replacedText += headingRes.text + "\n";
+              cursorOffset += headingRes.offset;
+            });
+            replacedText = replacedText.slice(0, -1); // remove the last `\n`
+          }
           break;
         case "api-request":
           let p = requestAPI(selectedText, view.file, args);
@@ -721,22 +738,27 @@ export default class TextFormat extends Plugin {
 
     //: Set cursor selection
     const fos = editor.posToOffset(editor.getCursor("from"));
+    const tos = editor.posToOffset(editor.getCursor("to")); // to offset
     switch (cmd) {
       case "merge":
       case "remove-blank-line":
       case "bullet":
       case "Chinese-punctuation":
         //: Select whole modifications 
-        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
         editor.setSelection(
           editor.offsetToPos(tos - replacedText.length),
           editor.offsetToPos(tos)
         );
         break;
       case "heading":
-        // put cursor back to the original position
-        editor.setSelection(editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
-          editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset));
+        if (origin_cursor_from.line == origin_cursor_to.line) {
+          // put cursor back to the original position
+          editor.setSelection(
+            editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
+            editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset));
+        } else {
+          editor.setSelection(editor.offsetToPos(tos - replacedText.length), editor.offsetToPos(tos));
+        }
         break;
       case "todo-sort":
         if (!somethingSelected) {
