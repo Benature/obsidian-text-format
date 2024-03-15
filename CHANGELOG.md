@@ -5,6 +5,8 @@
 ## 🏗️ developed
 > to be updated in the next version
 
+## 2.7.1
+
 - [fix] `customReplace()`: error when search contains like `\.\!\?` 
 - [updated] `Chinese-punctuation`: select modification at last
 - [updated] `math mode`: 
