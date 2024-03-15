@@ -1,4 +1,7 @@
-import { Editor, MarkdownView, Plugin, Notice, debounce, normalizePath } from "obsidian";
+import {
+  Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
+  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange
+} from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
@@ -27,7 +30,7 @@ export default class TextFormat extends Plugin {
     if (isActiveTitle()) {
       const file = this.app.workspace.getActiveFile();
       // let newName = file.basename;
-      let newName = this.textFormat(file.basename, cmd);
+      let newName = this.formatSelection(file.basename, cmd);
       if (newName === null) {
         Error("Unknown command " + cmd);
         newName = file.basename;
@@ -365,7 +368,7 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  textFormat(selectedText: string, cmd: string, args: any = ""): string | null {
+  formatSelection(selectedText: string, cmd: string, args: any = ""): string | null {
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -413,7 +416,6 @@ export default class TextFormat extends Plugin {
               break;
             }
           }
-          // console.log(toggleSeq[i], selectedText, resText, selectedText == getNewString(toggleSeq[i]))
           if (!duplicated) { //: if the converted text is the same as before toggle case, ignore it
             if (selectedText == resText) { break; }
           }
@@ -572,11 +574,16 @@ export default class TextFormat extends Plugin {
     return replacedText
   }
 
+
   editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, args: any = ""): void {
     // if nothing is selected, select the whole line.
-    const somethingSelected = editor.somethingSelected();
-    const origin_cursor_from = editor.getCursor("from");
-    const origin_cursor_to = editor.getCursor("to");
+    const selectionList: EditorSelectionOrCaret[] = editor.listSelections();
+    const selection = selectionList[0];
+
+    let anchorOffset = editor.posToOffset(selection.anchor), headOffset = editor.posToOffset(selection.head);
+    const origin_cursor_from = editor.offsetToPos(Math.min(anchorOffset, headOffset));
+    const origin_cursor_to = editor.offsetToPos(Math.max(anchorOffset, headOffset));
+    const somethingSelected = !(origin_cursor_from.ch == origin_cursor_to.ch && origin_cursor_from.line == origin_cursor_to.line)
     if (!somethingSelected) {
       let cursor = editor.getCursor();
 
@@ -589,9 +596,11 @@ export default class TextFormat extends Plugin {
         // don't select the next line which is not selected by user
         hos -= 1;
       }
-      editor.setSelection(editor.offsetToPos(aos), editor.offsetToPos(hos));
+      editor.setSelections([{ anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) }])
     }
 
+    const selectedTextList: string[] = [];
+    const rangeList: EditorRangeOrCaret[] = []
     let selectedText = editor.getSelection();
 
     let from = editor.getCursor("from"),
@@ -627,13 +636,28 @@ export default class TextFormat extends Plugin {
           from.line = 0;
           from.ch = 0;
           to.line = editor.lastLine() + 1;
-          editor.setSelection(from, to);
+          editor.setSelections([{ anchor: from, head: to }])
           selectedText = editor.getSelection();
         }
         break;
       default:
+        // Except special process of adjusting selection, get all selected text (for now)
+        selectionList.forEach((selection) => {
+          selectedTextList.push(editor.getRange(selection.anchor, selection.head))
+          rangeList.push(selection2range(editor, selection))
+        });
+        // selectedTextList = editor.getSelection();
         break;
     }
+    // For command that need adjusting selection, only contain first selection
+    // TODO: heading should support multi-selection
+    if (selectedTextList.length === 0) {
+      // selectedTextList = [selectedText];
+      // selectionList = [selection];
+      selectedTextList.push(selectedText);
+      rangeList.push(selection2range(editor, selection))
+    }
+
 
     switch (adjustSelection) {
       case "whole-paragraph":
@@ -642,12 +666,15 @@ export default class TextFormat extends Plugin {
         to.line += 1;
         to.ch = 0;
         if (to.line <= editor.lastLine()) {
-          editor.setSelection(
-            from,
-            editor.offsetToPos(editor.posToOffset(to) - 1)
-          );
+          editor.setSelections([{
+            anchor: from,
+            head: editor.offsetToPos(editor.posToOffset(to) - 1)
+          }]);
         } else {
-          editor.setSelection(from, to);
+          editor.setSelections([{
+            anchor: from,
+            head: to
+          }]);
         }
         selectedText = editor.getSelection();
         break;
@@ -655,86 +682,101 @@ export default class TextFormat extends Plugin {
         break;
     }
 
+    let replacedTextList: string[] = [];
+    const changeList: EditorChange[] = [];
+
     //: MODIFY SELECTION
-    let replacedText = this.textFormat(selectedText, cmd, args);
-    if (replacedText === null) {
-      switch (cmd) {
-        case "heading":
-          if (origin_cursor_from.line == origin_cursor_to.line) {
-            const headingRes = headingLevel(selectedText, args);
-            replacedText = headingRes.text;
-            cursorOffset = headingRes.offset
-          } else {
-            replacedText = "";
-            cursorOffset = 0;
-            selectedText.split("\n").forEach((line, index) => {
-              const headingRes = headingLevel(line, args, true);
-              replacedText += headingRes.text + "\n";
-              cursorOffset += headingRes.offset;
-            });
-            replacedText = replacedText.slice(0, -1); // remove the last `\n`
-          }
-          break;
-        case "api-request":
-          let p = requestAPI(selectedText, view.file, args);
-          p.then(result => {
-            replacedText = result;
-            editor.setSelection(from, to);
-            if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
-            editor.setSelection(from, editor.getCursor("head"));
+    for (let i = 0; i < selectedTextList.length; i++) {
+      let selectedText = selectedTextList[i];
+      // selectedTextList.forEach((selectedText) => {
+      let replacedText = this.formatSelection(selectedText, cmd, args);
+      if (replacedText === null) {
+        switch (cmd) {
+          case "heading":
+            if (origin_cursor_from.line == origin_cursor_to.line) {
+              const headingRes = headingLevel(selectedText, args);
+              replacedText = headingRes.text;
+              cursorOffset = headingRes.offset
+            } else {
+              replacedText = "";
+              cursorOffset = 0;
+              selectedText.split("\n").forEach((line, index) => {
+                const headingRes = headingLevel(line, args, true);
+                replacedText += headingRes.text + "\n";
+                cursorOffset += headingRes.offset;
+              });
+              replacedText = replacedText.slice(0, -1); // remove the last `\n`
+            }
+            break;
+          case "api-request":
+            let p = requestAPI(selectedText, view.file, args);
+            p.then(result => {
+              replacedText = result;
+              editor.setSelections([{ anchor: from, head: to }]);
+              if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
+              editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
+              return;
+            })
             return;
-          })
-          return;
-        case "callout":
-          const wholeContent = editor.getValue();
-          let type = this.settings.calloutType;
-          if (type.startsWith("!")) {
-            type = type.substring(1, type.length);
-          } else {
-            const preCallouts = wholeContent.match(/(?<=\n\>\s*\[\!)\w+(?=\])/gm);
-            if (preCallouts) {
-              type = preCallouts[preCallouts.length - 1];
+          case "callout":
+            const wholeContent = editor.getValue();
+            let type = this.settings.calloutType;
+            if (type.startsWith("!")) {
+              type = type.substring(1, type.length);
+            } else {
+              const preCallouts = wholeContent.match(/(?<=\n\>\s*\[\!)\w+(?=\])/gm);
+              if (preCallouts) {
+                type = preCallouts[preCallouts.length - 1];
+              }
             }
-          }
-          const lines = selectedText.replace(/$\n>/g, "").split("\n");
-          replacedText = `> [!${type}] ${lines[0]}`
-          if (lines.length > 1) {
-            for (let idx = 1; idx < lines.length; idx++) {
-              replacedText += `\n> ` + lines[idx];
+            const lines = selectedText.replace(/$\n>/g, "").split("\n");
+            replacedText = `> [!${type}] ${lines[0]}`
+            if (lines.length > 1) {
+              for (let idx = 1; idx < lines.length; idx++) {
+                replacedText += `\n> ` + lines[idx];
+              }
             }
-          }
-          break;
-        case "bullet":
-          let r = this.settings.BulletPoints.replace("-", "");
-          replacedText = selectedText
-            .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-              t.replace(RegExp(`[${r}] *`), "\n- ")
-            )
-            .replace(/\n[~\/Vv] /g, "\n- ")
-            .replace(/\n+/g, "\n")
-            .replace(/^\n/, "");
-          // if "-" in this.settings.BulletPoints
-          if (this.settings.BulletPoints.indexOf("-") > -1) {
-            replacedText = replacedText.replace(/^- /g, "\n- ");
-          }
-          // if select multi-paragraphs, add `- ` to the beginning
-          if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
-            replacedText = "- " + replacedText;
-          }
-          break;
-        case "latex-letter":
-          replacedText = convertLatex(editor, selectedText);
-          break;
-        default:
-          Error("Unknown command")
-          return;
+            break;
+          case "bullet":
+            let r = this.settings.BulletPoints.replace("-", "");
+            replacedText = selectedText
+              .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+                t.replace(RegExp(`[${r}] *`), "\n- ")
+              )
+              .replace(/\n[~\/Vv] /g, "\n- ")
+              .replace(/\n+/g, "\n")
+              .replace(/^\n/, "");
+            // if "-" in this.settings.BulletPoints
+            if (this.settings.BulletPoints.indexOf("-") > -1) {
+              replacedText = replacedText.replace(/^- /g, "\n- ");
+            }
+            // if select multi-paragraphs, add `- ` to the beginning
+            if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+              replacedText = "- " + replacedText;
+            }
+            break;
+          case "latex-letter":
+            replacedText = convertLatex(editor, selectedText);
+            break;
+          default:
+            Error("Unknown command")
+            return;
+        }
       }
+      replacedTextList.push(replacedText);
+      changeList.push({ text: replacedText, ...rangeList[i] });
+      // })
     }
 
-    // change text only when two viable is different
-    if (replacedText != selectedText) {
-      editor.replaceSelection(replacedText);
-    }
+
+
+    editor.transaction({
+      selections: rangeList,
+      changes: changeList
+    });
+
+
+    let replacedText = replacedTextList[0];
 
     //: Set cursor selection
     const fos = editor.posToOffset(editor.getCursor("from"));
@@ -745,31 +787,51 @@ export default class TextFormat extends Plugin {
       case "bullet":
       case "Chinese-punctuation":
         //: Select whole modifications 
-        editor.setSelection(
-          editor.offsetToPos(tos - replacedText.length),
-          editor.offsetToPos(tos)
-        );
+        editor.setSelections([{
+          anchor: editor.offsetToPos(tos - replacedText.length),
+          head: editor.offsetToPos(tos)
+        }]);
         break;
       case "heading":
         if (origin_cursor_from.line == origin_cursor_to.line) {
           // put cursor back to the original position
-          editor.setSelection(
-            editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
-            editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset));
+          editor.setSelections([{
+            anchor: editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
+            head: editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset)
+          }]);
         } else {
-          editor.setSelection(editor.offsetToPos(tos - replacedText.length), editor.offsetToPos(tos));
+          editor.setSelections([{
+            anchor: editor.offsetToPos(tos - replacedText.length),
+            head: editor.offsetToPos(tos)
+          }]);
         }
         break;
       case "todo-sort":
         if (!somethingSelected) {
-          editor.setSelection(origin_cursor_from, origin_cursor_to);
+          editor.setSelections([{
+            anchor: origin_cursor_from,
+            head: origin_cursor_to
+          }]);
         } else {
-          editor.setSelection(editor.offsetToPos(fos), editor.getCursor("head"));
+          editor.setSelections([{
+            anchor: editor.offsetToPos(fos),
+            head: editor.getCursor("head")
+          }]);
         }
         break;
+      case "lowercase":
+      case "uppercase":
+      case "capitalize-word":
+      case "capitalize-sentence":
+      case "titlecase":
+      case "togglecase":
+        editor.setSelections(selectionList);
+        break;
       default:
-        let head = editor.getCursor("head");
-        editor.setSelection(editor.offsetToPos(fos), head);
+        editor.setSelections([{
+          anchor: editor.offsetToPos(fos),
+          head: editor.getCursor("head")
+        }]);
     }
   }
 
@@ -780,4 +842,12 @@ export default class TextFormat extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
+}
+
+
+function selection2range(editor: Editor, selection: EditorSelectionOrCaret): EditorRangeOrCaret {
+  let anchorOffset = editor.posToOffset(selection.anchor), headOffset = editor.posToOffset(selection.head);
+  const from = editor.offsetToPos(Math.min(anchorOffset, headOffset));
+  const to = editor.offsetToPos(Math.max(anchorOffset, headOffset));
+  return { from: from, to: to };
 }
