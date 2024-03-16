@@ -581,7 +581,7 @@ export function convertLatex(editor: Editor, selectedText: string): string {
             RegExp(pre + patternChar2 + suf, "g"),
             (t, t1, t2) => {
                 // ignore cases
-                if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we/g.test(t)) { return t; }
+                if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we|be/g.test(t)) { return t; }
                 return `$${G(t1)}_${G(t2)}$`;
             })
         .replace(

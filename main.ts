@@ -599,8 +599,7 @@ export default class TextFormat extends Plugin {
       editor.setSelections([{ anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) }])
     }
 
-    const selectedTextList: string[] = [];
-    const rangeList: EditorRangeOrCaret[] = []
+
     let selectedText = editor.getSelection();
 
     let from = editor.getCursor("from"),
@@ -608,6 +607,8 @@ export default class TextFormat extends Plugin {
     let cursorOffset = 0;
 
     let adjustSelection = "none";
+
+    let supportMultiCursor = false;
 
     //： Adjust Selection
     switch (cmd) {
@@ -622,6 +623,7 @@ export default class TextFormat extends Plugin {
         if (origin_cursor_from.line != origin_cursor_to.line) {
           adjustSelection = "whole-paragraph";
         }
+        // supportMultiCursor = true;
         break;
       case "split-blank":
       case "bullet":
@@ -642,22 +644,9 @@ export default class TextFormat extends Plugin {
         break;
       default:
         // Except special process of adjusting selection, get all selected text (for now)
-        selectionList.forEach((selection) => {
-          selectedTextList.push(editor.getRange(selection.anchor, selection.head))
-          rangeList.push(selection2range(editor, selection))
-        });
-        // selectedTextList = editor.getSelection();
+        supportMultiCursor = true;
         break;
     }
-    // For command that need adjusting selection, only contain first selection
-    // TODO: heading should support multi-selection
-    if (selectedTextList.length === 0) {
-      // selectedTextList = [selectedText];
-      // selectionList = [selection];
-      selectedTextList.push(selectedText);
-      rangeList.push(selection2range(editor, selection))
-    }
-
 
     switch (adjustSelection) {
       case "whole-paragraph":
@@ -677,10 +666,29 @@ export default class TextFormat extends Plugin {
           }]);
         }
         selectedText = editor.getSelection();
+        console.log(selectedText)
         break;
       default:
         break;
     }
+
+    // For command that need adjusting selection, only contain first selection
+    const selectedTextList: string[] = [];
+    const rangeList: EditorRangeOrCaret[] = [];
+    if (supportMultiCursor) {
+      selectionList.forEach((selection) => {
+        selectedTextList.push(editor.getRange(selection.anchor, selection.head))
+        rangeList.push(selection2range(editor, selection))
+      });
+    } else {
+      selectedTextList.push(selectedText);
+      rangeList.push(selection2range(editor, selection))
+    }
+
+    console.log(selectedTextList)
+    console.log(editor.getSelection())
+
+
 
     let replacedTextList: string[] = [];
     const changeList: EditorChange[] = [];
@@ -764,16 +772,21 @@ export default class TextFormat extends Plugin {
         }
       }
       replacedTextList.push(replacedText);
-      changeList.push({ text: replacedText, ...rangeList[i] });
+      if (supportMultiCursor) {
+        changeList.push({ text: replacedText, ...rangeList[i] });
+      } else {
+        changeList.push({ text: replacedText, ...selection2range(editor, editor.listSelections()[0]) })
+      }
       // })
     }
 
 
 
     editor.transaction({
-      selections: rangeList,
+      // selections: rangeList,
       changes: changeList
     });
+    console.log(changeList)
 
 
     let replacedText = replacedTextList[0];
