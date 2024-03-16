@@ -1,6 +1,6 @@
 import {
   Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
-  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange
+  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
@@ -369,8 +369,8 @@ export default class TextFormat extends Plugin {
   }
 
   formatSelection(selectedText: string, cmd: string, args: any = ""): string | null {
-    // console.log("cmd", cmd)
-    // console.log("selectedText", selectedText)
+    console.log("cmd", cmd)
+    console.log("selectedText", selectedText)
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -434,7 +434,7 @@ export default class TextFormat extends Plugin {
         if (!(replacedText)) { return; }
         break;
       case "remove-redundant-spaces":
-        // console.log("selectedText", selectedText)
+        console.log("selectedText", selectedText)
         replacedText = selectedText
           .replace(/(?:\S) {2,}/g, " ")
           .replace(/ $| (?=\n)/g, "");
@@ -546,9 +546,11 @@ export default class TextFormat extends Plugin {
         break;
       case "remove-url-link":
         replacedText = removeUrlLink(selectedText, this.settings.UrlLinkFormat);
+        console.log("replacedText", replacedText)
         if (this.settings.RemoveWikiURL2) {
           replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
         }
+        console.log("replacedText", replacedText)
         break;
       case "link-url2wiki":
         replacedText = url2WikiLink(selectedText);
@@ -574,138 +576,128 @@ export default class TextFormat extends Plugin {
       default:
         replacedText = null;
     }
+    console.log("formatSelection.replacedText", replacedText)
     return replacedText
   }
 
 
   editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, args: any = ""): void {
     // if nothing is selected, select the whole line.
-    const selectionList: EditorSelectionOrCaret[] = editor.listSelections();
-    const selection = selectionList[0];
-
-    let anchorOffset = editor.posToOffset(selection.anchor), headOffset = editor.posToOffset(selection.head);
-    const origin_cursor_from = editor.offsetToPos(Math.min(anchorOffset, headOffset));
-    const origin_cursor_to = editor.offsetToPos(Math.max(anchorOffset, headOffset));
-    const somethingSelected = !(origin_cursor_from.ch == origin_cursor_to.ch && origin_cursor_from.line == origin_cursor_to.line)
-    if (!somethingSelected) {
-      // Select whole line if nothing selected
-      let cursor = editor.getCursor();
-
-      cursor.ch = 0;
-      let aos = editor.posToOffset(cursor);
-
-      cursor.line += 1;
-      let hos = editor.posToOffset(cursor);
-      if (cursor.line <= editor.lastLine()) {
-        // don't select the next line which is not selected by user
-        hos -= 1;
-      }
-      editor.setSelections([{ anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) }])
-    }
-
-
-    let selectedText = editor.getSelection();
-
-    let from = editor.getCursor("from"),
-      to = editor.getCursor("to");
-    let cursorOffset = 0;
-
-    let adjustSelection = "none";
+    const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
+    const resetSelectionList: EditorSelectionOrCaret[] = [];
+    const adjustRangeList: EditorRangeOrCaret[] = [];
 
     let supportMultiCursor = false;
 
-    //： Adjust Selection
-    switch (cmd) {
-      case "heading":
-        if (origin_cursor_from.line != origin_cursor_to.line) {
-          adjustSelection = "whole-paragraph";
-        }
-        // supportMultiCursor = true;
-        break;
-      case "split-blank":
-      case "bullet":
-      case "convert-ordered":
-      case "callout":
-        //: Force to select whole paragraph(s)
-        adjustSelection = "whole-paragraph";
-        break;
-      case "todo-sort":
-        //: Select whole file if nothing selected
-        if (!somethingSelected) {
-          from.line = 0;
-          from.ch = 0;
-          to.line = editor.lastLine() + 1;
-          editor.setSelections([{ anchor: from, head: to }])
-          selectedText = editor.getSelection();
-        }
-        break;
-      default:
-        // Except special process of adjusting selection, get all selected text (for now)
-        supportMultiCursor = true;
-        break;
-    }
 
-    switch (adjustSelection) {
-      case "whole-paragraph":
-        //: Force to select whole paragraph(s)
-        from.ch = 0;
-        to.line += 1;
-        to.ch = 0;
-        if (to.line <= editor.lastLine()) {
-          editor.setSelections([{
-            anchor: from,
-            head: editor.offsetToPos(editor.posToOffset(to) - 1)
-          }]);
-        } else {
-          editor.setSelections([{
-            anchor: from,
-            head: to
-          }]);
-        }
-        selectedText = editor.getSelection();
-        // console.log(selectedText)
-        break;
-      default:
-        break;
-    }
-
-    // console.log("supportMultiCursor", supportMultiCursor)
-
-    // For command that need adjusting selection, only contain first selection
-    const selectedTextList: string[] = [];
-    const rangeList: EditorRangeOrCaret[] = [];
-    if (supportMultiCursor) {
-      editor.listSelections().forEach((selection) => {
-        let rangeTmp = selection2range(editor, selection);
-        // console.log("rangeTmp", rangeTmp)
-        selectedTextList.push(editor.getRange(rangeTmp.from, rangeTmp.to));
-        rangeList.push(rangeTmp);
-      });
-    } else {
-      selectedTextList.push(selectedText);
-      rangeList.push(selection2range(editor, selection))
-    }
-
-    // console.log("selectedTextList", selectedTextList)
-    // console.log(editor.getSelection())
-
-    // TODO: remove all `selectedText` before this line
-
-    let replacedTextList: string[] = [];
     const changeList: EditorChange[] = [];
 
-    //: MODIFY SELECTION
-    for (let i = 0; i < selectedTextList.length; i++) {
-      let selectedText = selectedTextList[i];
-      // selectedTextList.forEach((selectedText) => {
-      let replacedText = selectedText;
-      // console.log(i, "replacedText", replacedText)
+    originSelectionList.forEach(originSelection => {
+      // let adjustSelection: EditorSelectionOrCaret = originSelection;
+      const originRange = selection2range(editor, originSelection);
+      console.log("originRange", originRange.from, originRange.to)
+
+      let adjustRange: EditorRangeOrCaret = originRange;
+      // let selectedText = editor.getRange(originRange.from, originRange.to);
+
+      const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
+      if (!somethingSelected) {
+        // Select whole line if nothing selected
+        // let cursor = editor.getCursor();
+        let cursor = { line: originRange.from.line, ch: 0 };
+
+        let offsetFrom = editor.posToOffset(cursor);
+
+        cursor.line += 1;
+        let offsetTo = editor.posToOffset(cursor);
+        if (cursor.line <= editor.lastLine()) {
+          // don't select the next line which is not selected by user
+          offsetTo -= 1;
+        }
+        adjustRange = { from: editor.offsetToPos(offsetFrom), to: editor.offsetToPos(offsetTo) };
+        // selectedText = editor.getRange(editor.offsetToPos(aos), editor.offsetToPos(hos));
+        // adjustSelection = { anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) };
+        // editor.setSelections([{ anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) }])
+      }
+
+
+      let from = editor.getCursor("from"),
+        to = editor.getCursor("to");
+      let cursorOffset = 0;
+
+      let adjustSelectionCmd = "none";
+
+
+      //： Adjust Selection
+      switch (cmd) {
+        case "heading":
+          if (originRange.from.line != originRange.to.line) {
+            adjustSelectionCmd = "whole-paragraph";
+          }
+          supportMultiCursor = true;
+          break;
+        case "split-blank":
+        case "bullet":
+        case "convert-ordered":
+        case "callout":
+          //: Force to select whole paragraph(s)
+          adjustSelectionCmd = "whole-paragraph";
+          break;
+        case "todo-sort":
+          //: Select whole file if nothing selected
+          if (!somethingSelected) {
+            // from.line = 0;
+            // from.ch = 0;
+            // to.line = editor.lastLine() + 1;
+            adjustRange = { from: { line: 0, ch: 0 }, to: { line: editor.lastLine() + 1, ch: 0 } };
+            // selectedText = editor.getRange(from, to);
+            // adjustSelection = { anchor: from, head: to };
+            // editor.setSelections([{ anchor: from, head: to }])
+            // selectedText = editor.getSelection();
+          }
+          break;
+        default:
+          // Except special process of adjusting selection, get all selected text (for now)
+          supportMultiCursor = true;
+          break;
+      }
+
+      switch (adjustSelectionCmd) {
+        case "whole-paragraph":
+          //: Force to select whole paragraph(s)
+          from.ch = 0;
+          to.line += 1;
+          to.ch = 0;
+          if (to.line <= editor.lastLine()) {
+            adjustRange = { from: from, to: editor.offsetToPos(editor.posToOffset(to) - 1) };
+            // editor.setSelections([{
+            //   anchor: from,
+            //   head: editor.offsetToPos(editor.posToOffset(to) - 1)
+            // }]);
+          } else {
+            adjustRange = { from: from, to: to };
+            // editor.setSelections([{
+            //   anchor: from,
+            //   head: to
+            // }]);
+          }
+          // selectedText = editor.getSelection();
+          // console.log(selectedText)
+          break;
+        default:
+          break;
+      }
+      const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
+
+      //: MODIFY SELECTION
+      let replacedText: string;
+      // console.log("replacedText", replacedText)
       try {
         replacedText = this.formatSelection(selectedText, cmd, args);
         if (replacedText === null) {
           switch (cmd) {
             case "heading":
-              if (origin_cursor_from.line == origin_cursor_to.line) {
+              if (originRange.from.line == originRange.to.line) {
                 const headingRes = headingLevel(selectedText, args);
                 replacedText = headingRes.text;
                 cursorOffset = headingRes.offset
@@ -780,81 +772,78 @@ export default class TextFormat extends Plugin {
         console.error(e);
       }
       // console.log("replacedText", replacedText)
-      replacedTextList.push(replacedText);
-      if (supportMultiCursor) {
-        changeList.push({ text: replacedText, ...rangeList[i] });
-      } else {
-        changeList.push({ text: replacedText, ...selection2range(editor, editor.listSelections()[0]) })
-      }
-      // })
-    }
+      let editorChange = { text: replacedText, ...adjustRange };
+      editor.transaction({
+        // selections: rangeList,
+        changes: [editorChange]
+      });
+      changeList.push(editorChange)
 
 
-
-    editor.transaction({
-      // selections: rangeList,
-      changes: changeList
-    });
-    // console.log(changeList)
-
-
-    let replacedText = replacedTextList[0];
-
-    //: Set cursor selection
-    const fos = editor.posToOffset(editor.getCursor("from"));
-    const tos = editor.posToOffset(editor.getCursor("to")); // to offset
-    switch (cmd) {
-      case "merge":
-      case "remove-blank-line":
-      case "bullet":
-      case "Chinese-punctuation":
-        //: Select whole modifications 
-        editor.setSelections([{
-          anchor: editor.offsetToPos(tos - replacedText.length),
-          head: editor.offsetToPos(tos)
-        }]);
-        break;
-      case "heading":
-        if (origin_cursor_from.line == origin_cursor_to.line) {
-          // put cursor back to the original position
-          editor.setSelections([{
-            anchor: editor.offsetToPos(editor.posToOffset(origin_cursor_from) + cursorOffset),
-            head: editor.offsetToPos(editor.posToOffset(origin_cursor_to) + cursorOffset)
-          }]);
-        } else {
-          editor.setSelections([{
+      //: Set cursor selection
+      let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
+      const fos = editor.posToOffset(adjustRange.from);
+      const tos = editor.posToOffset(adjustRange.to);
+      // const fos = editor.posToOffset(editor.getCursor("from"));
+      // const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+      switch (cmd) {
+        case "merge":
+        case "remove-blank-line":
+        case "bullet":
+        case "Chinese-punctuation":
+          //: Select whole modifications 
+          resetSelection = {
             anchor: editor.offsetToPos(tos - replacedText.length),
             head: editor.offsetToPos(tos)
-          }]);
-        }
-        break;
-      case "todo-sort":
-        if (!somethingSelected) {
-          editor.setSelections([{
-            anchor: origin_cursor_from,
-            head: origin_cursor_to
-          }]);
-        } else {
-          editor.setSelections([{
+          };
+          break;
+        case "heading":
+          console.log("cursorOffset", cursorOffset)
+          console.log("originRange", originRange.from, originRange.to)
+          if (originRange.from.line == originRange.to.line) {
+            // put cursor back to the original position
+            resetSelection = {
+              anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + cursorOffset),
+              head: editor.offsetToPos(editor.posToOffset(originRange.to) + cursorOffset)
+            };
+          } else {
+            resetSelection = {
+              anchor: editor.offsetToPos(tos - replacedText.length),
+              head: editor.offsetToPos(tos)
+            };
+          }
+          break;
+        case "todo-sort":
+          if (!somethingSelected) {
+            resetSelection = {
+              anchor: originRange.from,
+              head: originRange.to
+            };
+          } else {
+            resetSelection = {
+              anchor: editor.offsetToPos(fos),
+              head: editor.getCursor("head")
+            };
+          }
+          break;
+        default:
+          resetSelection = {
             anchor: editor.offsetToPos(fos),
             head: editor.getCursor("head")
-          }]);
-        }
-        break;
-      case "lowercase":
-      case "uppercase":
-      case "capitalize-word":
-      case "capitalize-sentence":
-      case "titlecase":
-      case "togglecase":
-        editor.setSelections(selectionList);
-        break;
-      default:
-        editor.setSelections([{
-          anchor: editor.offsetToPos(fos),
-          head: editor.getCursor("head")
-        }]);
-    }
+          };
+      }
+      console.log("resetSelection", resetSelection)
+      resetSelectionList.push(resetSelection);
+    });
+
+    // console.log(changeList)
+    // editor.transaction({
+    //   // selections: rangeList,
+    //   changes: changeList
+    // });
+
+    // console.log("resetSelectionList", resetSelectionList)
+    editor.setSelections(resetSelectionList);
   }
 
   async loadSettings() {
