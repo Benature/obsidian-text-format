@@ -369,8 +369,6 @@ export default class TextFormat extends Plugin {
   }
 
   formatSelection(selectedText: string, cmd: string, args: any = ""): string | null {
-    console.log("cmd", cmd)
-    console.log("selectedText", selectedText)
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -434,7 +432,6 @@ export default class TextFormat extends Plugin {
         if (!(replacedText)) { return; }
         break;
       case "remove-redundant-spaces":
-        console.log("selectedText", selectedText)
         replacedText = selectedText
           .replace(/(?:\S) {2,}/g, " ")
           .replace(/ $| (?=\n)/g, "");
@@ -546,11 +543,9 @@ export default class TextFormat extends Plugin {
         break;
       case "remove-url-link":
         replacedText = removeUrlLink(selectedText, this.settings.UrlLinkFormat);
-        console.log("replacedText", replacedText)
         if (this.settings.RemoveWikiURL2) {
           replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
         }
-        console.log("replacedText", replacedText)
         break;
       case "link-url2wiki":
         replacedText = url2WikiLink(selectedText);
@@ -576,7 +571,7 @@ export default class TextFormat extends Plugin {
       default:
         replacedText = null;
     }
-    console.log("formatSelection.replacedText", replacedText)
+    // console.log("formatSelection.replacedText", replacedText)
     return replacedText
   }
 
@@ -593,17 +588,14 @@ export default class TextFormat extends Plugin {
     const changeList: EditorChange[] = [];
 
     originSelectionList.forEach(originSelection => {
-      // let adjustSelection: EditorSelectionOrCaret = originSelection;
       const originRange = selection2range(editor, originSelection);
-      console.log("originRange", originRange.from, originRange.to)
+      // console.log("originRange", originRange.from, originRange.to)
 
       let adjustRange: EditorRangeOrCaret = originRange;
-      // let selectedText = editor.getRange(originRange.from, originRange.to);
 
       const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
       if (!somethingSelected) {
         // Select whole line if nothing selected
-        // let cursor = editor.getCursor();
         let cursor = { line: originRange.from.line, ch: 0 };
 
         let offsetFrom = editor.posToOffset(cursor);
@@ -615,9 +607,6 @@ export default class TextFormat extends Plugin {
           offsetTo -= 1;
         }
         adjustRange = { from: editor.offsetToPos(offsetFrom), to: editor.offsetToPos(offsetTo) };
-        // selectedText = editor.getRange(editor.offsetToPos(aos), editor.offsetToPos(hos));
-        // adjustSelection = { anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) };
-        // editor.setSelections([{ anchor: editor.offsetToPos(aos), head: editor.offsetToPos(hos) }])
       }
 
 
@@ -646,14 +635,7 @@ export default class TextFormat extends Plugin {
         case "todo-sort":
           //: Select whole file if nothing selected
           if (!somethingSelected) {
-            // from.line = 0;
-            // from.ch = 0;
-            // to.line = editor.lastLine() + 1;
             adjustRange = { from: { line: 0, ch: 0 }, to: { line: editor.lastLine() + 1, ch: 0 } };
-            // selectedText = editor.getRange(from, to);
-            // adjustSelection = { anchor: from, head: to };
-            // editor.setSelections([{ anchor: from, head: to }])
-            // selectedText = editor.getSelection();
           }
           break;
         default:
@@ -691,7 +673,6 @@ export default class TextFormat extends Plugin {
 
       //: MODIFY SELECTION
       let replacedText: string;
-      // console.log("replacedText", replacedText)
       try {
         replacedText = this.formatSelection(selectedText, cmd, args);
         if (replacedText === null) {
@@ -771,10 +752,8 @@ export default class TextFormat extends Plugin {
       } catch (e) {
         console.error(e);
       }
-      // console.log("replacedText", replacedText)
       let editorChange = { text: replacedText, ...adjustRange };
       editor.transaction({
-        // selections: rangeList,
         changes: [editorChange]
       });
       changeList.push(editorChange)
@@ -784,8 +763,6 @@ export default class TextFormat extends Plugin {
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
       const tos = editor.posToOffset(adjustRange.to);
-      // const fos = editor.posToOffset(editor.getCursor("from"));
-      // const tos = editor.posToOffset(editor.getCursor("to")); // to offset
       switch (cmd) {
         case "merge":
         case "remove-blank-line":
@@ -798,8 +775,8 @@ export default class TextFormat extends Plugin {
           };
           break;
         case "heading":
-          console.log("cursorOffset", cursorOffset)
-          console.log("originRange", originRange.from, originRange.to)
+          // console.log("cursorOffset", cursorOffset)
+          // console.log("originRange", originRange.from, originRange.to)
           if (originRange.from.line == originRange.to.line) {
             // put cursor back to the original position
             resetSelection = {
@@ -832,17 +809,10 @@ export default class TextFormat extends Plugin {
             head: editor.getCursor("head")
           };
       }
-      console.log("resetSelection", resetSelection)
+      // console.log("resetSelection", resetSelection)
       resetSelectionList.push(resetSelection);
     });
 
-    // console.log(changeList)
-    // editor.transaction({
-    //   // selections: rangeList,
-    //   changes: changeList
-    // });
-
-    // console.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 
