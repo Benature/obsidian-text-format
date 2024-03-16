@@ -36,7 +36,7 @@ export function removeUrlLink(s: string, UrlLinkFormat: string): string {
     if (match && match.length === 3) {
       return stringFormat(UrlLinkFormat, match.groups);
     } else {
-      return s;
+      return t;
     }
   });
 }
