@@ -175,10 +175,10 @@ export default class TextFormat extends Plugin {
 
 
     this.addCommand({
-      id: "remove-spaces",
+      id: "remove-redundant-spaces",
       name: { en: "Remove redundant spaces in selection", zh: "将选中文本中的多余空格移除", "zh-TW": "將選取文字中的多餘空格移除" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-spaces");
+        this.editorTextFormat(editor, view, "remove-redundant-spaces");
       },
     });
     this.addCommand({
@@ -369,6 +369,8 @@ export default class TextFormat extends Plugin {
   }
 
   formatSelection(selectedText: string, cmd: string, args: any = ""): string | null {
+    // console.log("cmd", cmd)
+    // console.log("selectedText", selectedText)
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -381,10 +383,10 @@ export default class TextFormat extends Plugin {
         replacedText = selectedText.toUpperCase();
         break;
       case "capitalize-word":
-        replacedText = capitalizeWord(selectedText);
+        replacedText = capitalizeWord(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
         break;
       case "capitalize-sentence":
-        replacedText = capitalizeSentence(selectedText);
+        replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
         break;
       case "titlecase":
         replacedText = toTitleCase(selectedText, this.settings);
@@ -431,10 +433,10 @@ export default class TextFormat extends Plugin {
         }
         if (!(replacedText)) { return; }
         break;
-      case "remove-spaces":
-        console.log(selectedText)
+      case "remove-redundant-spaces":
+        // console.log("selectedText", selectedText)
         replacedText = selectedText
-          .replace(/(?<=\S) {2,}/g, " ")
+          .replace(/(?:\S) {2,}/g, " ")
           .replace(/ $| (?=\n)/g, "");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
@@ -507,9 +509,10 @@ export default class TextFormat extends Plugin {
           .replace(/\!(?=[^\[])/g, "！")
           .replace(/\?/g, "？")
           .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
+        // TODO: ignore `!` that is `[!note]`
         if (this.settings.RemoveBlanksWhenChinese) {
           replacedText = replacedText.replace(
-            /(?<=[\u4e00-\u9fa5【】（）「」《》：“？‘、；])(\s+)(?=[\u4e00-\u9fa5【】（）「」《》：“？‘、；])/g, "");
+            /([\u4e00-\u9fa5【】（）「」《》：“？‘、；])(\s+)([\u4e00-\u9fa5【】（）「」《》：“？‘、；])/g, "$1$3");
         }
         break;
       case "English-punctuation":
@@ -585,6 +588,7 @@ export default class TextFormat extends Plugin {
     const origin_cursor_to = editor.offsetToPos(Math.max(anchorOffset, headOffset));
     const somethingSelected = !(origin_cursor_from.ch == origin_cursor_to.ch && origin_cursor_from.line == origin_cursor_to.line)
     if (!somethingSelected) {
+      // Select whole line if nothing selected
       let cursor = editor.getCursor();
 
       cursor.ch = 0;
@@ -612,13 +616,6 @@ export default class TextFormat extends Plugin {
 
     //： Adjust Selection
     switch (cmd) {
-      case "capitalize-word":
-      case "capitalize-sentence":
-        //: Lower case text if setting is true
-        if (this.settings.LowercaseFirst) {
-          selectedText = selectedText.toLowerCase();
-        }
-        break;
       case "heading":
         if (origin_cursor_from.line != origin_cursor_to.line) {
           adjustSelection = "whole-paragraph";
@@ -666,29 +663,33 @@ export default class TextFormat extends Plugin {
           }]);
         }
         selectedText = editor.getSelection();
-        console.log(selectedText)
+        // console.log(selectedText)
         break;
       default:
         break;
     }
 
+    // console.log("supportMultiCursor", supportMultiCursor)
+
     // For command that need adjusting selection, only contain first selection
     const selectedTextList: string[] = [];
     const rangeList: EditorRangeOrCaret[] = [];
     if (supportMultiCursor) {
-      selectionList.forEach((selection) => {
-        selectedTextList.push(editor.getRange(selection.anchor, selection.head))
-        rangeList.push(selection2range(editor, selection))
+      editor.listSelections().forEach((selection) => {
+        let rangeTmp = selection2range(editor, selection);
+        // console.log("rangeTmp", rangeTmp)
+        selectedTextList.push(editor.getRange(rangeTmp.from, rangeTmp.to));
+        rangeList.push(rangeTmp);
       });
     } else {
       selectedTextList.push(selectedText);
       rangeList.push(selection2range(editor, selection))
     }
 
-    console.log(selectedTextList)
-    console.log(editor.getSelection())
+    // console.log("selectedTextList", selectedTextList)
+    // console.log(editor.getSelection())
 
-
+    // TODO: remove all `selectedText` before this line
 
     let replacedTextList: string[] = [];
     const changeList: EditorChange[] = [];
@@ -697,80 +698,88 @@ export default class TextFormat extends Plugin {
     for (let i = 0; i < selectedTextList.length; i++) {
       let selectedText = selectedTextList[i];
       // selectedTextList.forEach((selectedText) => {
-      let replacedText = this.formatSelection(selectedText, cmd, args);
-      if (replacedText === null) {
-        switch (cmd) {
-          case "heading":
-            if (origin_cursor_from.line == origin_cursor_to.line) {
-              const headingRes = headingLevel(selectedText, args);
-              replacedText = headingRes.text;
-              cursorOffset = headingRes.offset
-            } else {
-              replacedText = "";
-              cursorOffset = 0;
-              selectedText.split("\n").forEach((line, index) => {
-                const headingRes = headingLevel(line, args, true);
-                replacedText += headingRes.text + "\n";
-                cursorOffset += headingRes.offset;
-              });
-              replacedText = replacedText.slice(0, -1); // remove the last `\n`
-            }
-            break;
-          case "api-request":
-            let p = requestAPI(selectedText, view.file, args);
-            p.then(result => {
-              replacedText = result;
-              editor.setSelections([{ anchor: from, head: to }]);
-              if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
-              editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
+      let replacedText = selectedText;
+      // console.log(i, "replacedText", replacedText)
+      try {
+        replacedText = this.formatSelection(selectedText, cmd, args);
+        if (replacedText === null) {
+          switch (cmd) {
+            case "heading":
+              if (origin_cursor_from.line == origin_cursor_to.line) {
+                const headingRes = headingLevel(selectedText, args);
+                replacedText = headingRes.text;
+                cursorOffset = headingRes.offset
+              } else {
+                replacedText = "";
+                cursorOffset = 0;
+                selectedText.split("\n").forEach((line, index) => {
+                  const headingRes = headingLevel(line, args, true);
+                  replacedText += headingRes.text + "\n";
+                  cursorOffset += headingRes.offset;
+                });
+                replacedText = replacedText.slice(0, -1); // remove the last `\n`
+              }
+              break;
+            case "api-request":
+              let p = requestAPI(selectedText, view.file, args);
+              p.then(result => {
+                replacedText = result;
+                editor.setSelections([{ anchor: from, head: to }]);
+                if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
+                editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
+                return;
+              })
               return;
-            })
-            return;
-          case "callout":
-            const wholeContent = editor.getValue();
-            let type = this.settings.calloutType;
-            if (type.startsWith("!")) {
-              type = type.substring(1, type.length);
-            } else {
-              const preCallouts = wholeContent.match(/(?<=\n\>\s*\[\!)\w+(?=\])/gm);
-              if (preCallouts) {
-                type = preCallouts[preCallouts.length - 1];
+            case "callout":
+              const wholeContent = editor.getValue();
+              let type = this.settings.calloutType;
+              if (type.startsWith("!")) {
+                type = type.substring(1, type.length);
+              } else {
+                const reType = /(?:\n\>\s*\[\!)(\w+)(?:\])/gm
+                const preCallouts = wholeContent.match(reType);
+                if (preCallouts) {
+                  type = reType.exec(preCallouts[preCallouts.length - 1])[1];
+                }
               }
-            }
-            const lines = selectedText.replace(/$\n>/g, "").split("\n");
-            replacedText = `> [!${type}] ${lines[0]}`
-            if (lines.length > 1) {
-              for (let idx = 1; idx < lines.length; idx++) {
-                replacedText += `\n> ` + lines[idx];
+              const lines = selectedText.replace(/$\n>/g, "").split("\n");
+              replacedText = `> [!${type}] ${lines[0]}`
+              if (lines.length > 1) {
+                for (let idx = 1; idx < lines.length; idx++) {
+                  replacedText += `\n> ` + lines[idx];
+                }
               }
-            }
-            break;
-          case "bullet":
-            let r = this.settings.BulletPoints.replace("-", "");
-            replacedText = selectedText
-              .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-                t.replace(RegExp(`[${r}] *`), "\n- ")
-              )
-              .replace(/\n[~\/Vv] /g, "\n- ")
-              .replace(/\n+/g, "\n")
-              .replace(/^\n/, "");
-            // if "-" in this.settings.BulletPoints
-            if (this.settings.BulletPoints.indexOf("-") > -1) {
-              replacedText = replacedText.replace(/^- /g, "\n- ");
-            }
-            // if select multi-paragraphs, add `- ` to the beginning
-            if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
-              replacedText = "- " + replacedText;
-            }
-            break;
-          case "latex-letter":
-            replacedText = convertLatex(editor, selectedText);
-            break;
-          default:
-            Error("Unknown command")
-            return;
+              break;
+            case "bullet":
+              let r = this.settings.BulletPoints.replace("-", "");
+              replacedText = selectedText
+                .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+                  t.replace(RegExp(`[${r}] *`), "\n- ")
+                )
+                .replace(/\n[~\/Vv] /g, "\n- ")
+                .replace(/\n+/g, "\n")
+                .replace(/^\n/, "");
+              // if "-" in this.settings.BulletPoints
+              if (this.settings.BulletPoints.indexOf("-") > -1) {
+                replacedText = replacedText.replace(/^- /g, "\n- ");
+              }
+              // if select multi-paragraphs, add `- ` to the beginning
+              if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+                replacedText = "- " + replacedText;
+              }
+              break;
+            case "latex-letter":
+              replacedText = convertLatex(editor, selectedText);
+              break;
+            default:
+              Error("Unknown command")
+              return;
+          }
         }
+      } catch (e) {
+        console.error(e);
       }
+      // console.log("replacedText", replacedText)
       replacedTextList.push(replacedText);
       if (supportMultiCursor) {
         changeList.push({ text: replacedText, ...rangeList[i] });
@@ -786,7 +795,7 @@ export default class TextFormat extends Plugin {
       // selections: rangeList,
       changes: changeList
     });
-    console.log(changeList)
+    // console.log(changeList)
 
 
     let replacedText = replacedTextList[0];

@@ -116,7 +116,7 @@ export function zoteroNote(
         let text = result.groups.text.replace(/\\\[\d+\\\]/g, (t) =>
             t.replace("\\[", "[").replace("\\]", "]")
         );
-        console.log(template);
+        // console.log(template);
         // @ts-ignore
         return template.format({
             text: text,
@@ -170,7 +170,7 @@ export function array2markdown(content: string): string {
     content = content.replace(
         /\\begin\{array\}\{[clr]\}.*?\\end\{array\}/g,
         (t) => {
-            console.log(t)
+            // console.log(t)
             return t
                 .replace(/\\{1,2}begin\{array\}\{[clr]\}/g, "")
                 .replace("\\end{array}", "")
@@ -563,7 +563,7 @@ export function convertLatex(editor: Editor, selectedText: string): string {
     // const reGreek = /[\u03B1-\u03C9\u0391-\u03A9]/g; 
 
     //: Or, find math text and surround it with `$`
-    const pre = String.raw`(?<=[\s：（）。，、；—\(\)]|^)`;
+    const pre = String.raw`([\s：（）。，、；—\(\)]|^)`;
     const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；—\(\)]|$)`;
 
 
@@ -573,30 +573,30 @@ export function convertLatex(editor: Editor, selectedText: string): string {
         // single character
         .replace(
             RegExp(pre + String.raw`([a-zA-Z\u03B1-\u03C9\u0391-\u03A9])` + suf, "g"),
-            (t, t1) => {
-                return `$${G(t1)}$`;
+            (t, pre, t1) => {
+                return pre + `$${G(t1)}$`;
             })
         // two characters
         .replace(
             RegExp(pre + patternChar2 + suf, "g"),
-            (t, t1, t2) => {
+            (t, pre, t1, t2) => {
                 // ignore cases
-                if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we|be/g.test(t)) { return t; }
-                return `$${G(t1)}_${G(t2)}$`;
+                if (/is|or|as|to|am|an|at|by|do|go|ha|he|hi|ho|if|in|it|my|no|of|on|so|up|us|we|be/g.test(t1 + t2)) { return t; }
+                return pre + `$${G(t1)}_${G(t2)}$`;
             })
         .replace(
             RegExp(pre + String.raw`([a-z\u03B1-\u03C9\u0391-\u03A9])([\*])` + suf, "g"),
-            (t, t1, t2) => {
-                return `$${t1}^${t2}$`;
+            (t, pre, t1, t2) => {
+                return pre + `$${t1}^${t2}$`;
             })
         // calculator
         .replace(
             RegExp(pre + String.raw`([\w\u03B1-\u03C9\u0391-\u03A9]{1,3}[\+\-\*\/<>=][\w\u03B1-\u03C9\u0391-\u03A9]{1,3})` + suf, "g"),
-            (t, t1) => {
+            (t, pre, t1) => {
                 // let content = t1.replace(/([a-z])([a-zA-Z0-9])/g, `$1_$2`)
                 let content = t1.replace(RegExp(patternChar2, "g"),
                     (t: string, t1: string, t2: string) => `${G(t1)}_${G(t2)}`)
-                return `$${content}$`
+                return pre + `$${content}$`
             })
         ;
     return replacedText;
