@@ -338,6 +338,7 @@ export default class TextFormat extends Plugin {
         id: `wrapper-${index}`,
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
+          // TODO: support multi-cursor
           textWrapper(editor, view, wrapper.prefix, wrapper.suffix)
         },
       });
@@ -368,7 +369,7 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  formatSelection(selectedText: string, cmd: string, args: any = ""): string | null {
+  formatSelection(selectedText: string, cmd: string, args: any = null): string | null {
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -626,7 +627,7 @@ export default class TextFormat extends Plugin {
 
       let from = editor.getCursor("from"),
         to = editor.getCursor("to");
-      let cursorOffset = 0;
+
 
       let adjustSelectionCmd = "none";
 
@@ -674,6 +675,7 @@ export default class TextFormat extends Plugin {
       // console.log("adjustRange", adjustRange)
       const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
 
+      let cursorOffset = 0;
       //: MODIFY SELECTION
       let replacedText: string;
       try {
@@ -681,10 +683,10 @@ export default class TextFormat extends Plugin {
         if (replacedText === null) {
           switch (cmd) {
             case "heading":
-              if (originRange.from.line == originRange.to.line) {
+              if (adjustRange.from.line == adjustRange.to.line) {
                 const headingRes = headingLevel(selectedText, args);
                 replacedText = headingRes.text;
-                cursorOffset = headingRes.offset
+                cursorOffset = headingRes.offset;
               } else {
                 replacedText = "";
                 cursorOffset = 0;
@@ -755,10 +757,9 @@ export default class TextFormat extends Plugin {
       const tos = editor.posToOffset(adjustRange.to);
       switch (cmd) {
         case "heading":
-          // console.log("cursorOffset", cursorOffset)
           // console.log("originRange", originRange.from, originRange.to)
           if (originRange.from.line == originRange.to.line) {
-            // put cursor back to the original position
+            //: put cursor back to the original position
             resetSelection = {
               anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + cursorOffset),
               head: editor.offsetToPos(editor.posToOffset(originRange.to) + cursorOffset)
@@ -798,7 +799,6 @@ export default class TextFormat extends Plugin {
     //   changes: editChangeList
     // });
 
-    // console.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 
