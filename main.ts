@@ -109,17 +109,17 @@ export default class TextFormat extends Plugin {
     });
 
     this.addCommand({
-      id: "bullet-list",
+      id: "convert-bullet-list",
       name: { en: "Detect and format bullet list", zh: "识别并格式化无序列表", "zh-TW": "識別並格式化無序清單" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "bullet");
+        this.editorTextFormat(editor, view, "convert-bullet-list");
       },
     });
     this.addCommand({
       id: "convert-ordered-list",
       name: { en: "Detect and format ordered list", zh: "识别并格式化有序列表", "zh-TW": "識別並格式化有序清單" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "convert-ordered");
+        this.editorTextFormat(editor, view, "convert-ordered-list");
       },
     });
     this.addCommand({
@@ -433,8 +433,8 @@ export default class TextFormat extends Plugin {
         break;
       case "remove-redundant-spaces":
         replacedText = selectedText
-          .replace(/(?:\S) {2,}/g, " ")
-          .replace(/ $| (?=\n)/g, "");
+          .replace(/(\S)\s{2,}/g, "$1 ")
+          .replace(/\s$|\s(?=\n)/g, "");
         // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
         break;
       case "spaces-all":
@@ -464,7 +464,7 @@ export default class TextFormat extends Plugin {
       case "remove-citation":
         replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
         break;
-      case "convert-ordered":
+      case "convert-ordered-list":
         let orderedCount = 0;
         // var rx = new RegExp(
         //   String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
@@ -491,6 +491,25 @@ export default class TextFormat extends Plugin {
         );
         replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
         break;
+      case "convert-bullet-list":
+        let r = this.settings.BulletPoints.replace("-", "");
+        replacedText = selectedText
+          .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+            t.replace(RegExp(`[${r}] *`), "\n- ")
+          )
+          .replace(/\n[~\/Vv] /g, "\n- ")
+          .replace(/\n+/g, "\n")
+          .replace(/^\n/, "");
+        // if "-" in this.settings.BulletPoints
+        if (this.settings.BulletPoints.indexOf("-") > -1) {
+          replacedText = replacedText.replace(/^- /g, "\n- ");
+        }
+        // if select multi-paragraphs, add `- ` to the beginning
+        if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+          replacedText = "- " + replacedText;
+        }
+        replacedText = replacedText.replace(/^\n*/, "");
+        break;
       case "split-blank":
         replacedText = selectedText.replace(/ /g, "\n");
         break;
@@ -515,7 +534,6 @@ export default class TextFormat extends Plugin {
       case "English-punctuation":
         replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
         break;
-
       case "decodeURI":
         replacedText = selectedText.replace(
           /(\w+):\/\/[-\w+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
@@ -568,6 +586,7 @@ export default class TextFormat extends Plugin {
       case "custom-replace":
         replacedText = customReplace(selectedText, args);
         break;
+
       default:
         replacedText = null;
     }
@@ -580,22 +599,17 @@ export default class TextFormat extends Plugin {
     // if nothing is selected, select the whole line.
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
-    const adjustRangeList: EditorRangeOrCaret[] = [];
 
-    let supportMultiCursor = false;
-
-
-    const changeList: EditorChange[] = [];
+    const editChangeList: EditorChange[] = [];
 
     originSelectionList.forEach(originSelection => {
       const originRange = selection2range(editor, originSelection);
-      // console.log("originRange", originRange.from, originRange.to)
 
       let adjustRange: EditorRangeOrCaret = originRange;
 
       const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
       if (!somethingSelected) {
-        // Select whole line if nothing selected
+        //: Select whole line if nothing selected
         let cursor = { line: originRange.from.line, ch: 0 };
 
         let offsetFrom = editor.posToOffset(cursor);
@@ -603,7 +617,7 @@ export default class TextFormat extends Plugin {
         cursor.line += 1;
         let offsetTo = editor.posToOffset(cursor);
         if (cursor.line <= editor.lastLine()) {
-          // don't select the next line which is not selected by user
+          //: don't select the next line which is not selected by user
           offsetTo -= 1;
         }
         adjustRange = { from: editor.offsetToPos(offsetFrom), to: editor.offsetToPos(offsetTo) };
@@ -623,11 +637,10 @@ export default class TextFormat extends Plugin {
           if (originRange.from.line != originRange.to.line) {
             adjustSelectionCmd = "whole-paragraph";
           }
-          supportMultiCursor = true;
           break;
         case "split-blank":
-        case "bullet":
-        case "convert-ordered":
+        case "convert-bullet-list":
+        case "convert-ordered-list":
         case "callout":
           //: Force to select whole paragraph(s)
           adjustSelectionCmd = "whole-paragraph";
@@ -639,8 +652,7 @@ export default class TextFormat extends Plugin {
           }
           break;
         default:
-          // Except special process of adjusting selection, get all selected text (for now)
-          supportMultiCursor = true;
+          //: Except special process of adjusting selection, get all selected text (for now)
           break;
       }
 
@@ -652,23 +664,14 @@ export default class TextFormat extends Plugin {
           to.ch = 0;
           if (to.line <= editor.lastLine()) {
             adjustRange = { from: from, to: editor.offsetToPos(editor.posToOffset(to) - 1) };
-            // editor.setSelections([{
-            //   anchor: from,
-            //   head: editor.offsetToPos(editor.posToOffset(to) - 1)
-            // }]);
           } else {
             adjustRange = { from: from, to: to };
-            // editor.setSelections([{
-            //   anchor: from,
-            //   head: to
-            // }]);
           }
-          // selectedText = editor.getSelection();
-          // console.log(selectedText)
           break;
         default:
           break;
       }
+      // console.log("adjustRange", adjustRange)
       const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
 
       //: MODIFY SELECTION
@@ -697,10 +700,10 @@ export default class TextFormat extends Plugin {
               let p = requestAPI(selectedText, view.file, args);
               p.then(result => {
                 replacedText = result;
-                editor.setSelections([{ anchor: from, head: to }]);
-                if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
-                editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
-                return;
+                // editor.setSelections([{ anchor: from, head: to }]);
+                // if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
+                // editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
+                // return;
               })
               return;
             case "callout":
@@ -723,24 +726,7 @@ export default class TextFormat extends Plugin {
                 }
               }
               break;
-            case "bullet":
-              let r = this.settings.BulletPoints.replace("-", "");
-              replacedText = selectedText
-                .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-                  t.replace(RegExp(`[${r}] *`), "\n- ")
-                )
-                .replace(/\n[~\/Vv] /g, "\n- ")
-                .replace(/\n+/g, "\n")
-                .replace(/^\n/, "");
-              // if "-" in this.settings.BulletPoints
-              if (this.settings.BulletPoints.indexOf("-") > -1) {
-                replacedText = replacedText.replace(/^- /g, "\n- ");
-              }
-              // if select multi-paragraphs, add `- ` to the beginning
-              if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
-                replacedText = "- " + replacedText;
-              }
-              break;
+
             case "latex-letter":
               replacedText = convertLatex(editor, selectedText);
               break;
@@ -752,11 +738,15 @@ export default class TextFormat extends Plugin {
       } catch (e) {
         console.error(e);
       }
-      let editorChange = { text: replacedText, ...adjustRange };
-      editor.transaction({
-        changes: [editorChange]
-      });
-      changeList.push(editorChange)
+      //: Make change immediately
+      if (replacedText != selectedText) {
+        // TODO: multi-cursor: count number of lines added by plugin, add the number to `adjustRange`
+        let editorChange = { text: replacedText, ...adjustRange };
+        editor.transaction({
+          changes: [editorChange]
+        });
+        editChangeList.push(editorChange)
+      }
 
 
       //: Set cursor selection
@@ -764,16 +754,6 @@ export default class TextFormat extends Plugin {
       const fos = editor.posToOffset(adjustRange.from);
       const tos = editor.posToOffset(adjustRange.to);
       switch (cmd) {
-        case "merge":
-        case "remove-blank-line":
-        case "bullet":
-        case "Chinese-punctuation":
-          //: Select whole modifications 
-          resetSelection = {
-            anchor: editor.offsetToPos(tos - replacedText.length),
-            head: editor.offsetToPos(tos)
-          };
-          break;
         case "heading":
           // console.log("cursorOffset", cursorOffset)
           // console.log("originRange", originRange.from, originRange.to)
@@ -805,14 +785,20 @@ export default class TextFormat extends Plugin {
           break;
         default:
           resetSelection = {
-            anchor: editor.offsetToPos(fos),
-            head: editor.getCursor("head")
+            anchor: adjustRange.from,
+            head: editor.offsetToPos(fos + replacedText.length)
           };
       }
       // console.log("resetSelection", resetSelection)
       resetSelectionList.push(resetSelection);
     });
 
+    // console.log("editChangeList", editChangeList)
+    // editor.transaction({
+    //   changes: editChangeList
+    // });
+
+    // console.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 
@@ -826,7 +812,7 @@ export default class TextFormat extends Plugin {
 }
 
 
-function selection2range(editor: Editor, selection: EditorSelectionOrCaret): EditorRangeOrCaret {
+function selection2range(editor: Editor, selection: EditorSelectionOrCaret): { readonly from: EditorPosition, readonly to: EditorPosition } {
   let anchorOffset = editor.posToOffset(selection.anchor), headOffset = editor.posToOffset(selection.head);
   const from = editor.offsetToPos(Math.min(anchorOffset, headOffset));
   const to = editor.offsetToPos(Math.max(anchorOffset, headOffset));

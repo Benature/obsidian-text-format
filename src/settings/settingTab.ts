@@ -108,7 +108,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
 
-    headerEl = containerEl.createEl("h3", { text: "URL formatting" });
+    headerEl = containerEl.createEl("h3", { text: "Link formatting" });
     this.contentEl = containerEl.createDiv();
     makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -116,9 +116,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
       // .setDesc("Or will use absolute path instead.")
       .addDropdown(dropDown =>
         dropDown
-          .addOption(Wikilink2mdPathMode.absolute, 'Absolute')
           .addOption(Wikilink2mdPathMode.relativeObsidian, 'Relative to Obsidian Vault')
           .addOption(Wikilink2mdPathMode.relativeFile, 'Relative to current file')
+          .addOption(Wikilink2mdPathMode.absolute, 'Absolute')
           .setValue(this.plugin.settings.Wikilink2mdRelativePath || Wikilink2mdPathMode.relativeObsidian)
           .onChange(async (value) => {
             this.plugin.settings.Wikilink2mdRelativePath = value as Wikilink2mdPathMode;

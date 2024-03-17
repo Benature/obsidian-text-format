@@ -27,9 +27,9 @@ export interface customReplaceSetting {
 }
 
 export enum Wikilink2mdPathMode {
-    absolute = "absolute",
     relativeObsidian = "relative-obsidian",
     relativeFile = "relative-file",
+    absolute = "absolute",
 }
 
 export interface FormatSettings {

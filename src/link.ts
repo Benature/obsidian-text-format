@@ -29,11 +29,14 @@ export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): str
 const RegexMarkdownLink = /\[(.+?)\]\((?:[^)]+\([^)]+\)[^)]*|[^)]+)\)/g;
 
 export function removeUrlLink(s: string, UrlLinkFormat: string): string {
+  console.log(s)
   const rx = RegexMarkdownLink;
   return s.replace(rx, function (t) {
     // TODO: add a setting to decide whether remove url link (starts with http) only or all kinds of links
-    const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/[\S\s]+)\)/;
+    // const regex = /\[(?<text>.*?)\]\((?<url>https?:\/\/[\S\s]+)\)/;
+    const regex = /\[(?<text>.*?)\]\((?<url>[\S\s]+?)\)/;
     const match = t.match(regex);
+    console.log(match)
     if (match && match.length === 3) {
       return stringFormat(UrlLinkFormat, match.groups);
     } else {
@@ -70,9 +73,14 @@ export function convertWikiLinkToMarkdown(wikiLink: string, plugin: TextFormat):
           linkURL = relativePath(linkURL, currentFilePath)
           break;
       }
-      linkURL = linkURL.replace(/\s/g, "%20")
+      linkURL = linkURL.replace(/\s/g, "%20");
     }
-    return `[${linkText}](${linkURL})`;
+    const matchAlias = linkText.match(/#(.*)$/);
+    let aliasLink = "";
+    if (matchAlias) {
+      aliasLink = "#" + matchAlias[1].replace(/\s/g, "%20");
+    }
+    return `[${linkText}](${linkURL}${aliasLink})`;
   });
 
   return markdown;

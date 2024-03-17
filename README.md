@@ -32,9 +32,9 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
     - [Markdown Grammar](#markdown-grammar)
       - [List](#list)
       - [Links](#links)
-    - [PDF copy / OCR](#pdf-copy--ocr)
+    - [Copy / OCR issues](#copy--ocr-issues)
     - [Academic/Study](#academicstudy)
-    - [Custom](#custom)
+    - [Advanced custom](#advanced-custom)
     - [Others](#others)
   - [Support](#support)
   - [Some Examples](#some-examples)
@@ -70,13 +70,13 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 *discussions in [#83](https://github.com/Benature/obsidian-text-format/issues/83)*
 
 #### List
-| Command                                  | Description                                                                                                                                           |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Detect and format **bullet** list ⚙️      | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines.                                            |
-| Detect and format **ordered** list       | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4) |
-| Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                              |
-| Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                    |
-| **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37), [#46](https://github.com/Benature/obsidian-text-format/issues/46)                  |
+| Command                                  | Description                                                                                                                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Detect and format **bullet** list ⚙️      | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines. ([test cases](https://github.com/Benature/obsidian-text-format/issues/66)) |
+| Detect and format **ordered** list       | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4)                                 |
+| Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                                                              |
+| Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                                                    |
+| **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37), [#46](https://github.com/Benature/obsidian-text-format/issues/46)                                                  |
 
 #### Links
 
@@ -85,9 +85,9 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Remove WikiLinks format in selection                     | e.g. Convert `[[WikiLinks]]` to `WikiLinks` ([#28](https://github.com/Benature/obsidian-text-format/issues/28))        |
 | Remove URL links format in selection                     | e.g. Convert `[Google](www.google.com)` to `Google`                                                                    |
 | Convert URL links to WikiLinks in selection              | e.g. Convert `[Google](www.google.com)` to `[[Google]]`                                                                |
-| Convert wikiLinks to plain markdown links in selection ⚙️ | e.g. Convert `[[Google]]` to `[Google](Google.md)` ([#40](https://github.com/Benature/obsidian-text-format/issues/40)) |
+| Convert WikiLinks to plain markdown links in selection ⚙️ | e.g. Convert `[[Google]]` to `[Google](Google.md)` ([#40](https://github.com/Benature/obsidian-text-format/issues/40)) |
 
-### PDF copy / OCR
+### Copy / OCR issues
 
 | Command                                            | Description                                                                                                                                                                                                                                        |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -115,7 +115,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 
 
-### Custom
+### Advanced custom
 
 | Command                  | Description                                                                                                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
