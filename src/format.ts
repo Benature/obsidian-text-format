@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice } from "obsidian";
+import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, EditorRangeOrCaret, EditorChange, EditorSelection, EditorSelectionOrCaret } from "obsidian";
 import { FormatSettings, customReplaceSetting } from "src/settings/types";
 import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
@@ -274,9 +274,15 @@ String.prototype.format = function (args: any) {
     return result;
 };
 
-export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: string, suffix_setting: string): void {
-    // @ts-ignore
-    const metaProperties = view.metadataEditor.properties;
+export function textWrapper(selectedText: string, context: any): { editorChange: EditorChange, resetSelection: EditorSelectionOrCaret, selectedText: string } {
+    const editor: Editor = context.editor;
+    const prefix_setting: string = context.prefix;
+    const suffix_setting: string = context.suffix;
+    const adjustRange: EditorRangeOrCaret = context.adjustRange;
+    let resetSelection;
+    let editorChange: EditorChange;
+
+    const metaProperties = context.view.metadataEditor.properties;
     let meta: Record<string, any> = {};
     for (const m of metaProperties) { meta[m.key] = m.value; }
 
@@ -288,14 +294,9 @@ export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: 
     const PL = prefix.length; // Prefix Length
     const SL = suffix.length; // Suffix Length
 
-    let selectedText = editor.somethingSelected() ? editor.getSelection() : "";
-
-    let last_cursor = editor.getCursor(); // the cursor that at the last position of doc
-    last_cursor.line = editor.lastLine();
-    last_cursor.ch = editor.getLine(last_cursor.line).length;
-    const last_offset = editor.posToOffset(last_cursor);
-
     function Cursor(offset: number): EditorPosition {
+        const last_cursor = { line: editor.lastLine(), ch: editor.getLine(editor.lastLine()).length }
+        const last_offset = editor.posToOffset(last_cursor);
         if (offset > last_offset) {
             return last_cursor;
         }
@@ -303,11 +304,8 @@ export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: 
         return editor.offsetToPos(offset);
     }
 
-    /* Detect whether the selected text is packed by <u></u>.
-         If true, unpack it, else pack with <u></u>. */
-
-    const fos = editor.posToOffset(editor.getCursor("from")); // from offset
-    const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+    const fos = editor.posToOffset(adjustRange.from); // from offset
+    const tos = editor.posToOffset(adjustRange.to); // to offset
     const len = selectedText.length;
 
     const beforeText = editor.getRange(Cursor(fos - PL), Cursor(tos - len));
@@ -316,37 +314,19 @@ export function textWrapper(editor: Editor, view: MarkdownView, prefix_setting: 
     const endText = editor.getRange(Cursor(tos - SL), Cursor(tos));
 
     if (beforeText === prefix && afterText === suffix) {
-        //=> undo underline (inside selection)
-        editor.setSelection(Cursor(fos - PL), Cursor(tos + SL));
-        editor.replaceSelection(`${selectedText}`);
-        // re-select
-        editor.setSelection(Cursor(fos - PL), Cursor(tos - PL));
+        //: selection outside match prefix and suffix => undo underline (inside selection)
+        editorChange = { text: selectedText, from: Cursor(fos - PL), to: Cursor(tos + SL) };
+        resetSelection = { anchor: Cursor(fos - PL), head: Cursor(tos - PL) };
+        selectedText = prefix + selectedText + suffix;
     } else if (startText === prefix && endText === suffix) {
-        //=> undo underline (outside selection)
-        editor.replaceSelection(
-            editor.getRange(Cursor(fos + PL), Cursor(tos - SL))
-        );
-        // re-select
-        editor.setSelection(Cursor(fos), Cursor(tos - PL - SL));
-    } else {
-        //=> do underline
-
-        if (selectedText) {
-            // console.log("selected");
-            editor.replaceSelection(`${prefix}${selectedText}${suffix}`);
-            // re-select
-            editor.setSelection(
-                editor.offsetToPos(fos + PL),
-                editor.offsetToPos(tos + PL)
-            );
-        } else {
-            // console.log("not selected");
-            editor.replaceSelection(`${prefix}${suffix}`);
-            let cursor = editor.getCursor();
-            cursor.ch -= SL;
-            editor.setCursor(cursor);
-        }
+        //: selection inside match prefix and suffix => undo underline (outside selection)
+        editorChange = { text: editor.getRange(Cursor(fos + PL), Cursor(tos - SL)), ...adjustRange };
+        resetSelection = { anchor: Cursor(fos), head: Cursor(tos - PL - SL) }
+    } else { //: Add prefix and suffix to selection
+        editorChange = { text: prefix + selectedText + suffix, ...adjustRange };
+        resetSelection = { anchor: editor.offsetToPos(fos + PL), head: editor.offsetToPos(tos + PL) }
     }
+    return { editorChange: editorChange, resetSelection: resetSelection, selectedText: selectedText };
 }
 
 export function replaceLigature(s: string): string {

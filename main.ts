@@ -8,7 +8,7 @@ import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
 import { LetterCaseCommands } from "src/commands";
 import { getString } from "src/langs/langs";
-import { selectionBehavior } from "src/types";
+import { selectionBehavior, FormatSelectionReturn } from "src/types";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');
@@ -30,12 +30,8 @@ export default class TextFormat extends Plugin {
   async formatEditorOrTitle(cmd: string) {
     if (isActiveTitle()) {
       const file = this.app.workspace.getActiveFile();
-      // let newName = file.basename;
-      let newName = await this.formatSelection(file.basename, cmd);
-      if (newName === null) {
-        Error("Unknown command " + cmd);
-        newName = file.basename;
-      }
+      const formatResult = await this.formatSelection(file.basename, cmd);
+      const newName = formatResult.editorChange.text;
       const newPath = normalizePath(file.parent.path + "/" + newName + "." + file.extension)
       this.app.vault.adapter.rename(file.path, newPath);
     } else {
@@ -340,8 +336,8 @@ export default class TextFormat extends Plugin {
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
           // TODO: support multi-cursor
-          textWrapper(editor, view, wrapper.prefix, wrapper.suffix);
-          // this.editorTextFormat(editor, view, "wrapper", wrapper);
+          // textWrapper(editor, view, wrapper.prefix, wrapper.suffix);
+          this.editorTextFormat(editor, view, "wrapper", wrapper);
         },
       });
     });
@@ -371,8 +367,13 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<string> {
+
+
+  async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<FormatSelectionReturn> {
     let replacedText: string = selectedText;
+    let ret: FormatSelectionReturn = { editorChange: {} as EditorChange };
+    // ret.editorChange = null;
+    let editorChange: EditorChange;
     try {
       switch (cmd) {
         case "anki":
@@ -606,6 +607,13 @@ export default class TextFormat extends Plugin {
         case "api-request":
           replacedText = await requestAPI(selectedText, context.view.file, context.url);
           break;
+        case "wrapper":
+          const wrapperResult = textWrapper(selectedText, context);
+          selectedText = wrapperResult.selectedText;
+          replacedText = wrapperResult.editorChange.text;
+          context.adjustRange = { from: wrapperResult.editorChange.from, to: wrapperResult.editorChange.to };
+          ret.resetSelection = wrapperResult.resetSelection;
+          break;
         case "callout":
           const wholeContent = context.editor.getValue();
           let type = this.settings.calloutType;
@@ -635,8 +643,18 @@ export default class TextFormat extends Plugin {
     } catch (e) {
       console.error(e);
     }
+
+    if (replacedText != selectedText) {
+      ret.editorChange = { text: replacedText, ...context?.adjustRange };
+    }
+    return ret;
+    // const ret: FormatSelectionReturn = {
+    //   editorChange: editorChange
+    // }
+
+    // return ret;
+    // return { editorChange: editorChange, resetSelection: context?.resetSelection };
     // this.log("formatSelection.replacedText", replacedText)
-    return replacedText;
   }
 
   log(...args: any[]): void {
@@ -665,6 +683,9 @@ export default class TextFormat extends Plugin {
       //： Adjust Selection
       let adjustSelectionCmd: selectionBehavior;
       switch (cmd) {
+        case "wrapper":
+          //: Keep the selection as it is
+          break;
         case "heading":
           adjustSelectionCmd = selectionBehavior.wholeLine;
           break;
@@ -711,23 +732,21 @@ export default class TextFormat extends Plugin {
       context.editor = editor;
       context.view = view;
       context.adjustRange = adjustRange;
-      const replacedText = await this.formatSelection(selectedText, cmd, context);
-
+      const formatResult = await this.formatSelection(selectedText, cmd, context);
       //: Make change immediately
-      if (replacedText != selectedText) {
-        let editorChange = { text: replacedText, ...adjustRange };
-        editor.transaction({
-          changes: [editorChange]
-        });
-        editChangeList.push(editorChange)
+      if (formatResult.editorChange) {
+        editor.transaction({ changes: [formatResult.editorChange] });
       }
-
 
       //: Set cursor selection
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
+      const replacedText = formatResult.editorChange.text;
       const cursorLast = editor.offsetToPos(fos + replacedText.length);
       switch (cmd) {
+        case "wrapper":
+          resetSelection = formatResult.resetSelection;
+          break;
         case "callout":
           if (!somethingSelected && selectedText.length === 0) {
             resetSelection = {
