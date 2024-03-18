@@ -5,8 +5,11 @@
 ## 🏗️ developed
 > to be updated in the next version
 
-## 2.7.1
+## 3.0.0-b5
+- [feature] support multi-cursor for commands ([#48](https://github.com/Benature/obsidian-text-format/issues/48))
+- [feature] heading upper/lower for multi-lines ([#83](https://github.com/Benature/obsidian-text-format/issues/83))
 
+## 2.7.1
 - [fix] `customReplace()`: error when search contains like `\.\!\?` 
 - [updated] `Chinese-punctuation`: select modification at last
 - [updated] `math mode`: 
