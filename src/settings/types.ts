@@ -43,6 +43,7 @@ export interface FormatSettings {
     WrapperList: Array<WrapperSetting>;
     RequestList: Array<APIRequestSetting>;
     customReplaceList: Array<customReplaceSetting>;
+    customReplaceBuiltIn: Array<string>;
     ToggleSequence: string;
     RemoveWikiURL2: boolean;
     WikiLinkFormat: WikiLinkFormatGroup;
@@ -64,6 +65,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>" }],
     RequestList: [],
     customReplaceList: [],
+    customReplaceBuiltIn: [],
     ToggleSequence: "titleCase\nlowerCase\nupperCase",
     RemoveWikiURL2: false,
     WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },

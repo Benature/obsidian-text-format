@@ -8,6 +8,10 @@ const EN = {
         "togglecase": "Togglecase",
         "slugify": "Slugify",
         "snakify": "Snakify",
+        "remove-trailing-spaces": "Remove trailing spaces",
+        "remove-blank-line": "Remove blank line(s)",
+        "add-line-break": "Add extra line break between paragraphs",
+        "split-lines-by-blank": "Split line(s) by blanks",
     },
     setting: {
 
@@ -24,6 +28,10 @@ const ZH = {
         "togglecase": "切换大小写格式",
         "slugify": "使用 Slugify 格式化（`-`连字符）",
         "snakify": "使用 Snakify 格式化（`_`连字符）",
+        "remove-trailing-spaces": "移除所有行末空格",
+        "remove-blank-line": "移除空行",
+        "add-line-break": "在段落间添加额外换行",
+        "split-lines-by-blank": "按空格分行",
     },
     setting: {
 

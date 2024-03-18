@@ -1,16 +1,8 @@
-import {
-  MarkdownView,
-  Plugin,
-  Setting,
-  PluginSettingTab,
-  App,
-  Menu,
-  ButtonComponent,
-  setIcon,
-} from "obsidian";
+import { Setting, PluginSettingTab, App, ButtonComponent, setIcon } from "obsidian";
 import TextFormat from "../../main";
-import { FormatSettings, DEFAULT_SETTINGS, Wikilink2mdPathMode } from './types';
-
+import { Wikilink2mdPathMode } from './types';
+import { CustomReplacementBuiltInCommands } from "../commands"
+import { getString } from "../langs/langs";
 
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -19,6 +11,17 @@ export class TextFormatSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: TextFormat) {
     super(app, plugin);
     this.plugin = plugin;
+    this.builtInCustomReplacement();
+  }
+
+  builtInCustomReplacement() {
+    for (let command of CustomReplacementBuiltInCommands) {
+      if (!this.plugin.settings.customReplaceBuiltIn.includes(command.id)) {
+        this.plugin.settings.customReplaceList.push({ name: getString(["command", command.id]), data: command.data });
+        this.plugin.settings.customReplaceBuiltIn.push(command.id);
+        this.plugin.saveSettings();
+      }
+    }
   }
 
   display(): void {
@@ -381,7 +384,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Replace")
+          cb.setPlaceholder("Replace (empty is fine)")
             .setValue(replaceSetting.data[0].replace)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].data[0].replace = newValue;

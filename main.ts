@@ -189,20 +189,20 @@ export default class TextFormat extends Plugin {
         this.editorTextFormat(editor, view, "spaces-all");
       },
     });
-    this.addCommand({
-      id: "remove-trailing-all",
-      name: { en: "Remove trailing spaces in selection", zh: "将选中文本中的所有行末空格移除", "zh-TW": "將選取文字中的所有行尾空格移除" }[lang],
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "trailing-spaces");
-      },
-    });
-    this.addCommand({
-      id: "remove-blank-line",
-      name: { en: "Remove blank line(s)", zh: "将选中文本中的空行移除", "zh-TW": "將選取文字中的空行移除" }[lang],
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-blank-line");
-      },
-    });
+    // this.addCommand({
+    //   id: "remove-trailing-all",
+    //   name: { en: "Remove trailing spaces in selection", zh: "将选中文本中的所有行末空格移除", "zh-TW": "將選取文字中的所有行尾空格移除" }[lang],
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     this.editorTextFormat(editor, view, "trailing-spaces");
+    //   },
+    // });
+    // this.addCommand({
+    //   id: "remove-blank-line",
+    //   name: { en: "Remove blank line(s)", zh: "将选中文本中的空行移除", "zh-TW": "將選取文字中的空行移除" }[lang],
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     this.editorTextFormat(editor, view, "remove-blank-line");
+    //   },
+    // });
     this.addCommand({
       id: "merge-line",
       name: { en: "Merge broken paragraph(s) in selection", zh: "将选中文本中的断行合并", "zh-TW": "將選取文字中的斷行合併" }[lang],
@@ -210,13 +210,13 @@ export default class TextFormat extends Plugin {
         this.editorTextFormat(editor, view, "merge");
       },
     });
-    this.addCommand({
-      id: "split-blank",
-      name: { en: "Split line(s) by blanks", zh: "将选中文本按空格分行", "zh-TW": "將選取文字按空格分行" }[lang],
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "split-blank");
-      },
-    });
+    // this.addCommand({
+    //   id: "split-blank",
+    //   name: { en: "Split line(s) by blanks", zh: "将选中文本按空格分行", "zh-TW": "將選取文字按空格分行" }[lang],
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     this.editorTextFormat(editor, view, "split-blank");
+    //   },
+    // });
     this.addCommand({
       id: "chinese-punctuation",
       name: { en: "Convert to Chinese punctuation marks (,;:!?)", zh: "转换为中文标点符号（,;:!?）", "zh-TW": "轉換為中文標點符號（,;:!?）" }[lang],
@@ -309,20 +309,20 @@ export default class TextFormat extends Plugin {
         this.editorTextFormat(editor, view, "decodeURI");
       },
     });
-    this.addCommand({
-      id: "paragraph-double-spaces",
-      name: { en: "Add extra double spaces per paragraph for whole file", zh: "全文为每段段末添加双空格", "zh-TW": "全文為每段段末添加雙空格" }[lang],
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        extraDoubleSpaces(editor, view);
-      },
-    });
-    this.addCommand({
-      id: "add-line-break",
-      name: { en: "Add extra line break to paragraph", zh: "在段落末添加额外换行", "zh-TW": "在段落末添加額外換行" }[lang],
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "add-line-break");
-      },
-    });
+    // this.addCommand({
+    //   id: "paragraph-double-spaces",
+    //   name: { en: "Add extra double spaces per paragraph for whole file", zh: "全文为每段段末添加双空格", "zh-TW": "全文為每段段末添加雙空格" }[lang],
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     extraDoubleSpaces(editor, view);
+    //   },
+    // });
+    // this.addCommand({
+    //   id: "add-line-break",
+    //   name: { en: "Add extra line break to paragraph", zh: "在段落末添加额外换行", "zh-TW": "在段落末添加額外換行" }[lang],
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     this.editorTextFormat(editor, view, "add-line-break");
+    //   },
+    // });
     this.addCommand({
       id: "space-word-symbol",
       name: { en: "Format space between word and symbol", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
@@ -444,9 +444,9 @@ export default class TextFormat extends Plugin {
         case "spaces-all":
           replacedText = removeAllSpaces(selectedText);
           break;
-        case "trailing-spaces":
-          replacedText = selectedText.replace(/(\s*)(?=\n)|(\s*)$/g, "")
-          break;
+        // case "trailing-spaces":
+        //   replacedText = selectedText.replace(/(\s*)(?=\n)|(\s*)$/g, "")
+        //   break;
         case "merge":
           replacedText = selectedText.replace(/(?:[^\n])(\n)(?!\n)/g, (t, t1) => t.replace(t1, " "));
           if (this.settings.MergeParagraph_Newlines) {
@@ -456,12 +456,12 @@ export default class TextFormat extends Plugin {
             replacedText = replacedText.replace(/ +/g, " ");
           }
           break;
-        case "remove-blank-line":
-          replacedText = selectedText.replace(/\n\s*\n/g, "\n"); // issue #16
-          break;
-        case "add-line-break":
-          replacedText = selectedText.replace(/\n/g, "\n\n");
-          break;
+        // case "remove-blank-line":
+        //   replacedText = selectedText.replace(/\n\s*\n/g, "\n"); // issue #16
+        //   break;
+        // case "add-line-break":
+        //   replacedText = selectedText.replace(/\n/g, "\n\n");
+        //   break;
         case "space-word-symbol":
           replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
           break;
@@ -513,9 +513,9 @@ export default class TextFormat extends Plugin {
           }
           replacedText = replacedText.replace(/^\n*/, "");
           break;
-        case "split-blank":
-          replacedText = selectedText.replace(/ /g, "\n");
-          break;
+        // case "split-blank":
+        //   replacedText = selectedText.replace(/ /g, "\n");
+        //   break;
         case "Chinese-punctuation":
           replacedText = selectedText;
           replacedText = replacedText
@@ -605,16 +605,6 @@ export default class TextFormat extends Plugin {
           break;
         case "api-request":
           replacedText = await requestAPI(selectedText, context.view.file, context.url);
-          // p.then((result) => {
-          //   replacedText = result;
-          //   // editor.setSelections([{ anchor: from, head: to }]);
-          //   // if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
-          //   // editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
-          //   // return;
-          //   console.log("1", replacedText);
-          // })
-          console.log(2, replacedText);
-          // return;
           break;
         case "callout":
           const wholeContent = context.editor.getValue();
