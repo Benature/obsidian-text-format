@@ -635,13 +635,13 @@ export default class TextFormat extends Plugin {
     } catch (e) {
       console.error(e);
     }
-    // console.log("formatSelection.replacedText", replacedText)
+    // this.log("formatSelection.replacedText", replacedText)
     return replacedText;
   }
 
   log(...args: any[]): void {
     // TODO: add verbose log setting
-    if (true) {
+    if (this.settings.debugMode) {
       console.log(...args);
     }
   }
@@ -654,7 +654,7 @@ export default class TextFormat extends Plugin {
     const editChangeList: EditorChange[] = [];
 
     for (let originSelection of originSelectionList) {
-      console.log(originSelection)
+      this.log(originSelection)
       const originRange = selection2range(editor, originSelection);
       this.log(originRange)
 
@@ -748,7 +748,7 @@ export default class TextFormat extends Plugin {
       resetSelectionList.push(resetSelection);
     }
 
-    // console.log("resetSelectionList", resetSelectionList)
+    // this.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 

@@ -17,14 +17,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.builtInCustomReplacement();
   }
 
-  builtInCustomReplacement() {
+  async builtInCustomReplacement() {
     for (let command of CustomReplacementBuiltInCommands) {
       if (!this.plugin.settings.customReplaceBuiltIn.includes(command.id)) {
         this.plugin.settings.customReplaceList.push({ name: getString(["command", command.id]), data: command.data });
         this.plugin.settings.customReplaceBuiltIn.push(command.id);
-        this.plugin.saveSettings();
       }
     }
+    await this.plugin.saveSettings();
   }
 
   display(): void {
@@ -476,6 +476,18 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
           .onChange(async (value) => {
             this.plugin.settings.RemoveBlanksWhenChinese = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(this.contentEl)
+      .setName("Debug logging")
+      .setDesc("verbose logging in the console")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.debugMode)
+          .onChange(async (value) => {
+            this.plugin.settings.debugMode = value;
             await this.plugin.saveSettings();
           });
       });

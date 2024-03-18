@@ -52,6 +52,7 @@ export interface FormatSettings {
     OrderedListOtherSeparator: string;
     Wikilink2mdRelativePath: Wikilink2mdPathMode;
     calloutType: string;
+    debugMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -74,4 +75,5 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     OrderedListOtherSeparator: String.raw``,
     Wikilink2mdRelativePath: Wikilink2mdPathMode.relativeObsidian,
     calloutType: "NOTE",
+    debugMode: false,
 };
