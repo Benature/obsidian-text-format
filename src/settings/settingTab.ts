@@ -8,10 +8,12 @@ import { addDonationElement } from "./donation"
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
   contentEl: HTMLElement;
+  collapseMemory: { [key: string]: boolean };
 
   constructor(app: App, plugin: TextFormat) {
     super(app, plugin);
     this.plugin = plugin;
+    this.collapseMemory = {}
     this.builtInCustomReplacement();
   }
 
@@ -40,7 +42,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" })
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Lowercase before capitalize/title case")
       .setDesc(
@@ -83,7 +85,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Remove redundant blank lines")
       .setDesc(
@@ -114,7 +116,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Link formatting" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Path mode when covering wikilinks to plain markdown links.")
       // .setDesc("Or will use absolute path instead.")
@@ -191,7 +193,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Format bullet/ordered list" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Possible bullet point characters")
       .setDesc("The characters that will be regarded as bullet points.")
@@ -223,7 +225,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Wrapper" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     const wrapperRuleDesc = document.createDocumentFragment();
     wrapperRuleDesc.append(
       "<Wrapper Name> <Prefix Template> <Suffix Template>",
@@ -291,7 +293,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "API Request" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("API Request URL")
       .setDesc(
@@ -345,7 +347,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Custom replacement" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Add custom replacement")
       .setDesc("The plugin will replace the `search` string with the `replace` string in the selection. RegExp is supported.")
@@ -407,7 +409,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Zotero pdf note format" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl);
+    this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
       .setName("Zotero pdf note (input) RegExp")
       .setDesc(
@@ -449,7 +451,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     headerEl = containerEl.createEl("h3", { text: "Others" });
     this.contentEl = containerEl.createDiv();
-    makeCollapsible(headerEl, this.contentEl, true);
+    this.makeCollapsible(headerEl, this.contentEl, true);
 
     new Setting(this.contentEl)
       .setName("Callout type")
@@ -480,34 +482,49 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     addDonationElement(containerEl);
   }
+
+  // refer from https://github.com/Mocca101/obsidian-plugin-groups/tree/main
+  makeCollapsible(foldClickElement: HTMLElement, content: HTMLElement, startOpened?: boolean) {
+    if (!content.hasClass('tf-collapsible-content')) {
+      content.addClass('tf-collapsible-content');
+    }
+
+    if (!foldClickElement.hasClass('tf-collapsible-header')) {
+      foldClickElement.addClass('tf-collapsible-header');
+    }
+
+    toggleCollapsibleIcon(foldClickElement);
+
+    let text = "<unknown>";
+    // settings headers are H3
+    if (foldClickElement.tagName === "H3") {
+      text = foldClickElement.textContent;
+      if (!(text in this.collapseMemory)) {
+        this.collapseMemory[text] = false;
+      }
+      startOpened = this.collapseMemory[text];
+    }
+
+    if (startOpened) {
+      content.addClass('is-active');
+      toggleCollapsibleIcon(foldClickElement);
+    }
+
+    foldClickElement.onclick = () => {
+      if (content.hasClass('is-active')) {
+        content.removeClass('is-active');
+        this.collapseMemory[text] = false;
+      } else {
+        content.addClass('is-active');
+        this.collapseMemory[text] = true;
+      }
+
+      toggleCollapsibleIcon(foldClickElement);
+    };
+  }
 }
 
 
-export function makeCollapsible(foldClickElement: HTMLElement, content: HTMLElement, startOpened?: boolean) {
-  // Credits go to: https://github.com/Mocca101/obsidian-plugin-groups/tree/main
-  if (!content.hasClass('tf-collapsible-content')) {
-    content.addClass('tf-collapsible-content');
-  }
-
-  if (!foldClickElement.hasClass('tf-collapsible-header')) {
-    foldClickElement.addClass('tf-collapsible-header');
-  }
-
-  toggleCollapsibleIcon(foldClickElement);
-
-  if (startOpened) {
-    content.addClass('is-active');
-    toggleCollapsibleIcon(foldClickElement);
-  }
-
-  foldClickElement.onclick = () => {
-    content.hasClass('is-active')
-      ? content.removeClass('is-active')
-      : content.addClass('is-active');
-
-    toggleCollapsibleIcon(foldClickElement);
-  };
-}
 
 function toggleCollapsibleIcon(parentEl: HTMLElement) {
   let foldable: HTMLElement | null = parentEl.querySelector(
