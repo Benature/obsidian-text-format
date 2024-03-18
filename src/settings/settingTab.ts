@@ -583,6 +583,17 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+    new Setting(this.contentEl)
+      .setName("Heading lower to plain text")
+      .setDesc("If disabled, heading level 1 cannot be lowered to plain text.")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.headingLevelMin === 0)
+          .onChange(async (value) => {
+            this.plugin.settings.headingLevelMin = value ? 0 : 1;
+            await this.plugin.saveSettings();
+          });
+      });
   }
 }
 

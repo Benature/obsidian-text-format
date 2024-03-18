@@ -592,12 +592,12 @@ export default class TextFormat extends Plugin {
         case "heading":
           const adjustRange = context.adjustRange;
           if (adjustRange.from.line == adjustRange.to.line) {
-            const headingRes = headingLevel(selectedText, context.upper);
+            const headingRes = headingLevel(selectedText, context.upper, this.settings.headingLevelMin);
             replacedText = headingRes.text;
           } else {
             replacedText = "";
             selectedText.split("\n").forEach((line, index) => {
-              const headingRes = headingLevel(line, context.upper, true);
+              const headingRes = headingLevel(line, context.upper, this.settings.headingLevelMin, true);
               replacedText += headingRes.text + "\n";
             });
             replacedText = replacedText.slice(0, -1); // remove the last `\n`
@@ -666,9 +666,7 @@ export default class TextFormat extends Plugin {
       let adjustSelectionCmd: selectionBehavior;
       switch (cmd) {
         case "heading":
-          // if (originRange.from.line != originRange.to.line) {
           adjustSelectionCmd = selectionBehavior.wholeLine;
-          // }
           break;
         case "split-blank":
         case "convert-bullet-list":
@@ -735,6 +733,15 @@ export default class TextFormat extends Plugin {
             resetSelection = {
               anchor: cursorLast,
               head: cursorLast
+            };
+          }
+          break;
+        case "heading":
+          if (originRange.from.line === originRange.to.line) {
+            let offset = replacedText.length - selectedText.length;
+            resetSelection = {
+              anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + offset),
+              head: editor.offsetToPos(editor.posToOffset(originRange.to) + offset)
             };
           }
           break;

@@ -53,6 +53,7 @@ export interface FormatSettings {
     Wikilink2mdRelativePath: Wikilink2mdPathMode;
     calloutType: string;
     debugMode: boolean;
+    headingLevelMin: number;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -76,4 +77,5 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     Wikilink2mdRelativePath: Wikilink2mdPathMode.relativeObsidian,
     calloutType: "NOTE",
     debugMode: false,
+    headingLevelMin: 0,
 };
