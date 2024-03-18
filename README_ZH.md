@@ -1,12 +1,13 @@
-# 文本格式
+# Text Format 文本格式化插件
 
 <div align="center">
 
 ![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-text-format%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![GitHub stars](https://img.shields.io/github/stars/Benature/obsidian-text-format?style=flat) ![latest download](https://img.shields.io/github/downloads/Benature/obsidian-text-format/latest/total?style=plastic) 
 [中文 | [English](https://github.com/Benature/obsidian-text-format)]
 
-
 </div>
+
+⚠️ **中文文档不如英文文档更新及时，如有任何疑问、建议可在公众号（恰好恰好）、[小红书](https://www.xiaohongshu.com/user/profile/5b63f42ce8ac2b773f832471)（木一Benature）直接联系作者。**
 
 
 >当我做笔记时，有时会遇到一些问题，比如  
@@ -26,7 +27,7 @@
 
 ---
 
-- [文本格式](#文本格式)
+- [Text Format 文本格式化插件](#text-format-文本格式化插件)
   - [功能](#功能)
     - [基本](#基本)
     - [Markdown 语法](#markdown-语法)

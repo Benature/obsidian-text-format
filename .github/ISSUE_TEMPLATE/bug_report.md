@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: The plugin did not work as my expectations
+about: The plugin did not work as expectation
 title: "[Bug] "
 labels: ""
 assignees: ""

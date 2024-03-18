@@ -154,11 +154,11 @@ The format template can refer to https://www.zotero.org/support/note_templates
 
 
 ### Replacements
-use cases:
+[use cases](https://github.com/Benature/obsidian-text-format/milestone/1?closed=1):
 - Split paragraph into sentences: [#78](https://github.com/Benature/obsidian-text-format/issues/78#issuecomment-1999198698)
 
 ### Wrapper
-use cases:
+[use cases](https://github.com/Benature/obsidian-text-format/milestone/2?closed=1):
 - Underline: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>`
 - Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
 

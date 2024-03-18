@@ -27,11 +27,11 @@ export default class TextFormat extends Plugin {
   debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
   debounceUpdateCommandRequest = debounce(this.updateCommandRequest, 1000, true);
 
-  formatEditorOrTitle(cmd: string) {
+  async formatEditorOrTitle(cmd: string) {
     if (isActiveTitle()) {
       const file = this.app.workspace.getActiveFile();
       // let newName = file.basename;
-      let newName = this.formatSelection(file.basename, cmd);
+      let newName = await this.formatSelection(file.basename, cmd);
       if (newName === null) {
         Error("Unknown command " + cmd);
         newName = file.basename;
@@ -86,7 +86,7 @@ export default class TextFormat extends Plugin {
       id: "heading-upper",
       name: { "en": "Heading upper", "zh": "标题上升一级", "zh-TW": "標題上升一級" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "heading", true);
+        this.editorTextFormat(editor, view, "heading", { upper: true });
       },
       repeatable: false,
       hotkeys: [
@@ -99,7 +99,7 @@ export default class TextFormat extends Plugin {
       id: "heading-lower",
       name: { "en": "Heading lower", "zh": "标题下降一级", "zh-TW": "標題下降一級" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "heading", false);
+        this.editorTextFormat(editor, view, "heading", { upper: false });
       },
       repeatable: false,
       hotkeys: [
@@ -353,7 +353,7 @@ export default class TextFormat extends Plugin {
         id: `request-${index}`,
         name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.editorTextFormat(editor, view, "api-request", request.url);
+          this.editorTextFormat(editor, view, "api-request", { url: request.url });
         },
       });
     });
@@ -365,235 +365,288 @@ export default class TextFormat extends Plugin {
         id: `custom-replace-${index}`,
         name: { "en": "Custom Replace", "zh": "自定义替换", "zh-TW": "自定義取代" }[lang] + " - " + customReplace.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.editorTextFormat(editor, view, "custom-replace", customReplace);
+          this.editorTextFormat(editor, view, "custom-replace", { settings: customReplace });
         },
       });
     });
   }
 
-  formatSelection(selectedText: string, cmd: string, context: any = {}): string | null {
-    let replacedText;
-    switch (cmd) {
-      case "anki":
-        replacedText = ankiSelection(selectedText);
-        break;
-      case "lowercase":
-        replacedText = selectedText.toLowerCase();
-        break;
-      case "uppercase":
-        replacedText = selectedText.toUpperCase();
-        break;
-      case "capitalize-word":
-        replacedText = capitalizeWord(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
-        break;
-      case "capitalize-sentence":
-        replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
-        break;
-      case "titlecase":
-        replacedText = toTitleCase(selectedText, this.settings);
-        break;
-      case "togglecase":
-        let lowerString = selectedText.toLowerCase();
-        const settings = this.settings;
-        function getNewString(caseCommand: string): string {
-          switch (caseCommand) {
-            case "titleCase": return toTitleCase(selectedText, settings);
-            case "lowerCase": return lowerString;
-            case "upperCase": return selectedText.toUpperCase();
-            case "capitalizeWord": return capitalizeWord(lowerString)
-            case "capitalizeSentence": return capitalizeSentence(lowerString)
-            default:
-              new Notice(`Unknown case ${caseCommand}. \nOnly lowerCase, upperCase, capitalizeWord, capitalizeSentence, titleCase supported.`);
-              return null;
+  async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<string> {
+    let replacedText: string = selectedText;
+    try {
+      switch (cmd) {
+        case "anki":
+          replacedText = ankiSelection(selectedText);
+          break;
+        case "lowercase":
+          replacedText = selectedText.toLowerCase();
+          break;
+        case "uppercase":
+          replacedText = selectedText.toUpperCase();
+          break;
+        case "capitalize-word":
+          replacedText = capitalizeWord(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          break;
+        case "capitalize-sentence":
+          replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          break;
+        case "titlecase":
+          replacedText = toTitleCase(selectedText, this.settings);
+          break;
+        case "togglecase":
+          let lowerString = selectedText.toLowerCase();
+          const settings = this.settings;
+          function getNewString(caseCommand: string): string {
+            switch (caseCommand) {
+              case "titleCase": return toTitleCase(selectedText, settings);
+              case "lowerCase": return lowerString;
+              case "upperCase": return selectedText.toUpperCase();
+              case "capitalizeWord": return capitalizeWord(lowerString)
+              case "capitalizeSentence": return capitalizeSentence(lowerString)
+              default:
+                new Notice(`Unknown case ${caseCommand}. \nOnly lowerCase, upperCase, capitalizeWord, capitalizeSentence, titleCase supported.`);
+                return null;
+            }
           }
-        }
-        let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
-        let textHistory = new Array<string>();
-        let i;
-        const L = toggleSeq.length;
-        for (i = 0; i < L; i++) {
-          let resText = getNewString(toggleSeq[i]), duplicated = false;
-          for (let j = 0; j < textHistory.length; j++) {
-            if (textHistory[j] == resText) {
-              duplicated = true;
+          let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
+          let textHistory = new Array<string>();
+          let i;
+          const L = toggleSeq.length;
+          for (i = 0; i < L; i++) {
+            let resText = getNewString(toggleSeq[i]), duplicated = false;
+            for (let j = 0; j < textHistory.length; j++) {
+              if (textHistory[j] == resText) {
+                duplicated = true;
+                break;
+              }
+            }
+            if (!duplicated) { //: if the converted text is the same as before toggle case, ignore it
+              if (selectedText == resText) { break; }
+            }
+            textHistory.push(resText);
+          }
+          //: find the toggle case that is different from the original text
+          for (i++; i < i + L; i++) {
+            let resText = getNewString(toggleSeq[i % L]);
+            if (selectedText != resText) {
+              replacedText = resText;
               break;
             }
           }
-          if (!duplicated) { //: if the converted text is the same as before toggle case, ignore it
-            if (selectedText == resText) { break; }
+          if (!(replacedText)) { return; }
+          break;
+        case "remove-redundant-spaces":
+          replacedText = selectedText
+            .replace(/(\S) {2,}/g, "$1 ")
+            .replace(/ $| (?=\n)/g, "");
+          // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
+          break;
+        case "spaces-all":
+          replacedText = removeAllSpaces(selectedText);
+          break;
+        case "trailing-spaces":
+          replacedText = selectedText.replace(/(\s*)(?=\n)|(\s*)$/g, "")
+          break;
+        case "merge":
+          replacedText = selectedText.replace(/(?:[^\n])(\n)(?!\n)/g, (t, t1) => t.replace(t1, " "));
+          if (this.settings.MergeParagraph_Newlines) {
+            replacedText = replacedText.replace(/\n\n+/g, "\n\n");
           }
-          textHistory.push(resText);
-        }
-        //: find the toggle case that is different from the original text
-        for (i++; i < i + L; i++) {
-          let resText = getNewString(toggleSeq[i % L]);
-          if (selectedText != resText) {
-            replacedText = resText;
-            break;
+          if (this.settings.MergeParagraph_Spaces) {
+            replacedText = replacedText.replace(/ +/g, " ");
           }
-        }
-        if (!(replacedText)) { return; }
-        break;
-      case "remove-redundant-spaces":
-        replacedText = selectedText
-          .replace(/(\S)\s{2,}/g, "$1 ")
-          .replace(/\s$|\s(?=\n)/g, "");
-        // replacedText = replacedText.replace(/\n /g, "\n"); // when a single space left at the head of the line
-        break;
-      case "spaces-all":
-        replacedText = removeAllSpaces(selectedText);
-        break;
-      case "trailing-spaces":
-        replacedText = selectedText.replace(/(\s*)(?=\n)|(\s*)$/g, "")
-        break;
-      case "merge":
-        replacedText = selectedText.replace(/(?:[^\n])(\n)(?!\n)/g, (t, t1) => t.replace(t1, " "));
-        if (this.settings.MergeParagraph_Newlines) {
-          replacedText = replacedText.replace(/\n\n+/g, "\n\n");
-        }
-        if (this.settings.MergeParagraph_Spaces) {
-          replacedText = replacedText.replace(/ +/g, " ");
-        }
-        break;
-      case "remove-blank-line":
-        replacedText = selectedText.replace(/\n\s*\n/g, "\n"); // issue #16
-        break;
-      case "add-line-break":
-        replacedText = selectedText.replace(/\n/g, "\n\n");
-        break;
-      case "space-word-symbol":
-        replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
-        break;
-      case "remove-citation":
-        replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
-        break;
-      case "convert-ordered-list":
-        let orderedCount = 0;
-        // var rx = new RegExp(
-        //   String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
-        //   "|" +
-        //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
-        //   "g"
-        // );
-        let sepCustom = "";
-        if (this.settings.OrderedListOtherSeparator.length > 0) {
-          sepCustom = "|" + this.settings.OrderedListOtherSeparator;
-        }
+          break;
+        case "remove-blank-line":
+          replacedText = selectedText.replace(/\n\s*\n/g, "\n"); // issue #16
+          break;
+        case "add-line-break":
+          replacedText = selectedText.replace(/\n/g, "\n\n");
+          break;
+        case "space-word-symbol":
+          replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
+          break;
+        case "remove-citation":
+          replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
+          break;
+        case "convert-ordered-list":
+          let orderedCount = 0;
+          // var rx = new RegExp(
+          //   String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
+          //   "|" +
+          //   String.raw`(?:^|\s| and )[^\s\(\[\]]\)`,
+          //   "g"
+          // );
+          let sepCustom = "";
+          if (this.settings.OrderedListOtherSeparator.length > 0) {
+            sepCustom = "|" + this.settings.OrderedListOtherSeparator;
+          }
 
-        const rx = new RegExp(
-          String.raw`([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))` + sepCustom + `)`,
-          "g");
-        // const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
-        replacedText = selectedText.replace(
-          rx, function (t, t1) {
-            orderedCount++;
-            let head = "\n"; // if single line, then add newline character.
-            return t.replace(t1, `${head}${orderedCount}. `);
+          const rx = new RegExp(
+            String.raw`([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))` + sepCustom + `)`,
+            "g");
+          // const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
+          replacedText = selectedText.replace(
+            rx, function (t, t1) {
+              orderedCount++;
+              let head = "\n"; // if single line, then add newline character.
+              return t.replace(t1, `${head}${orderedCount}. `);
+            }
+          );
+          replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
+          break;
+        case "convert-bullet-list":
+          let r = this.settings.BulletPoints.replace("-", "");
+          replacedText = selectedText
+            .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
+              t.replace(RegExp(`[${r}] *`), "\n- ")
+            )
+            .replace(/\n[~\/Vv] /g, "\n- ")
+            .replace(/\n+/g, "\n")
+            .replace(/^\n/, "");
+          // if "-" in this.settings.BulletPoints
+          if (this.settings.BulletPoints.indexOf("-") > -1) {
+            replacedText = replacedText.replace(/^- /g, "\n- ");
           }
-        );
-        replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
-        break;
-      case "convert-bullet-list":
-        let r = this.settings.BulletPoints.replace("-", "");
-        replacedText = selectedText
-          .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-            t.replace(RegExp(`[${r}] *`), "\n- ")
-          )
-          .replace(/\n[~\/Vv] /g, "\n- ")
-          .replace(/\n+/g, "\n")
-          .replace(/^\n/, "");
-        // if "-" in this.settings.BulletPoints
-        if (this.settings.BulletPoints.indexOf("-") > -1) {
-          replacedText = replacedText.replace(/^- /g, "\n- ");
-        }
-        // if select multi-paragraphs, add `- ` to the beginning
-        if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
-          replacedText = "- " + replacedText;
-        }
-        replacedText = replacedText.replace(/^\n*/, "");
-        break;
-      case "split-blank":
-        replacedText = selectedText.replace(/ /g, "\n");
-        break;
-      case "Chinese-punctuation":
-        replacedText = selectedText;
-        replacedText = replacedText
-          .replace(/ ?, ?/g, "，")
-          .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
-          .replace(/ ?、 ?/g, "、")
-          .replace(/;/g, "；")
-          .replace(/--/g, "——")
-          .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
-          .replace(/\!(?=[^\[])/g, "！")
-          .replace(/\?/g, "？")
-          .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
-        // TODO: ignore `!` that is `[!note]`
-        if (this.settings.RemoveBlanksWhenChinese) {
-          replacedText = replacedText.replace(
-            /([\u4e00-\u9fa5【】（）「」《》：“？‘、；])(\s+)([\u4e00-\u9fa5【】（）「」《》：“？‘、；])/g, "$1$3");
-        }
-        break;
-      case "English-punctuation":
-        replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
-        break;
-      case "decodeURI":
-        replacedText = selectedText.replace(
-          /(\w+):\/\/[-\w+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
-          function (t) {
-            return decodeURI(t)
-              .replace(/\s/g, "%20")
-              .replace(/%2F/g, "/");
+          // if select multi-paragraphs, add `- ` to the beginning
+          if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+            replacedText = "- " + replacedText;
           }
-        );
-        break;
-      case "hyphen":
-        replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");
-        break;
-      case "array2table":
-        replacedText = array2markdown(selectedText);
-        break;
-      case "table2bullet":
-        replacedText = table2bullet(selectedText, false);
-        break;
-      case "table2bullet-header":
-        replacedText = table2bullet(selectedText, true);
-        break;
-      case "remove-wiki-link":
-        replacedText = removeWikiLink(selectedText, this.settings.WikiLinkFormat)
-        break;
-      case "remove-url-link":
-        replacedText = removeUrlLink(selectedText, this.settings.UrlLinkFormat);
-        if (this.settings.RemoveWikiURL2) {
-          replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
-        }
-        break;
-      case "link-url2wiki":
-        replacedText = url2WikiLink(selectedText);
-        break;
-      case "link-wiki2md":
-        replacedText = convertWikiLinkToMarkdown(selectedText, this);
-        break;
-      case "ligature":
-        replacedText = replaceLigature(selectedText);
-        break;
-      case "todo-sort":
-        replacedText = sortTodo(selectedText);
-        break;
-      case "slugify":
-        replacedText = slugify(selectedText);
-        break;
-      case "snakify":
-        replacedText = snakify(selectedText);
-        break;
-      case "custom-replace":
-        replacedText = customReplace(selectedText, context);
-        break;
-
-      default:
-        replacedText = null;
+          replacedText = replacedText.replace(/^\n*/, "");
+          break;
+        case "split-blank":
+          replacedText = selectedText.replace(/ /g, "\n");
+          break;
+        case "Chinese-punctuation":
+          replacedText = selectedText;
+          replacedText = replacedText
+            .replace(/ ?, ?/g, "，")
+            .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
+            .replace(/ ?、 ?/g, "、")
+            .replace(/;/g, "；")
+            .replace(/--/g, "——")
+            .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
+            .replace(/\!(?=[^\[])/g, "！")
+            .replace(/\?/g, "？")
+            .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
+          // TODO: ignore `!` that is `[!note]`
+          if (this.settings.RemoveBlanksWhenChinese) {
+            replacedText = replacedText.replace(
+              /([\u4e00-\u9fa5【】（）「」《》：“？‘、；])( +)([\u4e00-\u9fa5【】（）「」《》：“？‘、；])/g, "$1$3");
+          }
+          break;
+        case "English-punctuation":
+          replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
+          break;
+        case "decodeURI":
+          replacedText = selectedText.replace(
+            /(\w+):\/\/[-\w+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g,
+            function (t) {
+              return decodeURI(t)
+                .replace(/\s/g, "%20")
+                .replace(/%2F/g, "/");
+            }
+          );
+          break;
+        case "hyphen":
+          replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");
+          break;
+        case "array2table":
+          replacedText = array2markdown(selectedText);
+          break;
+        case "table2bullet":
+          replacedText = table2bullet(selectedText, false);
+          break;
+        case "table2bullet-header":
+          replacedText = table2bullet(selectedText, true);
+          break;
+        case "remove-wiki-link":
+          replacedText = removeWikiLink(selectedText, this.settings.WikiLinkFormat)
+          break;
+        case "remove-url-link":
+          replacedText = removeUrlLink(selectedText, this.settings.UrlLinkFormat);
+          if (this.settings.RemoveWikiURL2) {
+            replacedText = removeWikiLink(replacedText, this.settings.WikiLinkFormat);
+          }
+          break;
+        case "link-url2wiki":
+          replacedText = url2WikiLink(selectedText);
+          break;
+        case "link-wiki2md":
+          replacedText = convertWikiLinkToMarkdown(selectedText, this);
+          break;
+        case "ligature":
+          replacedText = replaceLigature(selectedText);
+          break;
+        case "todo-sort":
+          replacedText = sortTodo(selectedText);
+          break;
+        case "slugify":
+          replacedText = slugify(selectedText);
+          break;
+        case "snakify":
+          replacedText = snakify(selectedText);
+          break;
+        case "custom-replace":
+          replacedText = customReplace(selectedText, context.settings);
+          break;
+        case "heading":
+          const adjustRange = context.adjustRange;
+          if (adjustRange.from.line == adjustRange.to.line) {
+            const headingRes = headingLevel(selectedText, context.upper);
+            replacedText = headingRes.text;
+          } else {
+            replacedText = "";
+            selectedText.split("\n").forEach((line, index) => {
+              const headingRes = headingLevel(line, context.upper, true);
+              replacedText += headingRes.text + "\n";
+            });
+            replacedText = replacedText.slice(0, -1); // remove the last `\n`
+          }
+          break;
+        case "api-request":
+          replacedText = await requestAPI(selectedText, context.view.file, context.url);
+          // p.then((result) => {
+          //   replacedText = result;
+          //   // editor.setSelections([{ anchor: from, head: to }]);
+          //   // if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
+          //   // editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
+          //   // return;
+          //   console.log("1", replacedText);
+          // })
+          console.log(2, replacedText);
+          // return;
+          break;
+        case "callout":
+          const wholeContent = context.editor.getValue();
+          let type = this.settings.calloutType;
+          if (type.startsWith("!")) {
+            type = type.substring(1, type.length);
+          } else {
+            const reType = /(?:\n\>\s*\[\!)(\w+)(?:\])/gm
+            const preCallouts = wholeContent.match(reType);
+            if (preCallouts) {
+              type = reType.exec(preCallouts[preCallouts.length - 1])[1];
+            }
+          }
+          const lines = selectedText.replace(/$\n>/g, "").split("\n");
+          replacedText = `> [!${type}] ${lines[0]}`
+          if (lines.length > 1) {
+            for (let idx = 1; idx < lines.length; idx++) {
+              replacedText += `\n> ` + lines[idx];
+            }
+          }
+          break;
+        case "latex-letter":
+          replacedText = convertLatex(context.editor, selectedText);
+          break;
+        default:
+          Error("Unknown command");
+      }
+    } catch (e) {
+      console.error(e);
     }
     // console.log("formatSelection.replacedText", replacedText)
-    return replacedText
+    return replacedText;
   }
 
   log(...args: any[]): void {
@@ -603,14 +656,15 @@ export default class TextFormat extends Plugin {
     }
   }
 
-  editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: any = {}): void {
+  async editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: any = {}): Promise<void> {
     // if nothing is selected, select the whole line.
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
 
     const editChangeList: EditorChange[] = [];
 
-    originSelectionList.forEach(originSelection => {
+    for (let originSelection of originSelectionList) {
+      console.log(originSelection)
       const originRange = selection2range(editor, originSelection);
       this.log(originRange)
 
@@ -623,7 +677,7 @@ export default class TextFormat extends Plugin {
       switch (cmd) {
         case "heading":
           // if (originRange.from.line != originRange.to.line) {
-          adjustSelectionCmd = selectionBehavior.line;
+          adjustSelectionCmd = selectionBehavior.wholeLine;
           // }
           break;
         case "split-blank":
@@ -631,7 +685,7 @@ export default class TextFormat extends Plugin {
         case "convert-ordered-list":
         case "callout":
           //: Force to select whole paragraph(s)
-          adjustSelectionCmd = selectionBehavior.line;
+          adjustSelectionCmd = selectionBehavior.wholeLine;
           break;
         case "todo-sort":
           //: Select whole file if nothing selected
@@ -641,14 +695,14 @@ export default class TextFormat extends Plugin {
           break;
         default:
           if (!somethingSelected) {
-            adjustSelectionCmd = selectionBehavior.line;
+            adjustSelectionCmd = selectionBehavior.wholeLine;
           }
           //: Except special process of adjusting selection, get all selected text (for now)
           break;
       }
 
       switch (adjustSelectionCmd) {
-        case selectionBehavior.line: //: Force to select whole paragraph(s)
+        case selectionBehavior.wholeLine: //: Force to select whole paragraph(s)
           let to = { line: originRange.to.line, ch: 0 },
             from = { line: originRange.from.line, ch: 0 };
           to.line += 1;
@@ -666,67 +720,11 @@ export default class TextFormat extends Plugin {
       const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
       this.log("selectedText", selectedText)
       //: MODIFY SELECTION
-      let replacedText: string;
-      try {
-        replacedText = this.formatSelection(selectedText, cmd, context);
-        // TODO: add args to `context`
-        if (replacedText === null) {
-          switch (cmd) {
-            case "heading":
-              if (adjustRange.from.line == adjustRange.to.line) {
-                const headingRes = headingLevel(selectedText, context);
-                replacedText = headingRes.text;
-              } else {
-                replacedText = "";
-                selectedText.split("\n").forEach((line, index) => {
-                  const headingRes = headingLevel(line, context, true);
-                  replacedText += headingRes.text + "\n";
-                });
-                replacedText = replacedText.slice(0, -1); // remove the last `\n`
-              }
-              break;
-            case "api-request":
-              let p = requestAPI(selectedText, view.file, context);
-              p.then(result => {
-                replacedText = result;
-                // editor.setSelections([{ anchor: from, head: to }]);
-                // if (replacedText != selectedText) { editor.replaceSelection(replacedText); }
-                // editor.setSelections([{ anchor: from, head: editor.getCursor("head") }]);
-                // return;
-              })
-              return;
-            case "callout":
-              const wholeContent = editor.getValue();
-              let type = this.settings.calloutType;
-              if (type.startsWith("!")) {
-                type = type.substring(1, type.length);
-              } else {
-                const reType = /(?:\n\>\s*\[\!)(\w+)(?:\])/gm
-                const preCallouts = wholeContent.match(reType);
-                if (preCallouts) {
-                  type = reType.exec(preCallouts[preCallouts.length - 1])[1];
-                }
-              }
-              const lines = selectedText.replace(/$\n>/g, "").split("\n");
-              replacedText = `> [!${type}] ${lines[0]}`
-              if (lines.length > 1) {
-                for (let idx = 1; idx < lines.length; idx++) {
-                  replacedText += `\n> ` + lines[idx];
-                }
-              }
-              break;
+      context.editor = editor;
+      context.view = view;
+      context.adjustRange = adjustRange;
+      const replacedText = await this.formatSelection(selectedText, cmd, context);
 
-            case "latex-letter":
-              replacedText = convertLatex(editor, selectedText);
-              break;
-            default:
-              Error("Unknown command")
-              return;
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
       //: Make change immediately
       if (replacedText != selectedText) {
         let editorChange = { text: replacedText, ...adjustRange };
@@ -740,37 +738,27 @@ export default class TextFormat extends Plugin {
       //: Set cursor selection
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
-      // const tos = editor.posToOffset(adjustRange.to);
+      const cursorLast = editor.offsetToPos(fos + replacedText.length);
       switch (cmd) {
-        case "todo-sort":
-          if (!somethingSelected) {
+        case "callout":
+          if (!somethingSelected && selectedText.length === 0) {
             resetSelection = {
-              anchor: adjustRange.from,
-              head: adjustRange.to
-            };
-          } else {
-            resetSelection = {
-              anchor: editor.offsetToPos(fos),
-              head: editor.getCursor("head")
+              anchor: cursorLast,
+              head: cursorLast
             };
           }
           break;
         default:
           resetSelection = {
             anchor: adjustRange.from,
-            head: editor.offsetToPos(fos + replacedText.length)
+            head: cursorLast
           };
       }
       this.log("resetSelection", resetSelection)
       resetSelectionList.push(resetSelection);
-      // return;
-    });
+    }
 
-    // console.log("editChangeList", editChangeList)
-    // editor.transaction({
-    //   changes: editChangeList
-    // });
-
+    // console.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 
