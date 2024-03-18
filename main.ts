@@ -8,6 +8,7 @@ import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
 import { LetterCaseCommands } from "src/commands";
 import { getString } from "src/langs/langs";
+import { selectionBehavior } from "src/types";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');
@@ -339,7 +340,8 @@ export default class TextFormat extends Plugin {
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         editorCallback: (editor: Editor, view: MarkdownView) => {
           // TODO: support multi-cursor
-          textWrapper(editor, view, wrapper.prefix, wrapper.suffix)
+          textWrapper(editor, view, wrapper.prefix, wrapper.suffix);
+          // this.editorTextFormat(editor, view, "wrapper", wrapper);
         },
       });
     });
@@ -369,7 +371,7 @@ export default class TextFormat extends Plugin {
     });
   }
 
-  formatSelection(selectedText: string, cmd: string, args: any = null): string | null {
+  formatSelection(selectedText: string, cmd: string, context: any = {}): string | null {
     let replacedText;
     switch (cmd) {
       case "anki":
@@ -483,8 +485,7 @@ export default class TextFormat extends Plugin {
           "g");
         // const rx = /([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))|\sand\s|\s?(以及和)\s?)/g;
         replacedText = selectedText.replace(
-          rx,
-          function (t, t1) {
+          rx, function (t, t1) {
             orderedCount++;
             let head = "\n"; // if single line, then add newline character.
             return t.replace(t1, `${head}${orderedCount}. `);
@@ -585,7 +586,7 @@ export default class TextFormat extends Plugin {
         replacedText = snakify(selectedText);
         break;
       case "custom-replace":
-        replacedText = customReplace(selectedText, args);
+        replacedText = customReplace(selectedText, context);
         break;
 
       default:
@@ -595,8 +596,13 @@ export default class TextFormat extends Plugin {
     return replacedText
   }
 
+  log(...args: any[]): void {
+    if (true) {
+      console.log(...args);
+    }
+  }
 
-  editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, args: any = ""): void {
+  editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: any = {}): void {
     // if nothing is selected, select the whole line.
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
@@ -605,46 +611,26 @@ export default class TextFormat extends Plugin {
 
     originSelectionList.forEach(originSelection => {
       const originRange = selection2range(editor, originSelection);
+      this.log(originRange)
 
       let adjustRange: EditorRangeOrCaret = originRange;
 
       const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
-      if (!somethingSelected) {
-        //: Select whole line if nothing selected
-        let cursor = { line: originRange.from.line, ch: 0 };
-
-        let offsetFrom = editor.posToOffset(cursor);
-
-        cursor.line += 1;
-        let offsetTo = editor.posToOffset(cursor);
-        if (cursor.line <= editor.lastLine()) {
-          //: don't select the next line which is not selected by user
-          offsetTo -= 1;
-        }
-        adjustRange = { from: editor.offsetToPos(offsetFrom), to: editor.offsetToPos(offsetTo) };
-      }
-
-
-      let from = editor.getCursor("from"),
-        to = editor.getCursor("to");
-
-
-      let adjustSelectionCmd = "none";
-
 
       //： Adjust Selection
+      let adjustSelectionCmd: selectionBehavior;
       switch (cmd) {
         case "heading":
-          if (originRange.from.line != originRange.to.line) {
-            adjustSelectionCmd = "whole-paragraph";
-          }
+          // if (originRange.from.line != originRange.to.line) {
+          adjustSelectionCmd = selectionBehavior.line;
+          // }
           break;
         case "split-blank":
         case "convert-bullet-list":
         case "convert-ordered-list":
         case "callout":
           //: Force to select whole paragraph(s)
-          adjustSelectionCmd = "whole-paragraph";
+          adjustSelectionCmd = selectionBehavior.line;
           break;
         case "todo-sort":
           //: Select whole file if nothing selected
@@ -653,16 +639,18 @@ export default class TextFormat extends Plugin {
           }
           break;
         default:
+          if (!somethingSelected) {
+            adjustSelectionCmd = selectionBehavior.line;
+          }
           //: Except special process of adjusting selection, get all selected text (for now)
           break;
       }
 
       switch (adjustSelectionCmd) {
-        case "whole-paragraph":
-          //: Force to select whole paragraph(s)
-          from.ch = 0;
+        case selectionBehavior.line: //: Force to select whole paragraph(s)
+          let to = { line: originRange.to.line, ch: 0 },
+            from = { line: originRange.from.line, ch: 0 };
           to.line += 1;
-          to.ch = 0;
           if (to.line <= editor.lastLine()) {
             adjustRange = { from: from, to: editor.offsetToPos(editor.posToOffset(to) - 1) };
           } else {
@@ -672,34 +660,36 @@ export default class TextFormat extends Plugin {
         default:
           break;
       }
-      // console.log("adjustRange", adjustRange)
-      const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
 
-      let cursorOffset = 0;
+      this.log("adjustRange", adjustRange)
+      const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
+      this.log("selectedText", selectedText)
+      // let cursorOffset = 0;
       //: MODIFY SELECTION
       let replacedText: string;
       try {
-        replacedText = this.formatSelection(selectedText, cmd, args);
+        replacedText = this.formatSelection(selectedText, cmd, context);
+        // TODO: add args to `context`
         if (replacedText === null) {
           switch (cmd) {
             case "heading":
               if (adjustRange.from.line == adjustRange.to.line) {
-                const headingRes = headingLevel(selectedText, args);
+                const headingRes = headingLevel(selectedText, context);
                 replacedText = headingRes.text;
-                cursorOffset = headingRes.offset;
+                // cursorOffset = headingRes.offset;
               } else {
                 replacedText = "";
-                cursorOffset = 0;
+                // cursorOffset = 0;
                 selectedText.split("\n").forEach((line, index) => {
-                  const headingRes = headingLevel(line, args, true);
+                  const headingRes = headingLevel(line, context, true);
                   replacedText += headingRes.text + "\n";
-                  cursorOffset += headingRes.offset;
+                  // cursorOffset += headingRes.offset;
                 });
                 replacedText = replacedText.slice(0, -1); // remove the last `\n`
               }
               break;
             case "api-request":
-              let p = requestAPI(selectedText, view.file, args);
+              let p = requestAPI(selectedText, view.file, context);
               p.then(result => {
                 replacedText = result;
                 // editor.setSelections([{ anchor: from, head: to }]);
@@ -742,7 +732,6 @@ export default class TextFormat extends Plugin {
       }
       //: Make change immediately
       if (replacedText != selectedText) {
-        // TODO: multi-cursor: count number of lines added by plugin, add the number to `adjustRange`
         let editorChange = { text: replacedText, ...adjustRange };
         editor.transaction({
           changes: [editorChange]
@@ -754,28 +743,13 @@ export default class TextFormat extends Plugin {
       //: Set cursor selection
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
-      const tos = editor.posToOffset(adjustRange.to);
+      // const tos = editor.posToOffset(adjustRange.to);
       switch (cmd) {
-        case "heading":
-          // console.log("originRange", originRange.from, originRange.to)
-          if (originRange.from.line == originRange.to.line) {
-            //: put cursor back to the original position
-            resetSelection = {
-              anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + cursorOffset),
-              head: editor.offsetToPos(editor.posToOffset(originRange.to) + cursorOffset)
-            };
-          } else {
-            resetSelection = {
-              anchor: editor.offsetToPos(tos - replacedText.length),
-              head: editor.offsetToPos(tos)
-            };
-          }
-          break;
         case "todo-sort":
           if (!somethingSelected) {
             resetSelection = {
-              anchor: originRange.from,
-              head: originRange.to
+              anchor: adjustRange.from,
+              head: adjustRange.to
             };
           } else {
             resetSelection = {
@@ -790,8 +764,9 @@ export default class TextFormat extends Plugin {
             head: editor.offsetToPos(fos + replacedText.length)
           };
       }
-      // console.log("resetSelection", resetSelection)
+      this.log("resetSelection", resetSelection)
       resetSelectionList.push(resetSelection);
+      // return;
     });
 
     // console.log("editChangeList", editChangeList)
@@ -813,7 +788,8 @@ export default class TextFormat extends Plugin {
 
 
 function selection2range(editor: Editor, selection: EditorSelectionOrCaret): { readonly from: EditorPosition, readonly to: EditorPosition } {
-  let anchorOffset = editor.posToOffset(selection.anchor), headOffset = editor.posToOffset(selection.head);
+  let anchorOffset = editor.posToOffset(selection.anchor),
+    headOffset = editor.posToOffset(selection.head);
   const from = editor.offsetToPos(Math.min(anchorOffset, headOffset));
   const to = editor.offsetToPos(Math.max(anchorOffset, headOffset));
   return { from: from, to: to };
