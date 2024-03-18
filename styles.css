@@ -1,3 +1,20 @@
+.plugin-text-format H3,
+.plugin-text-format H4 {
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+}
+.plugin-text-format .heading-description {
+  padding-top: 0px;
+  color: var(--text-faint);
+}
+
+.plugin-text-format .header-div:has(H3) + .tf-collapsible-content {
+  margin-top: 10px;
+}
+.plugin-text-format .header-div:has(H4) + .tf-collapsible-content {
+  margin-top: 5px;
+}
+
 .tf-collapsible-content.is-active {
   display: block;
 }

@@ -27,12 +27,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
     await this.plugin.saveSettings();
   }
 
+
   display(): void {
     let { containerEl } = this;
 
     let headerEl;
 
     containerEl.empty();
+    containerEl.addClass("plugin-text-format");
     containerEl
       .createEl("p", { text: "More details in Github: " })
       .createEl("a", {
@@ -40,7 +42,99 @@ export class TextFormatSettingTab extends PluginSettingTab {
         href: "https://github.com/Benature/obsidian-text-format",
       });
 
-    headerEl = containerEl.createEl("h3", { text: "Words lower/title/toggle/capitalize case" })
+    this.addSettingsAboutWordCase(containerEl);
+    this.addSettingsAboutLink(containerEl);
+    this.addSettingsAboutList(containerEl);
+    this.addSettingsAboutMarkdownQuicker(containerEl);
+    this.addSettingsAboutWrapper(containerEl);
+    this.addSettingsAboutApiRequest(containerEl);
+    this.addSettingsAboutReplacement(containerEl);
+
+
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    headerEl = headerDiv.createEl("h3", { text: "Others" });
+
+    this.contentEl = containerEl.createDiv();
+    this.makeCollapsible(headerEl, this.contentEl, true);
+
+
+
+
+    new Setting(this.contentEl)
+      .setName("Remove spaces when converting Chinese punctuation marks")
+      .setDesc("for OCR case")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
+          .onChange(async (value) => {
+            this.plugin.settings.RemoveBlanksWhenChinese = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(this.contentEl)
+      .setName("Debug logging")
+      .setDesc("verbose logging in the console")
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.debugMode)
+          .onChange(async (value) => {
+            this.plugin.settings.debugMode = value;
+            await this.plugin.saveSettings();
+          });
+      });
+    this.addSettingsAboutParagraph(this.contentEl);
+
+    this.addSettingsAboutZotero(this.contentEl);
+
+    addDonationElement(containerEl);
+  }
+
+  // refer from https://github.com/Mocca101/obsidian-plugin-groups/tree/main
+  makeCollapsible(foldClickElement: HTMLElement, content: HTMLElement, startOpened?: boolean) {
+    if (!content.hasClass('tf-collapsible-content')) {
+      content.addClass('tf-collapsible-content');
+    }
+
+    if (!foldClickElement.hasClass('tf-collapsible-header')) {
+      foldClickElement.addClass('tf-collapsible-header');
+    }
+
+    toggleCollapsibleIcon(foldClickElement);
+
+    let text = "<unknown>";
+    // settings headers are H3
+    if (["H3", "H4"].includes(foldClickElement.tagName)) {
+      text = foldClickElement.textContent;
+      if (!(text in this.collapseMemory)) {
+        this.collapseMemory[text] = false;
+      }
+      startOpened = startOpened ? true : this.collapseMemory[text];
+    }
+
+    if (startOpened) {
+      content.addClass('is-active');
+      toggleCollapsibleIcon(foldClickElement);
+    }
+
+    foldClickElement.onclick = () => {
+      if (content.hasClass('is-active')) {
+        content.removeClass('is-active');
+        this.collapseMemory[text] = false;
+      } else {
+        content.addClass('is-active');
+        this.collapseMemory[text] = true;
+      }
+
+      toggleCollapsibleIcon(foldClickElement);
+    };
+  }
+
+
+  addSettingsAboutWordCase(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "Word cases" })
+    headerDiv.createEl("div", { text: "lowercase / uppercase / title case / toggle case / capitalize case", cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -82,11 +176,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+  }
+  addSettingsAboutParagraph(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h4", { text: "Merge broken paragraphs behavior" });
 
-    headerEl = containerEl.createEl("h3", { text: "Merge broken paragraphs behavior" });
-    this.contentEl = containerEl.createDiv();
-    this.makeCollapsible(headerEl, this.contentEl);
-    new Setting(this.contentEl)
+    let contentEl = containerEl.createDiv();
+    this.makeCollapsible(headerEl, contentEl);
+    new Setting(contentEl)
       .setName("Remove redundant blank lines")
       .setDesc(
         'change blank lines into single blank lines, e.g. "\\n\\n\\n" will be changed to "\\n\\n"'
@@ -100,7 +197,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
 
-    new Setting(this.contentEl)
+    new Setting(contentEl)
       .setName("Remove redundant blank spaces")
       .setDesc("ensure only one space between words")
       .addToggle((toggle) => {
@@ -111,10 +208,12 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+  }
+  addSettingsAboutLink(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "Link format" });
+    headerDiv.createEl("div", { text: "Markdown links (`[]()`), Wiki links (`[[ ]]`)", cls: "setting-item-description heading-description" });
 
-
-
-    headerEl = containerEl.createEl("h3", { text: "Link formatting" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -190,8 +289,11 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-
-    headerEl = containerEl.createEl("h3", { text: "Format bullet/ordered list" });
+  }
+  addSettingsAboutList(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "List format" });
+    headerDiv.createEl("div", { text: "Detect and convert bullet list / ordered list", cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -222,8 +324,12 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+  }
+  addSettingsAboutWrapper(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "Wrapper" });
+    headerDiv.createEl("div", { text: "Wrap the selection with prefix and suffix", cls: "setting-item-description heading-description" });
 
-    headerEl = containerEl.createEl("h3", { text: "Wrapper" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     const wrapperRuleDesc = document.createDocumentFragment();
@@ -289,9 +395,12 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         });
     });
+  }
+  addSettingsAboutApiRequest(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "API Request" });
+    headerDiv.createEl("div", { text: "Send a request to an API and replace the selection with the return.", cls: "setting-item-description heading-description" });
 
-
-    headerEl = containerEl.createEl("h3", { text: "API Request" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -344,8 +453,11 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         });
     });
+  }
+  addSettingsAboutReplacement(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "Custom replacement" });
 
-    headerEl = containerEl.createEl("h3", { text: "Custom replacement" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -405,12 +517,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         });
     });
+  }
+  addSettingsAboutZotero(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h4", { text: "Zotero pdf note format" });
 
-
-    headerEl = containerEl.createEl("h3", { text: "Zotero pdf note format" });
-    this.contentEl = containerEl.createDiv();
-    this.makeCollapsible(headerEl, this.contentEl);
-    new Setting(this.contentEl)
+    let contentEl = containerEl.createDiv();
+    this.makeCollapsible(headerEl, contentEl);
+    new Setting(contentEl)
       .setName("Zotero pdf note (input) RegExp")
       .setDesc(
         "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
@@ -430,7 +544,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-    new Setting(this.contentEl)
+    new Setting(contentEl)
       .setName("Zotero note pasted in Obsidian (output) format")
       .setDesc(
         "Variables: \n" +
@@ -447,11 +561,13 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-
-
-    headerEl = containerEl.createEl("h3", { text: "Others" });
+  }
+  addSettingsAboutMarkdownQuicker(containerEl: HTMLElement) {
+    let headerDiv = containerEl.createDiv({ cls: "header-div" });
+    let headerEl = headerDiv.createEl("h3", { text: "Markdown quicker" });
+    headerDiv.createEl("div", { text: "Quickly format the selection with common markdown syntax.", cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
-    this.makeCollapsible(headerEl, this.contentEl, true);
+    this.makeCollapsible(headerEl, this.contentEl);
 
     new Setting(this.contentEl)
       .setName("Callout type")
@@ -467,72 +583,6 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
-
-    new Setting(this.contentEl)
-      .setName("Remove spaces when converting Chinese punctuation marks")
-      .setDesc("for OCR case")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
-          .onChange(async (value) => {
-            this.plugin.settings.RemoveBlanksWhenChinese = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    new Setting(this.contentEl)
-      .setName("Debug logging")
-      .setDesc("verbose logging in the console")
-      .addToggle((toggle) => {
-        toggle
-          .setValue(this.plugin.settings.debugMode)
-          .onChange(async (value) => {
-            this.plugin.settings.debugMode = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
-    addDonationElement(containerEl);
-  }
-
-  // refer from https://github.com/Mocca101/obsidian-plugin-groups/tree/main
-  makeCollapsible(foldClickElement: HTMLElement, content: HTMLElement, startOpened?: boolean) {
-    if (!content.hasClass('tf-collapsible-content')) {
-      content.addClass('tf-collapsible-content');
-    }
-
-    if (!foldClickElement.hasClass('tf-collapsible-header')) {
-      foldClickElement.addClass('tf-collapsible-header');
-    }
-
-    toggleCollapsibleIcon(foldClickElement);
-
-    let text = "<unknown>";
-    // settings headers are H3
-    if (foldClickElement.tagName === "H3") {
-      text = foldClickElement.textContent;
-      if (!(text in this.collapseMemory)) {
-        this.collapseMemory[text] = false;
-      }
-      startOpened = this.collapseMemory[text];
-    }
-
-    if (startOpened) {
-      content.addClass('is-active');
-      toggleCollapsibleIcon(foldClickElement);
-    }
-
-    foldClickElement.onclick = () => {
-      if (content.hasClass('is-active')) {
-        content.removeClass('is-active');
-        this.collapseMemory[text] = false;
-      } else {
-        content.addClass('is-active');
-        this.collapseMemory[text] = true;
-      }
-
-      toggleCollapsibleIcon(foldClickElement);
-    };
   }
 }
 
