@@ -151,8 +151,15 @@ When the settings are
 + 中文标点异常。比如是复制的文本，或者是 OCR 的结果。
 ```
 
+# Academic / Study
+
+## Math mode
+
+```diff
+- Suppose variable x1 add x2 equals to variable Y.
++ Suppose variable $x_1$ add $x_2$ equals to variable $Y$.
+
+
 ...
-
-
 
 > Note: The document is still under development.

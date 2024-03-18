@@ -597,6 +597,7 @@ export default class TextFormat extends Plugin {
   }
 
   log(...args: any[]): void {
+    // TODO: add verbose log setting
     if (true) {
       console.log(...args);
     }
@@ -664,7 +665,6 @@ export default class TextFormat extends Plugin {
       this.log("adjustRange", adjustRange)
       const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
       this.log("selectedText", selectedText)
-      // let cursorOffset = 0;
       //: MODIFY SELECTION
       let replacedText: string;
       try {
@@ -676,14 +676,11 @@ export default class TextFormat extends Plugin {
               if (adjustRange.from.line == adjustRange.to.line) {
                 const headingRes = headingLevel(selectedText, context);
                 replacedText = headingRes.text;
-                // cursorOffset = headingRes.offset;
               } else {
                 replacedText = "";
-                // cursorOffset = 0;
                 selectedText.split("\n").forEach((line, index) => {
                   const headingRes = headingLevel(line, context, true);
                   replacedText += headingRes.text + "\n";
-                  // cursorOffset += headingRes.offset;
                 });
                 replacedText = replacedText.slice(0, -1); // remove the last `\n`
               }
