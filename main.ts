@@ -665,20 +665,17 @@ export default class TextFormat extends Plugin {
   }
 
   async editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: any = {}): Promise<void> {
-    // if nothing is selected, select the whole line.
+
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
 
-    const editChangeList: EditorChange[] = [];
-
     for (let originSelection of originSelectionList) {
-      this.log(originSelection)
       const originRange = selection2range(editor, originSelection);
-      this.log(originRange)
-
+      const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
       let adjustRange: EditorRangeOrCaret = originRange;
 
-      const somethingSelected = !(originRange.from.ch == originRange.to.ch && originRange.from.line == originRange.to.line)
+      this.log(originSelection)
+      this.log(originRange)
 
       //： Adjust Selection
       let adjustSelectionCmd: selectionBehavior;
@@ -704,6 +701,7 @@ export default class TextFormat extends Plugin {
           break;
         default:
           if (!somethingSelected) {
+            // if nothing is selected, select the whole line.
             adjustSelectionCmd = selectionBehavior.wholeLine;
           }
           //: Except special process of adjusting selection, get all selected text (for now)
@@ -725,9 +723,10 @@ export default class TextFormat extends Plugin {
           break;
       }
 
-      this.log("adjustRange", adjustRange)
       const selectedText = editor.getRange(adjustRange.from, adjustRange.to);
+      this.log("adjustRange", adjustRange)
       this.log("selectedText", selectedText)
+
       //: MODIFY SELECTION
       context.editor = editor;
       context.view = view;
