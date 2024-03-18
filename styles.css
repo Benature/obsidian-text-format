@@ -15,6 +15,21 @@
   margin-top: 5px;
 }
 
+.plugin-text-format .setting-item > .setting-item-control > input {
+  min-width: 145px;
+}
+
+.plugin-text-format .setting-item.custom-replace input,
+.plugin-text-format .setting-item.wrapper input {
+  width: 33%;
+}
+.plugin-text-format .setting-item.api-request input:first-child {
+  width: 30%;
+}
+.plugin-text-format .setting-item.api-request input {
+  width: 70%;
+}
+
 .tf-collapsible-content.is-active {
   display: block;
 }
@@ -23,7 +38,7 @@
   display: none;
 }
 
-.tf-collapsible-header:hover {
+.plugin-text-format .header-div:hover {
   background-color: var(--interactive-hover, #363636);
   border-radius: var(--button-radius, 5px);
 }

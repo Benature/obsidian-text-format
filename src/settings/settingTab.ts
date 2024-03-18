@@ -134,7 +134,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
   addSettingsAboutWordCase(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: "Word cases" })
-    headerDiv.createEl("div", { text: "lowercase / uppercase / title case / toggle case / capitalize case", cls: "setting-item-description heading-description" });
+    headerDiv.createEl("div", { text: "lowercase / uppercase / title case / capitalize case / cycle case", cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -151,7 +151,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
     new Setting(this.contentEl)
-      .setName("Toggle case sequence (one case in a line)")
+      .setName("Cycle case sequence (one case in a line)")
       .setDesc("Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
         "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
         "the two cases are not recommended to be used in the same time.")
@@ -394,12 +394,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.display();
             });
         });
+      s.infoEl.remove();
+      s.settingEl.addClass("wrapper");
     });
   }
   addSettingsAboutApiRequest(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: "API Request" });
-    headerDiv.createEl("div", { text: "Send a request to an API and replace the selection with the return.", cls: "setting-item-description heading-description" });
+    headerDiv.createEl("div", { text: "Send a request to an API and replace the selection with the return", cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
@@ -452,11 +454,15 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.display();
             });
         });
+      s.infoEl.remove();
+      s.settingEl.addClass("api-request");
     });
   }
   addSettingsAboutReplacement(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: "Custom replacement" });
+    headerDiv.createEl("div", { text: "Replace specific pattern with custom string", cls: "setting-item-description heading-description" });
+
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
@@ -516,6 +522,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
               this.display();
             });
         });
+      s.settingEl.addClass("custom-replace");
+      s.infoEl.remove();
     });
   }
   addSettingsAboutZotero(containerEl: HTMLElement) {
@@ -565,7 +573,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
   addSettingsAboutMarkdownQuicker(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: "Markdown quicker" });
-    headerDiv.createEl("div", { text: "Quickly format the selection with common markdown syntax.", cls: "setting-item-description heading-description" });
+    headerDiv.createEl("div", { text: "Quickly format the selection with common markdown syntax", cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
 

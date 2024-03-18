@@ -8,9 +8,9 @@ export const LetterCaseCommands = [
     }, {
         id: "capitalize-sentence",
     }, {
-        id: "titlecase",
+        id: "title-case",
     }, {
-        id: "togglecase",
+        id: "cycle-case",
     },
 ]
 

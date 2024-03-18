@@ -5,9 +5,11 @@
 ## 🏗️ developed
 > to be updated in the next version
 
-## 3.0.0-b5
+## 3.0.0-b7
 - [feature] support multi-cursor for commands ([#48](https://github.com/Benature/obsidian-text-format/issues/48))
 - [feature] heading upper/lower for multi-lines ([#83](https://github.com/Benature/obsidian-text-format/issues/83))
+- [fix] remove all `(?<=)` for compatible issue ([#82](https://github.com/Benature/obsidian-text-format/issues/82))
+- [renamed] rename ~~`toggle case`~~ to `cycle case` (id ~~`togglecase`~~ to `cycle-case`), rename ~~`titlecase`~~ to `title-case`. (Hotkeys on these commands need to be re-configured)
 
 ## 2.7.1
 - [fix] `customReplace()`: error when search contains like `\.\!\?` 

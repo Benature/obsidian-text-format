@@ -391,10 +391,10 @@ export default class TextFormat extends Plugin {
         case "capitalize-sentence":
           replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
           break;
-        case "titlecase":
+        case "title-case":
           replacedText = toTitleCase(selectedText, this.settings);
           break;
-        case "togglecase":
+        case "cycle-case":
           let lowerString = selectedText.toLowerCase();
           const settings = this.settings;
           function getNewString(caseCommand: string): string {
@@ -421,12 +421,12 @@ export default class TextFormat extends Plugin {
                 break;
               }
             }
-            if (!duplicated) { //: if the converted text is the same as before toggle case, ignore it
+            if (!duplicated) { //: if the converted text is the same as before cycle case, ignore it
               if (selectedText == resText) { break; }
             }
             textHistory.push(resText);
           }
-          //: find the toggle case that is different from the original text
+          //: find the cycle case that is different from the original text
           for (i++; i < i + L; i++) {
             let resText = getNewString(toggleSeq[i % L]);
             if (selectedText != resText) {

@@ -56,18 +56,18 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Capitalize** all **words**  ⚙️                   | Capitalize all words in selection  or the whole title (when cursor focus inline tile)                                                                                                   |
 | **Capitalize** only first word of **sentence**  ⚙️ | Capitalize only first word of sentence(s) in selection  or the whole title (when cursor focus inline tile)                                                                              |
 | **Title case**  ⚙️                                 | Capitalize words but leave certain words in lower case in selection  or the whole title (when cursor focus inline tile) [#1](https://github.com/Benature/obsidian-text-format/issues/1) |
-| **Toggle case**  ⚙️                                | A custom loop to format the selection or the whole title (when cursor focus inline tile)                                                                                                |
+| **Cycle case**  ⚙️                                 | A custom loop to format the selection or the whole title (when cursor focus inline tile)                                                                                                |
 | **Slugify** selected text                         | convert any input text into a URL-friendly slug                                                                                                                                         |
 | **Snakify** selected text                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                                |
 
 ### Markdown Grammar
 
-| Command       | Description                                                          |
-| ------------- | -------------------------------------------------------------------- |
-| Heading Upper | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`) |
-| Heading Lower | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) |
+| Command        | Description                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Heading upper  | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`)                                                                             |
+| Heading lower  | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) [[discussions](https://github.com/Benature/obsidian-text-format/issues/83)] |
+| Callout format | [#80](https://github.com/Benature/obsidian-text-format/issues/80)                                                                                |
 
-*discussions in [#83](https://github.com/Benature/obsidian-text-format/issues/83)*
 
 #### List
 | Command                                  | Description                                                                                                                                                                           |
