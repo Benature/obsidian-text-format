@@ -395,8 +395,6 @@ export default class TextFormat extends Plugin {
     });
   }
 
-
-
   async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<FormatSelectionReturn> {
     this.log("formatSelection", selectedText, cmd, context)
     let replacedText: string = selectedText;
@@ -759,14 +757,10 @@ export default class TextFormat extends Plugin {
 
       switch (adjustSelectionCmd) {
         case selectionBehavior.wholeLine: //: Force to select whole paragraph(s)
-          let to = { line: originRange.to.line, ch: 0 },
-            from = { line: originRange.from.line, ch: 0 };
-          to.line += 1;
-          if (to.line <= editor.lastLine()) {
-            adjustRange = { from: from, to: editor.offsetToPos(editor.posToOffset(to) - 1) };
-          } else {
-            adjustRange = { from: from, to: to };
-          }
+          adjustRange = {
+            from: { line: originRange.from.line, ch: 0 },
+            to: { line: originRange.to.line, ch: editor.getLine(originRange.to.line).length }
+          };
           break;
         default:
           break;
@@ -781,10 +775,15 @@ export default class TextFormat extends Plugin {
       context.view = view;
       context.adjustRange = adjustRange;
       const formatResult = await this.formatSelection(selectedText, cmd, context);
+      this.log("formatResult", formatResult)
       //: Make change immediately
-      if (formatResult.editorChange?.text) {
-        editor.transaction({ changes: [formatResult.editorChange] });
+
+      if (formatResult.editorChange.text == undefined) {
+        this.log("nothing changed.")
+        editor.setSelections(originSelectionList);
+        return;
       }
+      editor.transaction({ changes: [formatResult.editorChange] });
 
       //: Set cursor selection
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };

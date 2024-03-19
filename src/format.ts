@@ -32,24 +32,26 @@ export function capitalizeSentence(s: string): string {
     });
 }
 
-export function headingLevel(s: string, upper: boolean = true, minLevel: number, multiLines?: boolean): { text: string, offset: number } {
+export function headingLevel(s: string, upper: boolean = true, minLevel: number, isMultiLine?: boolean): { text: string, offset: number } {
     let ignorePlain = minLevel > 0;
     let offset = 0;
     if (upper) {
         let prefix = `#`;
-        if (!/^#+\s/.test(s)) {
-            if (multiLines) { return { text: s, offset: offset }; }
+        if (!/^#+\s/.test(s)) { // plain text (not a heading)
+            if (isMultiLine) { return { text: s, offset: offset }; }
             prefix = `# `;
         }
-        // let prefix = /^#+\s/.test(s) ? `#` : `# `
         s = prefix + s;
         offset = prefix.length;
     } else { //: LOWER
-        if (/^#\s/.test(s)) {
-            if (ignorePlain) { return { text: s, offset: offset }; }
+        if (/^# /.test(s)) { //: heading level 1
+            if (ignorePlain) {
+                console.log("ignore plain text")
+                return { text: s, offset: offset };
+            }
             s = s.slice(2);
             offset = -2;
-        } else if (/^#+\s/.test(s)) {
+        } else if (/^#+ /.test(s)) {
             s = s.slice(1);
             offset = -1;
         }
