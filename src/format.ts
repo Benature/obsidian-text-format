@@ -44,7 +44,7 @@ export function headingLevel(s: string, upper: boolean = true, minLevel: number,
         // let prefix = /^#+\s/.test(s) ? `#` : `# `
         s = prefix + s;
         offset = prefix.length;
-    } else {
+    } else { //: LOWER
         if (/^#\s/.test(s)) {
             if (ignorePlain) { return { text: s, offset: offset }; }
             s = s.slice(2);

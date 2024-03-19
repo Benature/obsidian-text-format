@@ -398,6 +398,7 @@ export default class TextFormat extends Plugin {
 
 
   async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<FormatSelectionReturn> {
+    this.log("formatSelection", selectedText, cmd, context)
     let replacedText: string = selectedText;
     let ret: FormatSelectionReturn = { editorChange: {} as EditorChange };
     try {
@@ -507,7 +508,6 @@ export default class TextFormat extends Plugin {
           if (this.settings.OrderedListOtherSeparator.length > 0) {
             sepCustom = "|" + this.settings.OrderedListOtherSeparator;
           }
-
           const rx = new RegExp(
             String.raw`([\(（]?(\b\d+|\b[a-zA-Z]|[ivx]{1,4})[.\)）](\s|(?=[\u4e00-\u9fa5]))` + sepCustom + `)`,
             "g");
@@ -523,11 +523,13 @@ export default class TextFormat extends Plugin {
           break;
         case "convert-bullet-list":
           let r = this.settings.BulletPoints.replace("-", "");
+          let bulletSymbolFound = false;
           replacedText = selectedText
-            .replace(RegExp(`\\s*[${r}] *`, "g"), (t) =>
-              t.replace(RegExp(`[${r}] *`), "\n- ")
-            )
-            .replace(/\n[~\/Vv] /g, "\n- ")
+            .replace(RegExp(`\s*([${r}] *)|(\n[~\/Vv] )`, "g"), (t, t1, t2) => {
+              // console.log(t, t1, t2)
+              bulletSymbolFound = true;
+              return t.replace(t1 || t2, "\n- ")
+            })
             .replace(/\n+/g, "\n")
             .replace(/^\n/, "");
           // if "-" in this.settings.BulletPoints
@@ -535,7 +537,7 @@ export default class TextFormat extends Plugin {
             replacedText = replacedText.replace(/^- /g, "\n- ");
           }
           // if select multi-paragraphs, add `- ` to the beginning
-          if (selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
+          if (bulletSymbolFound && selectedText.indexOf("\n") > -1 && replacedText.slice(0, 2) != "- ") {
             replacedText = "- " + replacedText;
           }
           replacedText = replacedText.replace(/^\n*/, "");
@@ -618,7 +620,7 @@ export default class TextFormat extends Plugin {
           break;
         case "heading":
           const adjustRange = context.adjustRange;
-          if (adjustRange.from.line == adjustRange.to.line) {
+          if (adjustRange.from.line === adjustRange.to.line) {
             const headingRes = headingLevel(selectedText, context.upper, this.settings.headingLevelMin);
             replacedText = headingRes.text;
           } else {
@@ -780,14 +782,14 @@ export default class TextFormat extends Plugin {
       context.adjustRange = adjustRange;
       const formatResult = await this.formatSelection(selectedText, cmd, context);
       //: Make change immediately
-      if (formatResult.editorChange) {
+      if (formatResult.editorChange?.text) {
         editor.transaction({ changes: [formatResult.editorChange] });
       }
 
       //: Set cursor selection
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
-      const replacedText = formatResult.editorChange.text;
+      const replacedText = formatResult.editorChange?.text || selectedText;
       const textOffset = replacedText.length - selectedText.length;
       const cursorLast = editor.offsetToPos(fos + replacedText.length);
       const selections = {
