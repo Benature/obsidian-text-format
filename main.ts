@@ -1,6 +1,6 @@
 import {
   Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
-  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition
+  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
@@ -58,20 +58,38 @@ export default class TextFormat extends Plugin {
 
     const lang = getLang();
 
-    this.registerEvent(this.app.workspace.on('editor-paste', async (evt: ClipboardEvent, editor: Editor, info: MarkdownView) => {
+    this.registerEvent(this.app.workspace.on('editor-paste', async (evt: ClipboardEvent, editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
       this.log(evt, editor, info)
+      // refer: https://github.com/kxxt/obsidian-advanced-paste/blob/cfb04918298f14ffa7f04aefa49beaef9a2e8a76/src/main.ts#L220
+      const isManuallyTriggered = evt == null; // Not triggered by Ctrl+V
+      if (!isManuallyTriggered && (evt.clipboardData?.getData("application/x-textformat-tag") == "tag")) {
+        //: Event was triggered by this plugin, don't handle it again
+        return;
+      }
+      // console.log(evt.defaultPrevented)
       // @ts-ignore
-      const formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste").value;
-      if (!formatOnPasteCmdList && formatOnPasteCmdList.length > 0) { return; }
-      let clipboard = evt.clipboardData.getData('text/plain');
+      const formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste")?.value;
+      if (formatOnPasteCmdList === undefined || formatOnPasteCmdList?.length == 0) { return; }
+      let clipboard = evt.clipboardData.getData('text/html');
       if (!clipboard) { return; }
+
       evt.preventDefault()
 
       for (let cmd of formatOnPasteCmdList) {
         const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;
         if (formatText) { clipboard = formatText; }
       }
-      editor.replaceSelection(clipboard);
+      // await navigator.clipboard.writeText('Some text to paste');
+
+      const dat = new DataTransfer();
+      dat.setData('text/html', `<pre>${clipboard}</pre>`);
+      // dat.setData('text/html', clipboard);
+      dat.setData("application/x-textformat-tag", "tag");
+      const e = new ClipboardEvent("paste", {
+        clipboardData: dat,
+      });
+      // @ts-ignore
+      info.currentMode.clipboardManager.handlePaste(e, editor, info)
     }))
 
     LetterCaseCommands.forEach(command => {
