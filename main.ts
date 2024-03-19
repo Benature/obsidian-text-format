@@ -22,6 +22,17 @@ function isActiveTitle(): boolean {
 }
 
 
+class PasteEventCopy extends ClipboardEvent {
+  constructor(originalEvent: ClipboardEvent) {
+    const { files } = originalEvent.clipboardData;
+    const dt = new DataTransfer();
+    for (let i = 0; i < files.length; i += 1) {
+      dt.items.add(files.item(i));
+    }
+    super("paste", { clipboardData: dt });
+  }
+};
+
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
   debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
@@ -46,6 +57,22 @@ export default class TextFormat extends Plugin {
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
     const lang = getLang();
+
+    this.registerEvent(this.app.workspace.on('editor-paste', async (evt: ClipboardEvent, editor: Editor, info: MarkdownView) => {
+      this.log(evt, editor, info)
+      // @ts-ignore
+      const formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste").value;
+      if (!formatOnPasteCmdList && formatOnPasteCmdList.length > 0) { return; }
+      let clipboard = evt.clipboardData.getData('text/plain');
+      if (!clipboard) { return; }
+      evt.preventDefault()
+
+      for (let cmd of formatOnPasteCmdList) {
+        const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;
+        if (formatText) { clipboard = formatText; }
+      }
+      editor.replaceSelection(clipboard);
+    }))
 
     LetterCaseCommands.forEach(command => {
       this.addCommand({
