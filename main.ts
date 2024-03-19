@@ -73,7 +73,8 @@ export default class TextFormat extends Plugin {
       let clipboard = evt.clipboardData.getData('text/html') || evt.clipboardData.getData('text/plain');
       if (!clipboard) { return; }
 
-      evt.preventDefault()
+      evt?.preventDefault();
+      // evt?.stopPropagation();
 
       for (let cmd of formatOnPasteCmdList) {
         const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;
@@ -101,6 +102,7 @@ export default class TextFormat extends Plugin {
             const cursorTo = editor.getCursor("to");
             editor.setSelection(editor.offsetToPos(editor.posToOffset(cursorTo) - clipboard.length), cursorTo);
             pluginEasyTyping.formatSelectionOrCurLine(editor, info);
+            editor.setCursor(editor.getCursor("to"));
           } catch (e) { console.error(e) }
         }
       }
@@ -521,7 +523,7 @@ export default class TextFormat extends Plugin {
         //   replacedText = selectedText.replace(/\n/g, "\n\n");
         //   break;
         case "space-word-symbol":
-          replacedText = selectedText.replace(/(\w+)\(/g, "$1 (");
+          replacedText = selectedText.replace(/(\w+)([\(\[]])/g, "$1 $2").replace(/([\)\]])(\w+)/g, "$1 $2");
           break;
         case "remove-citation":
           replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");

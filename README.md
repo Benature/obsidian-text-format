@@ -21,6 +21,11 @@ This plugin is created to format selected text lowercase/uppercase/capitalize/ti
 
 ## Features
 
+Experimental features:
+- Format on paste: see [#86](https://github.com/Benature/obsidian-text-format/issues/86)
+
+### Commands
+
 Press <kbd>cmd/ctrl+P</kbd> to enter the command. 👇
 
 Or you can consider to bind custom hotkeys to those commands according to [#29](https://github.com/Benature/obsidian-text-format/issues/29#issuecomment-1279246640).
@@ -29,14 +34,15 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 - [Text Format](#text-format)
   - [Features](#features)
-    - [Basic](#basic)
-    - [Markdown Grammar](#markdown-grammar)
-      - [List](#list)
-      - [Links](#links)
-    - [Copy / OCR issues](#copy--ocr-issues)
-    - [Academic / Study](#academic--study)
-    - [Advanced custom](#advanced-custom)
-    - [Others](#others)
+    - [Commands](#commands)
+      - [Basic](#basic)
+      - [Markdown Grammar](#markdown-grammar)
+        - [List](#list)
+        - [Links](#links)
+      - [Copy / OCR issues](#copy--ocr-issues)
+      - [Academic / Study](#academic--study)
+      - [Advanced custom](#advanced-custom)
+      - [Others](#others)
   - [Support](#support)
   - [Some Examples](#some-examples)
     - [Zotero format](#zotero-format)
@@ -48,7 +54,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 ⚙️: There is setting of this command.
 
-### Basic
+#### Basic
 
 | Command                                           | Description                                                                                                                                                                             |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -61,7 +67,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Slugify** selected text                         | convert any input text into a URL-friendly slug                                                                                                                                         |
 | **Snakify** selected text                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                                |
 
-### Markdown Grammar
+#### Markdown Grammar
 
 | Command        | Description                                                                                                                                      |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -70,7 +76,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Callout format | [#80](https://github.com/Benature/obsidian-text-format/issues/80)                                                                                |
 
 
-#### List
+##### List
 | Command                                  | Description                                                                                                                                                                           |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Detect and format **bullet** list ⚙️      | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines. ([test cases](https://github.com/Benature/obsidian-text-format/issues/66)) |
@@ -79,7 +85,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                                                    |
 | **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37), [#46](https://github.com/Benature/obsidian-text-format/issues/46)                                                  |
 
-#### Links
+##### Links
 
 | Command                                                  | Description                                                                                                            |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -88,7 +94,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Convert URL links to WikiLinks in selection              | e.g. Convert `[Google](www.google.com)` to `[[Google]]`                                                                |
 | Convert WikiLinks to plain markdown links in selection ⚙️ | e.g. Convert `[[Google]]` to `[Google](Google.md)` ([#40](https://github.com/Benature/obsidian-text-format/issues/40)) |
 
-### Copy / OCR issues
+#### Copy / OCR issues
 
 | Command                                            | Description                                                                                                                                                                                                                                        |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -104,7 +110,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Replace **ligature**                               | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
 
-### Academic / Study
+#### Academic / Study
 
 | Command                                                | Description                                                                  |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------- |
@@ -116,7 +122,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 
 
-### Advanced custom
+#### Advanced custom
 
 | Command                  | Description                                                                                                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -126,7 +132,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 
 
-### Others
+#### Others
 | Command                                              | Description                                                                                                     |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                  |
