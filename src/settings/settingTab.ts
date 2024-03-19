@@ -595,7 +595,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
         dropDown
           .addOption(CalloutTypeDecider.preContent, 'Last callout type before the cursor')
           .addOption(CalloutTypeDecider.wholeFile, 'Last callout type in the whole file')
-          .addOption(CalloutTypeDecider.fix, 'Fix callout type')
+          .addOption(CalloutTypeDecider.fix, 'Fixed callout type')
           .setValue(this.plugin.settings.calloutTypeDecider || CalloutTypeDecider.preContent)
           .onChange(async (value) => {
             this.plugin.settings.calloutTypeDecider = value as CalloutTypeDecider;
