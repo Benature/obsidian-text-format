@@ -66,11 +66,11 @@ export default class TextFormat extends Plugin {
         //: Event was triggered by this plugin, don't handle it again
         return;
       }
-      // console.log(evt.defaultPrevented)
       // @ts-ignore
       const formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste")?.value;
+      // console.log(formatOnPasteCmdList)
       if (formatOnPasteCmdList === undefined || formatOnPasteCmdList?.length == 0) { return; }
-      let clipboard = evt.clipboardData.getData('text/html');
+      let clipboard = evt.clipboardData.getData('text/html') || evt.clipboardData.getData('text/plain');
       if (!clipboard) { return; }
 
       evt.preventDefault()
@@ -89,7 +89,21 @@ export default class TextFormat extends Plugin {
         clipboardData: dat,
       });
       // @ts-ignore
-      info.currentMode.clipboardManager.handlePaste(e, editor, info)
+      await info.currentMode.clipboardManager.handlePaste(e, editor, info);
+
+      if (formatOnPasteCmdList.includes("easy-typing-format")) {
+        // @ts-ignore
+        const activePlugins = this.app.plugins.plugins;
+        if (activePlugins["easy-typing-obsidian"]) {
+          try {
+            const pluginEasyTyping = activePlugins["easy-typing-obsidian"]
+            // console.log(.formatSelectionOrCurLine);
+            const cursorTo = editor.getCursor("to");
+            editor.setSelection(editor.offsetToPos(editor.posToOffset(cursorTo) - clipboard.length), cursorTo);
+            pluginEasyTyping.formatSelectionOrCurLine(editor, info);
+          } catch (e) { console.error(e) }
+        }
+      }
     }))
 
     LetterCaseCommands.forEach(command => {
