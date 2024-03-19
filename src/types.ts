@@ -9,3 +9,7 @@ export interface FormatSelectionReturn {
     editorChange: EditorChange,
     resetSelection?: EditorSelectionOrCaret
 }
+
+// export interface TextFormatMemory {
+//     lastCallout: string;
+// }

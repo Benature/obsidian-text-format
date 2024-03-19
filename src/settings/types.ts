@@ -32,6 +32,13 @@ export enum Wikilink2mdPathMode {
     absolute = "absolute",
 }
 
+export enum CalloutTypeDecider {
+    wholeFile = "whole-file",
+    preContent = "previous-content",
+    // lastUsed = "last-used",
+    fix = "fix",
+}
+
 export interface FormatSettings {
     MergeParagraph_Newlines: boolean;
     MergeParagraph_Spaces: boolean;
@@ -54,6 +61,7 @@ export interface FormatSettings {
     calloutType: string;
     debugMode: boolean;
     headingLevelMin: number;
+    calloutTypeDecider: CalloutTypeDecider;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -78,4 +86,5 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     calloutType: "NOTE",
     debugMode: false,
     headingLevelMin: 0,
+    calloutTypeDecider: CalloutTypeDecider.preContent,
 };

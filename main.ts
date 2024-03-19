@@ -4,7 +4,7 @@ import {
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
-import { FormatSettings, DEFAULT_SETTINGS } from "src/settings/types";
+import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
 import { LetterCaseCommands } from "src/commands";
 import { getString } from "src/langs/langs";
@@ -26,6 +26,7 @@ export default class TextFormat extends Plugin {
   settings: FormatSettings;
   debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
   debounceUpdateCommandRequest = debounce(this.updateCommandRequest, 1000, true);
+  // memory: TextFormatMemory;
 
   async formatEditorOrTitle(cmd: string) {
     if (isActiveTitle()) {
@@ -372,8 +373,6 @@ export default class TextFormat extends Plugin {
   async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<FormatSelectionReturn> {
     let replacedText: string = selectedText;
     let ret: FormatSelectionReturn = { editorChange: {} as EditorChange };
-    // ret.editorChange = null;
-    let editorChange: EditorChange;
     try {
       switch (cmd) {
         case "anki":
@@ -615,23 +614,51 @@ export default class TextFormat extends Plugin {
           ret.resetSelection = wrapperResult.resetSelection;
           break;
         case "callout":
-          const wholeContent = context.editor.getValue();
-          let type = this.settings.calloutType;
-          if (type.startsWith("!")) {
-            type = type.substring(1, type.length);
-          } else {
-            const reType = /(?:\n\>\s*\[\!)(\w+)(?:\])/gm
-            const preCallouts = wholeContent.match(reType);
-            if (preCallouts) {
-              type = reType.exec(preCallouts[preCallouts.length - 1])[1];
+          const reCalloutType = /(?:(^|\n)\>\s*\[\!)(\w+)(?:\])/gm;
+          const lines = selectedText.replace(/^\n|\n$/g, "").split("\n");
+          if (lines[0].match(reCalloutType)) { //: detect callout grammar, delete callout prefix
+            replacedText = lines[0].replace(reCalloutType, "").replace(/^\s*/g, "");
+            let i = 1;
+            for (; i < lines.length; i++) {
+              if (lines[i].match(/^>/g)) {
+                replacedText += "\n" + lines[i].replace(/^>\s*/, "");
+              } else { break; }
             }
-          }
-          const lines = selectedText.replace(/$\n>/g, "").split("\n");
-          replacedText = `> [!${type}] ${lines[0]}`
-          if (lines.length > 1) {
-            for (let idx = 1; idx < lines.length; idx++) {
-              replacedText += `\n> ` + lines[idx];
+            //: add rest part of lines in original format
+            replacedText = (replacedText + "\n" + lines.slice(i, lines.length).join("\n")).replace(/\n$/g, "")
+          } else { //: To add callout prefix
+            //: Get the previous callout types at first
+            let wholeContent, type;
+            switch (this.settings.calloutTypeDecider) {
+              // case CalloutTypeDecider.lastUsed:
+              //   type = this.memory.lastCallout;
+              //   break;
+              case CalloutTypeDecider.fix:
+                type = this.settings.calloutType;
+                break;
+              case CalloutTypeDecider.wholeFile:
+                wholeContent = context.editor.getValue();
+                break;
+              case CalloutTypeDecider.preContent:
+                wholeContent = context.editor.getRange({ line: 0, ch: 0 }, context.adjustRange.from);
+                break;
             }
+            const preCalloutList = wholeContent.match(reCalloutType);
+            if (preCalloutList) {
+              type = reCalloutType.exec(preCalloutList[preCalloutList.length - 1])[2];
+            } else {
+              type = this.settings.calloutType;
+            }
+            if (type.startsWith("!")) { type = type.substring(1, type.length); }
+
+
+            replacedText = `> [!${type}] ${lines[0]}`
+            if (lines.length > 1) {
+              for (let idx = 1; idx < lines.length; idx++) {
+                replacedText += `\n> ` + lines[idx];
+              }
+            }
+            // this.memory.lastCallout = type;
           }
           break;
         case "latex-letter":
@@ -648,13 +675,6 @@ export default class TextFormat extends Plugin {
       ret.editorChange = { text: replacedText, ...context?.adjustRange };
     }
     return ret;
-    // const ret: FormatSelectionReturn = {
-    //   editorChange: editorChange
-    // }
-
-    // return ret;
-    // return { editorChange: editorChange, resetSelection: context?.resetSelection };
-    // this.log("formatSelection.replacedText", replacedText)
   }
 
   log(...args: any[]): void {
@@ -741,33 +761,32 @@ export default class TextFormat extends Plugin {
       let resetSelection: EditorSelectionOrCaret = { anchor: adjustRange.from, head: adjustRange.to };
       const fos = editor.posToOffset(adjustRange.from);
       const replacedText = formatResult.editorChange.text;
+      const textOffset = replacedText.length - selectedText.length;
       const cursorLast = editor.offsetToPos(fos + replacedText.length);
+      const selections = {
+        keepOriginSelection: {
+          anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + textOffset),
+          head: editor.offsetToPos(editor.posToOffset(originRange.to) + textOffset)
+        },
+        wholeReplacedText: {
+          anchor: adjustRange.from,
+          head: cursorLast
+        }
+      }
       switch (cmd) {
         case "wrapper":
           resetSelection = formatResult.resetSelection;
           break;
         case "callout":
-          if (!somethingSelected && selectedText.length === 0) {
-            resetSelection = {
-              anchor: cursorLast,
-              head: cursorLast
-            };
-          }
-          break;
         case "heading":
           if (originRange.from.line === originRange.to.line) {
-            let offset = replacedText.length - selectedText.length;
-            resetSelection = {
-              anchor: editor.offsetToPos(editor.posToOffset(originRange.from) + offset),
-              head: editor.offsetToPos(editor.posToOffset(originRange.to) + offset)
-            };
+            resetSelection = selections.keepOriginSelection;
+          } else {
+            resetSelection = selections.wholeReplacedText;
           }
           break;
         default:
-          resetSelection = {
-            anchor: adjustRange.from,
-            head: cursorLast
-          };
+          resetSelection = selections.wholeReplacedText;
       }
       this.log("resetSelection", resetSelection)
       resetSelectionList.push(resetSelection);

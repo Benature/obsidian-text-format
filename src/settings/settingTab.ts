@@ -1,6 +1,6 @@
 import { Setting, PluginSettingTab, App, ButtonComponent, setIcon } from "obsidian";
 import TextFormat from "../../main";
-import { Wikilink2mdPathMode } from './types';
+import { Wikilink2mdPathMode, CalloutTypeDecider } from './types';
 import { CustomReplacementBuiltInCommands } from "../commands"
 import { getString } from "../langs/langs";
 import { addDonationElement } from "./donation"
@@ -578,20 +578,6 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.makeCollapsible(headerEl, this.contentEl);
 
     new Setting(this.contentEl)
-      .setName("Callout type")
-      .setDesc(["Set the callout type for command `Callout format`. ",
-        "New callout block will use the last callout type in the current file by default. ",
-        "To disable this continuity, make the type begins with `!`, e.g. `!NOTE`."].join(""))
-      .addText((text) =>
-        text
-          .setPlaceholder("Callout type")
-          .setValue(this.plugin.settings.calloutType)
-          .onChange(async (value) => {
-            this.plugin.settings.calloutType = value;
-            await this.plugin.saveSettings();
-          })
-      );
-    new Setting(this.contentEl)
       .setName("Heading lower to plain text")
       .setDesc("If disabled, heading level 1 cannot be lowered to plain text.")
       .addToggle((toggle) => {
@@ -602,6 +588,31 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+    new Setting(this.contentEl)
+      .setName("Method to decide callout type")
+      .setDesc("How to decide the type of new callout block for command `Callout format`? `Fix callout type` use the default callout type always, other methods only use the default type when it fails to find previous callout block.")
+      .addDropdown(dropDown =>
+        dropDown
+          .addOption(CalloutTypeDecider.preContent, 'Last callout type before the cursor')
+          .addOption(CalloutTypeDecider.wholeFile, 'Last callout type in the whole file')
+          .addOption(CalloutTypeDecider.fix, 'Fix callout type')
+          .setValue(this.plugin.settings.calloutTypeDecider || CalloutTypeDecider.preContent)
+          .onChange(async (value) => {
+            this.plugin.settings.calloutTypeDecider = value as CalloutTypeDecider;
+            await this.plugin.saveSettings();
+          }));
+    new Setting(this.contentEl)
+      .setName("Default callout type")
+      .setDesc(["Set the default callout type for command `Callout format`. "].join(""))
+      .addText((text) =>
+        text
+          .setPlaceholder("Callout type")
+          .setValue(this.plugin.settings.calloutType)
+          .onChange(async (value) => {
+            this.plugin.settings.calloutType = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }
 
