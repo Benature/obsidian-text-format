@@ -5,7 +5,10 @@
 ## 🏗️ developed
 > to be updated in the next version
 
-## 3.0.0-b7
+## 3.0.1-b
+- [feature] Only sort the todo block where the caret is. more details at [#46](https://github.com/Benature/obsidian-text-format/issues/46#issuecomment-2008929183).
+
+## 3.0.0
 - [feature] support multi-cursor for commands ([#48](https://github.com/Benature/obsidian-text-format/issues/48))
 - [feature] heading upper/lower for multi-lines ([#83](https://github.com/Benature/obsidian-text-format/issues/83))
 - [fix] remove all `(?<=)` for compatible issue ([#82](https://github.com/Benature/obsidian-text-format/issues/82))

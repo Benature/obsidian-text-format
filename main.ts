@@ -196,10 +196,10 @@ export default class TextFormat extends Plugin {
       },
     });
     this.addCommand({
-      id: "todo-sort",
+      id: "sort-todo",
       name: { en: "Sort to-do list", zh: "将待办事项列表排序", "zh-TW": "將待辦事項列表排序" }[lang],
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "todo-sort");
+        this.editorTextFormat(editor, view, "sort-todo");
       },
     });
 
@@ -638,8 +638,18 @@ export default class TextFormat extends Plugin {
         case "ligature":
           replacedText = replaceLigature(selectedText);
           break;
-        case "todo-sort":
-          replacedText = sortTodo(selectedText);
+        case "sort-todo":
+          // const blocks = selectedText.split(/\n\s*\n/g);
+          // const results: string[] = [];
+          // for (const block of blocks) {
+          //   results.push(sortTodo(block));
+          // }
+          // replacedText = results.join("\n\n");
+          let fromLine = context.adjustRange.from.line;
+          if ((context.originRange.from.line === context.originRange.to.line) && (!context.editor.getLine(context.originRange.from.line).match(/\s*- \[[ \w\?\!\-]\] /))) {
+            fromLine = null;
+          }
+          replacedText = sortTodo(selectedText, context, fromLine);
           break;
         case "slugify":
           replacedText = slugify(selectedText);
@@ -774,11 +784,18 @@ export default class TextFormat extends Plugin {
           //: Force to select whole paragraph(s)
           adjustSelectionCmd = selectionBehavior.wholeLine;
           break;
-        case "todo-sort":
+        case "sort-todo":
           //: Select whole file if nothing selected
-          if (!somethingSelected) {
-            adjustRange = { from: { line: 0, ch: 0 }, to: { line: editor.lastLine() + 1, ch: 0 } };
+          if (originRange.from.line == originRange.to.line) {
+            adjustRange = {
+              from: { line: 0, ch: 0 },
+              // to: { line: editor.lastLine(), ch: editor.getLine(editor.lastLine()).length }
+              to: { line: editor.lastLine() + 1, ch: 0 }
+            };
+          } else {
+            adjustSelectionCmd = selectionBehavior.wholeLine;
           }
+          context.originRange = originRange;
           break;
         default:
           if (!somethingSelected) {
@@ -836,6 +853,9 @@ export default class TextFormat extends Plugin {
         }
       }
       switch (cmd) {
+        case "sort-todo":
+          resetSelection = originSelection;
+          break;
         case "wrapper":
           resetSelection = formatResult.resetSelection;
           break;
@@ -854,7 +874,7 @@ export default class TextFormat extends Plugin {
       resetSelectionList.push(resetSelection);
     }
 
-    // this.log("resetSelectionList", resetSelectionList)
+    this.log("resetSelectionList", resetSelectionList)
     editor.setSelections(resetSelectionList);
   }
 

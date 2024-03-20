@@ -339,20 +339,27 @@ export function replaceLigature(s: string): string {
     return s;
 }
 
-export function sortTodo(s: string): string {
-    let lines = s.split("\n");
+/**
+ * @param [text] The text to sort
+ * @param [context] The context of the sort, including the editor and the settings
+ * @param [fromOffset=0] - the offset of the first line of the text to sort
+*/
+export function sortTodo(text: string, context: any, fromLine: number | null = null): string {
+    const lines = text.split("\n");
+    // console.log("lines", lines)
 
-    let prefix_text_line = -1,
-        suffix_text_line = -1;
+
+    let prefix_text_index = -1,
+        suffix_text_index = -1;
     let todos: { [key: string]: any[] } = {};
     let todo_detected = false, sort_prefix = false;
     let indent = 0;
     let last_flag: string, // flag of last line that count in as a new todo of level `indent`
         flag: string;
     for (const [i, line] of lines.entries()) {
-        let flags = /- \[([ \w])\]/g.exec(line);
-        // console.log(flags);
-        if (flags) {
+        let flags = /- \[([ \w])\] /g.exec(line);
+        // console.log(i, flags, line);
+        if (flags) { // it is a todo line
             let head = line.match(/^[ \t]*/g)[0];
             if (!todo_detected) {
                 // first time to detect todo checkbox
@@ -362,7 +369,7 @@ export function sortTodo(s: string): string {
                 if (head.length < indent) {
                     // the level of this line is higher than before,
                     // reset the index and consider above lines as prefix text
-                    prefix_text_line = i - 1;
+                    prefix_text_index = i - 1;
                     indent = head.length;
                     todos = {}; // reset
                     sort_prefix = true;
@@ -381,39 +388,75 @@ export function sortTodo(s: string): string {
                 last_flag = flag;
             }
         } else {
-            // console.log("else", flags, todo_detected)
+            // console.log("else", flags, todo_detected, line)
             if (todo_detected) {
-                suffix_text_line = i;
+                suffix_text_index = i;
                 break;
             } else {
-                prefix_text_line = i;
+                prefix_text_index = i;
             }
         }
     }
-    let body = "";
-    for (const [i, flag] of Object.keys(todos).sort().entries()) {
-        todos[flag].forEach((line, j) => {
-            if (line.match(/\n/g)) {
-                let sub_lines = line.split("\n");
-                line = sub_lines[0] + "\n" + sortTodo(sub_lines.slice(1, sub_lines.length).join("\n"));
-            }
-            body += line + "\n";
-        })
+    // console.log("todos", todos)
+    // console.log("prefix_text_line", prefix_text_index, "suffix_text_line", suffix_text_index)
+    const todoBlockRangeLine = {
+        from: prefix_text_index != -1 ? fromLine + prefix_text_index : fromLine,
+        to: suffix_text_index != -1 ? fromLine + suffix_text_index : fromLine + lines.length
     }
-    body = body.slice(0, body.length - 1); // remove the last "\n"
-    // console.log(body)
+    // console.log(context.originRange.from.line, context.originRange.to.line);//, fromLine, fromLine + prefix_text_index, fromLine + suffix_text_index)
+    // console.log(todoBlockRangeLine)
+    let body: string;
+    if (fromLine === null
+        || (
+            (context.originRange.from.line >= todoBlockRangeLine.from && context.originRange.from.line <= todoBlockRangeLine.to)
+            || (context.originRange.from.line <= todoBlockRangeLine.from && context.originRange.to.line >= todoBlockRangeLine.to)
+            || (context.originRange.to.line >= todoBlockRangeLine.from && context.originRange.to.line <= todoBlockRangeLine.to)
+        )) {
 
-    let prefix_text = lines.slice(0, prefix_text_line + 1).join('\n');
-    let suffix_text = suffix_text_line == -1 ? "" : lines.slice(suffix_text_line, lines.length).join('\n');
-    if (sort_prefix) {
-        prefix_text = sortTodo(prefix_text);
+        body = "";
+        for (const [i, flag] of Object.keys(todos).sort().entries()) {
+            todos[flag].forEach((line, j) => {
+                // console.log("body line", line)
+                if (line.match(/\n/g)) {
+                    let sub_lines = line.split("\n");
+                    line = sub_lines[0] + "\n" + sortTodo(sub_lines.slice(1, sub_lines.length).join("\n"), context, null);
+                }
+                body += line + "\n";
+            })
+        }
+        body = body.slice(0, body.length - 1); // remove the last "\n"
+
+    } else {
+        // console.log("else: Do not sort")
+        // body = lines.slice(todoBlockRangeLine.from, todoBlockRangeLine.to).join("\n");
+        // body = lines.slice(prefix_text_line + 1, suffix_text_line + 1).join("\n");
+        body = lines.slice(prefix_text_index === -1 ? 0 : prefix_text_index + 1,
+            suffix_text_index === -1 ? lines.length : suffix_text_index).join("\n");
+        // return text;
     }
-    if (!(suffix_text_line == -1 || suffix_text_line == lines.length - 1)) {
-        suffix_text = sortTodo(suffix_text);
+    // return text;
+    // console.log("input text")
+    // console.log(text)
+    // console.log("body", body)
+
+    let prefix_text = prefix_text_index === -1 ? null : lines.slice(0, prefix_text_index + 1).join('\n');
+    // prefix_text = lines.slice(0, prefix_text_line + 1).join('\n');
+    // let suffix_text = suffix_text_index === -1 ? null : (
+    //     suffix_text_index + 1 == lines.length ? null : lines.slice(suffix_text_index + 1, lines.length).join('\n'));
+    // console.log("suffix_text", suffix_text_index + 1 == lines.length)
+    if (sort_prefix) {
+        prefix_text = sortTodo(prefix_text, context, fromLine);
+    }
+    let suffix_text = suffix_text_index === -1 ? null : lines.slice(suffix_text_index, lines.length + 1).join("\n");
+    if (!(suffix_text_index == -1 || (suffix_text_index + 1 == lines.length))) {
+        // suffix_text = lines.slice(suffix_text_index + 1, lines.length + 1).join("\n");
+        suffix_text = sortTodo(suffix_text, context, suffix_text_index == -1 ? null : fromLine + suffix_text_index);
     }
     let whole = [prefix_text, body, suffix_text];
-    whole = whole.filter(item => item != "")
-    // console.log(whole.join('\n'));
+    // console.log(prefix_text_index, suffix_text_index)
+    // console.log("text", text)
+    // console.log("whole", whole);
+    whole = whole.filter(item => item != null) // remove empty lines
     return whole.join('\n');
 }
 
