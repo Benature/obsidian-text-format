@@ -68,7 +68,7 @@ export const GreekLetters: { [key: string]: string } = {
     'β': '\\beta',
     'γ': '\\gamma',
     'δ': '\\delta',
-    'ε': '\\epsilon',
+    'ε': '\\varepsilon',
     'ζ': '\\zeta',
     'η': '\\eta',
     'θ': '\\theta',
@@ -117,5 +117,6 @@ export const GreekLetters: { [key: string]: string } = {
     '≠': '\\neq',
     '≤': '\\leq',
     '≥': '\\geq',
-    ',...,': ',\\dots,'
+    ',...,': ',\\dots,',
+    '∂': '\\partial',
 };

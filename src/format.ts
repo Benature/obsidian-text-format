@@ -600,6 +600,7 @@ export function convertLatex(editor: Editor, selectedText: string): string {
         .replace(
             RegExp(pre + String.raw`([a-zA-Z\u03B1-\u03C9\u0391-\u03A9])` + suf, "g"),
             (t, pre, t1) => {
+                if (/[aA]/.test(t1)) { return t; }
                 return pre + `$${G(t1)}$`;
             })
         // two characters
