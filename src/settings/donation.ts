@@ -1,14 +1,55 @@
 export function addDonationElement(containerEl: HTMLElement): void {
+    const lang = window.localStorage.getItem("language");
+    let text: string[] = [];
+    switch (lang) {
+        case "zh":
+        case "zh-tw":
+            text = [
+                `如果插件对您有帮助，欢迎打赏！🤩 可以通过`,
+                `<a>微信、支付宝</a>、`,
+                `<a href="https://afdian.net/a/Benature-K">⚡️ 爱发电</a>、<a href="https://www.buymeacoffee.com/benature">☕️ Buy Me a Coffee</a>请木一喝杯咖啡。不胜感激！🙇`,
+            ];
+            break;
+        default:
+            text = [`If you find this plugin useful and would like to support its development, you can sponsor me via
+				<a href="https://www.buymeacoffee.com/benature">☕️ Buy Me a Coffee</a>,
+				<a href="https://afdian.net/a/Benature-K">⚡️ AiFaDian</a>, `,
+                `<a>WeChat or Alipay</a>. `,
+                `Any amount is welcome, thank you!`]
+            break;
+    }
+    addDonationElementContent(containerEl, text);
+}
+
+function addDonationElementContent(containerEl: HTMLElement, text: string[]): void {
     const donateELdiv = containerEl.createEl("div");
     donateELdiv.setAttribute("style", "text-align: center; margin-top: 5rem; border-top: 0.2px solid grey");
-    const donateELa1 = document.createElement('p');
-    donateELa1.appendText("If you find this plugin useful and would like to support its development, you can sponsor me by the button below.");
-    donateELa1.setAttribute("style", "color: gray;");
-    donateELdiv.appendChild(donateELa1);
+    const textContainerEl = document.createElement('div');
+    textContainerEl.setCssProps({ "font-size": "10px", color: "gray", "margin-bottom": "10px", "margin-top": "10px" });
+    let textEl1 = textContainerEl.createEl("span");
+    let textEl2 = textContainerEl.createEl("span");
+    let textEl3 = textContainerEl.createEl("span");
+    textEl1.innerHTML = text[0];
+    textEl2.innerHTML = text[1];
+    textEl3.innerHTML = text[2];
+    // donateELa1.appendText("If you find this plugin useful and would like to support its development, you can sponsor me by the button below.");
+    donateELdiv.appendChild(textContainerEl);
+
+    let centerEl = donateELdiv.createEl("div");
+    centerEl.setCssProps({ "display": "flex", "justify-content": "center" });
+    // centerEl.createEl("div", { text: "dfsfdsd" });
+    let qrcodeEl = centerEl.createEl("img");
+    qrcodeEl.setAttribute("src", "https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png");
+    qrcodeEl.setCssProps({ display: "none", width: "300px", "margin-bottom": "1rem" });
+
+    textEl2.addEventListener("click", () => {
+        qrcodeEl.setCssStyles({ "display": "block", });
+    })
+
     const parser = new DOMParser();
     const donateELa2 = document.createElement('a');
     donateELa2.setAttribute('href', "https://www.buymeacoffee.com/benature");
-    donateELa2.addClass('advanced-tables-donate-button');
+    // donateELa2.addClass('advanced-tables-donate-button');
     donateELa2.appendChild(parser.parseFromString(buyMeACoffee, 'text/xml').documentElement);
     donateELdiv.appendChild(donateELa2);
 }
