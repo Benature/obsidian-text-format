@@ -5,8 +5,9 @@
 ## 🏗️ developed
 > to be updated in the next version
 
-## 3.0.1-b
+## 3.0.1
 - [feature] Only sort the todo block where the caret is. more details at [#46](https://github.com/Benature/obsidian-text-format/issues/46#issuecomment-2008929183).
+- [fix] `#` for capitalizeSentence
 
 ## 3.0.0
 - [feature] support multi-cursor for commands ([#48](https://github.com/Benature/obsidian-text-format/issues/48))

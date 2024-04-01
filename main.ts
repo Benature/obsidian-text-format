@@ -506,6 +506,7 @@ export default class TextFormat extends Plugin {
           const L = toggleSeq.length;
           for (i = 0; i < L; i++) {
             let resText = getNewString(toggleSeq[i]), duplicated = false;
+            // console.log(resText, toggleSeq[i])
             for (let j = 0; j < textHistory.length; j++) {
               if (textHistory[j] == resText) {
                 duplicated = true;
@@ -521,6 +522,7 @@ export default class TextFormat extends Plugin {
           for (i++; i < i + L; i++) {
             let resText = getNewString(toggleSeq[i % L]);
             if (selectedText != resText) {
+              // console.log("!", toggleSeq[i % L])
               replacedText = resText;
               break;
             }

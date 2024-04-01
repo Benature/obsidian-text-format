@@ -148,7 +148,7 @@
 如果您发现此插件有用并想要支持其开发，您可以通过 [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature)、微信、支付宝或[爱发电](https://afdian.net/a/Benature-K)支持我，谢谢！
 
 <p align="center">
-<img src="https://s2.loli.net/2024/01/30/jQ9fTSyBxvXRoOM.png" width="500px">
+<img src="https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png" width="500px">
 </p>
 
 

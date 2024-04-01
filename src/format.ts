@@ -20,7 +20,7 @@ export function capitalizeWord(str: string): string {
 export function capitalizeSentence(s: string): string {
     let lcp = "(" + LC + "+)"; // LC plus
     var rx = new RegExp(
-        String.raw`(?:^|[\n"“]|[\.\!\?\~]\s+|\s*- \s*)` + lcp,
+        String.raw`(?:^|[\n"“]|[\.\!\?\~#]\s+|\s*- \s*)` + lcp,
         "g"
     );
     return s.replace(rx, function (t0, t) {

@@ -146,7 +146,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.net/a/Benature-K). Any amount is welcome, thank you!
 
 <p align="center">
-<img src="https://s2.loli.net/2024/01/30/jQ9fTSyBxvXRoOM.png" width="500px">
+<img src="https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png" width="500px">
 </p>
 
 
@@ -179,8 +179,9 @@ Example of command `Custom API Request`:
 + A survey concludes that obsidian is a good app ([[File Name of the Reference]]). Furthermore, The note taking...
 ```
 
-
 ### Basic
+
+![demo](https://user-images.githubusercontent.com/35028647/121776728-149ea500-cbc1-11eb-89ee-f4afcb0816ed.gif)
 
 - lowercase
   ```diff
@@ -255,4 +256,4 @@ Example of command `Custom API Request`:
   + 2. second, blahblah 
   + 3. third, blahblah
   ```
-![demo](https://user-images.githubusercontent.com/35028647/121776728-149ea500-cbc1-11eb-89ee-f4afcb0816ed.gif)
+
