@@ -4,6 +4,7 @@ import { Wikilink2mdPathMode, CalloutTypeDecider } from './types';
 import { CustomReplacementBuiltInCommands } from "../commands"
 import { getString } from "../langs/langs";
 import { addDonationElement } from "./donation"
+import { v4 as uuidv4 } from "uuid";
 
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -14,19 +15,18 @@ export class TextFormatSettingTab extends PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
     this.collapseMemory = {}
-    this.builtInCustomReplacement();
+    // this.builtInCustomReplacement();
   }
 
-  async builtInCustomReplacement() {
-    for (let command of CustomReplacementBuiltInCommands) {
-      if (!this.plugin.settings.customReplaceBuiltIn.includes(command.id)) {
-        this.plugin.settings.customReplaceList.push({ name: getString(["command", command.id]), data: command.data });
-        this.plugin.settings.customReplaceBuiltIn.push(command.id);
-      }
-    }
-    await this.plugin.saveSettings();
-  }
-
+  // async builtInCustomReplacement() {
+  //   for (let command of CustomReplacementBuiltInCommands) {
+  //     if (this.plugin.settings.customReplaceBuiltInLog[command.id] == null) {
+  //       this.plugin.settings.customReplaceList.push({ name: getString(["command", command.id]), data: command.data });
+  //       this.plugin.settings.customReplaceBuiltInLog[command.id] = { id: command.id, modified: false };
+  //     }
+  //   }
+  //   await this.plugin.saveSettings();
+  // }
 
   display(): void {
     let { containerEl } = this;
@@ -209,6 +209,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
   }
+
   addSettingsAboutLink(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: "Link format" });
@@ -348,6 +349,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setCta()
           .onClick(async () => {
             this.plugin.settings.WrapperList.push({
+              id: uuidv4(),
               name: "",
               prefix: "",
               suffix: "",
@@ -418,6 +420,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setButtonText("+")
           .setCta().onClick(async () => {
             this.plugin.settings.RequestList.push({
+              id: uuidv4(),
               name: "",
               url: "",
             });
@@ -474,6 +477,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           .setButtonText("+")
           .setCta().onClick(async () => {
             this.plugin.settings.customReplaceList.push({
+              id: uuidv4(),
               name: "",
               data: [{
                 search: "",
@@ -485,6 +489,24 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       })
     this.plugin.settings.customReplaceList.forEach((replaceSetting, index) => {
+      const checkIsBuiltIn = () => {
+        if (this.plugin.settings.customReplaceBuiltInLog[replaceSetting.id]) {
+          let logData = this.plugin.settings.customReplaceBuiltInLog[replaceSetting.id].data;
+          let nowData = replaceSetting.data;
+          if (logData.length != nowData.length) {
+            this.plugin.settings.customReplaceBuiltInLog[replaceSetting.id].modified = true;
+            return;
+          }
+          for (let i = 0; i < logData.length; i++) {
+            console.log(logData[i], nowData[i])
+            if (logData[i].search !== nowData[i].search || logData[i].replace !== nowData[i].replace) {
+              this.plugin.settings.customReplaceBuiltInLog[replaceSetting.id].modified = true;
+              return;
+            }
+          }
+          this.plugin.settings.customReplaceBuiltInLog[replaceSetting.id].modified = false;
+        }
+      };
       const s = new Setting(this.contentEl)
         .addText((cb) => {
           cb.setPlaceholder("Command name")
@@ -500,6 +522,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .setValue(replaceSetting.data[0].search)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].data[0].search = newValue;
+              checkIsBuiltIn();
               await this.plugin.saveSettings();
               this.plugin.debounceUpdateCommandCustomReplace();
             });
@@ -509,6 +532,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .setValue(replaceSetting.data[0].replace)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].data[0].replace = newValue;
+              checkIsBuiltIn();
               await this.plugin.saveSettings();
               this.plugin.debounceUpdateCommandCustomReplace();
             });

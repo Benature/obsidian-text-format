@@ -4,11 +4,13 @@ import {
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
-import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider } from "src/settings/types";
+import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
-import { LetterCaseCommands } from "src/commands";
+import { CustomReplacementBuiltInCommands, LetterCaseCommands } from "src/commands";
 import { getString } from "src/langs/langs";
 import { selectionBehavior, FormatSelectionReturn } from "src/types";
+import { v4 as uuidv4 } from "uuid";
+import { renew } from "src/util";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');
@@ -54,6 +56,7 @@ export default class TextFormat extends Plugin {
 
   async onload() {
     await this.loadSettings();
+    await this.initCustomSettings();
     this.addSettingTab(new TextFormatSettingTab(this.app, this));
 
     const lang = getLang();
@@ -411,7 +414,7 @@ export default class TextFormat extends Plugin {
     // });
     this.addCommand({
       id: "space-word-symbol",
-      name: { en: "Format space between word and symbol", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
+      name: { en: "Format space between words and symbols", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
       icon: "space",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.editorTextFormat(editor, view, "space-word-symbol");
@@ -548,7 +551,11 @@ export default class TextFormat extends Plugin {
           }
           break;
         case "space-word-symbol":
-          replacedText = selectedText.replace(/(\w+)([\(\[]])/g, "$1 $2").replace(/([\)\]])(\w+)/g, "$1 $2");
+          replacedText = selectedText
+            .replace(/(\w+)([\(\[\{])/g, "$1 $2")
+            .replace(/([\)\]\}])(\w+)/g, "$1 $2")
+            .replace(/([\u4e00-\u9fa5])([a-zA-Z])/g, "$1 $2")
+            .replace(/([a-zA-Z])([\u4e00-\u9fa5])/g, "$1 $2");
           break;
         case "remove-citation":
           replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
@@ -905,12 +912,73 @@ export default class TextFormat extends Plugin {
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.compatibleSettingsUpgrade();
   }
 
   async saveSettings() {
     await this.saveData(this.settings);
+
+  }
+
+  async initCustomSettings() {
+    if (this.manifest.version === this.settings.manifest.version) { return; } // no need to upgrade
+
+    await this.compatibleSettingsUpgrade();
+    for (let command of CustomReplacementBuiltInCommands) {
+      if (!this.settings.customReplaceBuiltInLog[command.id]) {
+        this.settings.customReplaceList.push({
+          id: command.id,
+          name: getString(["command", command.id]),
+          data: renew(command.data)
+        });
+        this.settings.customReplaceBuiltInLog[command.id] = {
+          id: command.id,
+          modified: false,
+          data: renew(command.data)
+        };
+      } else { // build in command is loaded in older version, then check if modified
+        if (!this.settings.customReplaceBuiltInLog[command.id].modified) {
+          // upgrade replacement data
+          const index = this.settings.customReplaceList.findIndex(item => item.id === command.id);
+          console.log(index);
+          if (index > -1) {
+            this.settings.customReplaceList[index].data = renew(command.data);
+          }
+          // this.settings.customReplaceBuiltInLog[command.id].data = command.data;
+        }
+      }
+    }
+    this.settings.manifest.version = this.manifest.version; // update version
+    await this.saveSettings();
+  }
+
+  async compatibleSettingsUpgrade() {
+    // uuid init
+    for (let i in this.settings.customReplaceList)
+      if (!this.settings.customReplaceList[i].id)
+        this.settings.customReplaceList[i].id = uuidv4();
+    for (let i in this.settings.WrapperList)
+      if (!this.settings.WrapperList[i].id)
+        this.settings.WrapperList[i].id = uuidv4();
+    for (let i in this.settings.RequestList)
+      if (!this.settings.RequestList[i].id)
+        this.settings.RequestList[i].id = uuidv4();
+
+    // @ts-ignore
+    const oldCustomReplaceBuiltIn = this.settings.customReplaceBuiltIn;
+    if (oldCustomReplaceBuiltIn &&
+      (!this.settings.customReplaceBuiltInLog || Object.keys(this.settings.customReplaceBuiltInLog).length == 0)) {
+      console.log("upgrade customReplaceBuiltInLog")
+      let newBuiltIn: { [id: string]: CustomReplaceBuiltIn } = {};
+      for (const i in oldCustomReplaceBuiltIn) {
+        const id: string = oldCustomReplaceBuiltIn[i]; // string
+        newBuiltIn[id] = { id: id, modified: false, data: CustomReplacementBuiltInCommands.find(x => x.id === id).data };
+      }
+      this.settings.customReplaceBuiltInLog = newBuiltIn;
+    }
   }
 }
+
 
 
 function selection2range(editor: Editor, selection: EditorSelectionOrCaret): { readonly from: EditorPosition, readonly to: EditorPosition } {

@@ -1,11 +1,13 @@
 
 export interface WrapperSetting {
+    id: string;
     name: string;
     prefix: string;
     suffix: string;
 }
 
 export interface APIRequestSetting {
+    id: string;
     name: string;
     url: string;
 }
@@ -22,6 +24,7 @@ export interface customReplaceSettingPair {
 }
 
 export interface customReplaceSetting {
+    id: string;
     name: string;
     data: Array<customReplaceSettingPair>;
 }
@@ -39,7 +42,16 @@ export enum CalloutTypeDecider {
     fix = "fix",
 }
 
+export interface CustomReplaceBuiltIn {
+    id: string;
+    modified: boolean;
+    data: Array<customReplaceSettingPair>;
+}
+
 export interface FormatSettings {
+    manifest: {
+        version: string;
+    }
     MergeParagraph_Newlines: boolean;
     MergeParagraph_Spaces: boolean;
     LowercaseFirst: boolean;
@@ -50,7 +62,7 @@ export interface FormatSettings {
     WrapperList: Array<WrapperSetting>;
     RequestList: Array<APIRequestSetting>;
     customReplaceList: Array<customReplaceSetting>;
-    customReplaceBuiltIn: Array<string>;
+    customReplaceBuiltInLog: { [id: string]: CustomReplaceBuiltIn };
     ToggleSequence: string;
     RemoveWikiURL2: boolean;
     WikiLinkFormat: WikiLinkFormatGroup;
@@ -65,6 +77,9 @@ export interface FormatSettings {
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
+    manifest: {
+        version: "0.0.0",
+    },
     MergeParagraph_Newlines: true,
     MergeParagraph_Spaces: true,
     LowercaseFirst: true,
@@ -72,10 +87,10 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
     ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",
     BulletPoints: "•–§",
-    WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>" }],
+    WrapperList: [{ name: "underline", prefix: "<u>", suffix: "</u>", id: "underline" }],
     RequestList: [],
     customReplaceList: [],
-    customReplaceBuiltIn: [],
+    customReplaceBuiltInLog: {},
     ToggleSequence: "titleCase\nlowerCase\nupperCase",
     RemoveWikiURL2: false,
     WikiLinkFormat: { headingOnly: "{title} (> {heading})", aliasOnly: "{alias} ({title})", both: "{alias} ({title} > {heading})" },
