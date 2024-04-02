@@ -202,9 +202,9 @@ export function array2markdown(content: string): string {
     return beautify_markdown;
 }
 
-export function toTitleCase(text: string, settings: FormatSettings): string {
+export function toTitleCase(text: string, settings: FormatSettings | null = null): string {
     // reference: https://github.com/gouch/to-title-case
-    var properNouns = RegExp(`^(` + settings.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
+    var properNouns = RegExp(`^(` + settings?.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
     var smallWords =
         /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
     var alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
@@ -213,10 +213,10 @@ export function toTitleCase(text: string, settings: FormatSettings): string {
     return text.split(wordSeparators)
         .map(function (current: string, index: number, array: string[]): string {
 
-            if (current.search(properNouns) > -1) { /* Check for proper nouns */
+            if (settings && current.search(properNouns) > -1) { /* Check for proper nouns */
                 return current;
             } else {
-                if (settings.LowercaseFirst) {
+                if (settings && settings.LowercaseFirst) {
                     current = current.toLowerCase();
                 }
             }
@@ -524,9 +524,18 @@ export function slugify(text: string, maxLength: number = 76): string {
     return text;
 }
 
-export function snakify(text: string, maxLength: number = 76): string {
+export function snakify(text: string): string {
     text = text.toLowerCase();
     text = text.replace(/\s+/g, "_");
+    return text;
+}
+
+export function camelCase(text: string, lowerFirst = false): string {
+    text = toTitleCase(text.toLowerCase());
+    text = text.replace(/\s+/g, "");
+    if (lowerFirst) {
+        text = text.charAt(0).toLowerCase() + text.slice(1);
+    }
     return text;
 }
 

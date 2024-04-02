@@ -5,7 +5,7 @@ import {
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
 import { TextFormatSettingTab } from "src/settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "src/settings/types";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex } from "src/format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex, camelCase } from "src/format";
 import { CustomReplacementBuiltInCommands, LetterCaseCommands } from "src/commands";
 import { getString } from "src/langs/langs";
 import { selectionBehavior, FormatSelectionReturn } from "src/types";
@@ -143,6 +143,22 @@ export default class TextFormat extends Plugin {
       icon: "case-sensitive",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.editorTextFormat(editor, view, "snakify");
+      },
+    });
+    this.addCommand({
+      id: "camel-case-lower",
+      name: { en: "camelCase selected text", zh: "使用小驼峰格式化选中文本", "zh-TW": "使用小駝峰格式化選取文字" }[lang],
+      icon: "case-sensitive",
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.editorTextFormat(editor, view, "camel-case", { lowerFirst: true });
+      },
+    });
+    this.addCommand({
+      id: "camel-case-upper",
+      name: { en: "CamelCase selected text", zh: "使用大驼峰格式化选中文本", "zh-TW": "使用大駝峰格式化選取文字" }[lang],
+      icon: "case-sensitive",
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        this.editorTextFormat(editor, view, "camel-case", { lowerFirst: false });
       },
     });
 
@@ -688,6 +704,9 @@ export default class TextFormat extends Plugin {
           break;
         case "snakify":
           replacedText = snakify(selectedText);
+          break;
+        case "camel-case":
+          replacedText = camelCase(selectedText, context.lowerFirst);
           break;
         case "custom-replace":
           replacedText = customReplace(selectedText, context.settings);
