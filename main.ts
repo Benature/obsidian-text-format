@@ -111,6 +111,18 @@ export default class TextFormat extends Plugin {
       }
     }))
 
+    this.addCommand({
+      id: "open-settings",
+      name: "Open preference settings tab",
+      icon: "bolt",
+      callback: () => {
+        // @ts-ignore
+        const settings = this.app.setting;
+        settings.open();
+        settings.openTabById(`obsidian-text-format`);
+      },
+    });
+
     LetterCaseCommands.forEach(command => {
       this.addCommand({
         id: command.id,
