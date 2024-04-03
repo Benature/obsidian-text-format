@@ -556,16 +556,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
-    new Setting(contentEl)
+    const zoteroEl = new Setting(contentEl)
       .setName("Zotero pdf note (input) RegExp")
-      .setDesc(
-        "The format of note template can configured refer to https://www.zotero.org/support/note_templates. \n" +
-        "Variables: \n" +
-        "<text>: highlight,\n" +
-        "<pdf_url>: comment,\n" +
-        "<item>: citation."
-      )
-      .addTextArea((text) =>
+      .addTextArea((text) => {
         text
           .setPlaceholder(
             String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`
@@ -575,7 +568,15 @@ export class TextFormatSettingTab extends PluginSettingTab {
             this.plugin.settings.ZoteroNoteRegExp = value;
             await this.plugin.saveSettings();
           })
+        text.inputEl.setCssProps({ "height": "5rem" });
+      }
       );
+    zoteroEl.descEl.innerHTML = `<div>The format of note template can configured refer to <a href="https://github.com/Benature/obsidian-text-format?tab=readme-ov-file#zotero-format">document</a>.</div>
+    <ul>
+    <li><code>text</code>: highlight</li>
+    <li><code>pdf_url</code>: comment</li>
+    <li><code>item</code>: citation</li>
+    </ul>`;
     new Setting(contentEl)
       .setName("Zotero note pasted in Obsidian (output) format")
       .setDesc(
@@ -584,14 +585,16 @@ export class TextFormatSettingTab extends PluginSettingTab {
         "{pdf_url}: <pdf_url>,\n" +
         "{item}: <item>."
       )
-      .addTextArea((text) =>
+      .addTextArea((text) => {
         text
           .setPlaceholder("{text} [🔖]({pdf_url})")
           .setValue(this.plugin.settings.ZoteroNoteTemplate)
           .onChange(async (value) => {
             this.plugin.settings.ZoteroNoteTemplate = value;
             await this.plugin.saveSettings();
-          })
+          });
+
+      }
       );
   }
   addSettingsAboutMarkdownQuicker(containerEl: HTMLElement) {
