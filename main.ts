@@ -23,18 +23,6 @@ function isActiveTitle(): boolean {
   return activeClasses.contains("inline-title") || activeClasses.contains("view-header-title");
 }
 
-
-class PasteEventCopy extends ClipboardEvent {
-  constructor(originalEvent: ClipboardEvent) {
-    const { files } = originalEvent.clipboardData;
-    const dt = new DataTransfer();
-    for (let i = 0; i < files.length; i += 1) {
-      dt.items.add(files.item(i));
-    }
-    super("paste", { clipboardData: dt });
-  }
-};
-
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
   debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
@@ -458,8 +446,6 @@ export default class TextFormat extends Plugin {
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          // TODO: support multi-cursor
-          // textWrapper(editor, view, wrapper.prefix, wrapper.suffix);
           this.editorTextFormat(editor, view, "wrapper", wrapper);
         },
       });
@@ -954,7 +940,7 @@ export default class TextFormat extends Plugin {
   async initCustomSettings() {
     if (this.manifest.version === this.settings.manifest.version) { return; } // no need to upgrade
 
-    await this.compatibleSettingsUpgrade();
+    this.compatibleSettingsUpgrade();
     for (let command of CustomReplacementBuiltInCommands) {
       if (!this.settings.customReplaceBuiltInLog[command.id]) {
         this.settings.customReplaceList.push({
@@ -979,11 +965,28 @@ export default class TextFormat extends Plugin {
         }
       }
     }
+
+    await this.backupDataJson();
+
+    // update version AFTER backup data.json
     this.settings.manifest.version = this.manifest.version; // update version
     await this.saveSettings();
   }
 
-  async compatibleSettingsUpgrade() {
+  async backupDataJson() {
+    // save a backup data.json before overwriting data.json
+    const vault = this.app.vault;
+    // @ts-ignore
+    const originDataPath = normalizePath(this.manifest.dir + "/data.json");
+    const newDataPath = normalizePath(this.manifest.dir + `/data-backup-v${this.settings.manifest.version}-to-v${this.manifest.version}.json`);
+    if (await vault.adapter.exists(originDataPath)) {
+      // exist data.json of old version
+      new Notice(`[INFO] Updated ${this.manifest.name} from ${this.settings.manifest.version} to v${this.manifest.version}, backup ongoing...`)
+      await vault.adapter.copy(originDataPath, newDataPath);
+    }
+  }
+
+  compatibleSettingsUpgrade() {
     // uuid init
     for (let i in this.settings.customReplaceList)
       if (!this.settings.customReplaceList[i].id)
