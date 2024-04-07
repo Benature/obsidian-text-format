@@ -7,7 +7,8 @@ export enum selectionBehavior {
 
 export interface FormatSelectionReturn {
     editorChange: EditorChange,
-    resetSelection?: EditorSelectionOrCaret
+    resetSelection?: EditorSelectionOrCaret,
+    resetSelectionOffset?: { anchor: number, head: number },
 }
 
 // export interface TextFormatMemory {

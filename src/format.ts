@@ -276,12 +276,13 @@ String.prototype.format = function (args: any) {
     return result;
 };
 
-export function textWrapper(selectedText: string, context: any): { editorChange: EditorChange, resetSelection: EditorSelectionOrCaret, selectedText: string } {
+export function textWrapper(selectedText: string, context: any): { editorChange: EditorChange, selectedText: string, resetSelectionOffset: { anchor: number, head: number } } {
     const editor: Editor = context.editor;
     const prefix_setting: string = context.prefix;
     const suffix_setting: string = context.suffix;
     const adjustRange: EditorRangeOrCaret = context.adjustRange;
-    let resetSelection;
+    // let resetSelection;
+    let resetSelectionOffset;
     let editorChange: EditorChange;
 
     const metaProperties = context.view.metadataEditor.properties;
@@ -295,6 +296,7 @@ export function textWrapper(selectedText: string, context: any): { editorChange:
     const suffix = suffix_template(meta);
     const PL = prefix.length; // Prefix Length
     const SL = suffix.length; // Suffix Length
+
 
     function Cursor(offset: number): EditorPosition {
         const last_cursor = { line: editor.lastLine(), ch: editor.getLine(editor.lastLine()).length }
@@ -310,25 +312,34 @@ export function textWrapper(selectedText: string, context: any): { editorChange:
     const tos = editor.posToOffset(adjustRange.to); // to offset
     const len = selectedText.length;
 
-    const beforeText = editor.getRange(Cursor(fos - PL), Cursor(tos - len));
-    const afterText = editor.getRange(Cursor(fos + len), Cursor(tos + SL));
-    const startText = editor.getRange(Cursor(fos), Cursor(fos + PL));
-    const endText = editor.getRange(Cursor(tos - SL), Cursor(tos));
+    const outPrefix = editor.getRange(Cursor(fos - PL), Cursor(tos - len));
+    const outSuffix = editor.getRange(Cursor(fos + len), Cursor(tos + SL));
+    const inPrefix = editor.getRange(Cursor(fos), Cursor(fos + PL));
+    const inSuffix = editor.getRange(Cursor(tos - SL), Cursor(tos));
 
-    if (beforeText === prefix && afterText === suffix) {
+    if (outPrefix === prefix && outSuffix === suffix) {
         //: selection outside match prefix and suffix => undo underline (inside selection)
         editorChange = { text: selectedText, from: Cursor(fos - PL), to: Cursor(tos + SL) };
-        resetSelection = { anchor: Cursor(fos - PL), head: Cursor(tos - PL) };
+        // resetSelection = { anchor: Cursor(fos - PL), head: Cursor(tos - PL) };
+        resetSelectionOffset = { anchor: fos - PL, head: tos - PL };
         selectedText = prefix + selectedText + suffix;
-    } else if (startText === prefix && endText === suffix) {
+    } else if (inPrefix === prefix && inSuffix === suffix) {
         //: selection inside match prefix and suffix => undo underline (outside selection)
         editorChange = { text: editor.getRange(Cursor(fos + PL), Cursor(tos - SL)), ...adjustRange };
-        resetSelection = { anchor: Cursor(fos), head: Cursor(tos - PL - SL) }
-    } else { //: Add prefix and suffix to selection
+        // resetSelection = { anchor: Cursor(fos), head: Cursor(tos - PL - SL) }
+        resetSelectionOffset = { anchor: fos, head: tos - PL - SL }
+    } else {
+        //: Add prefix and suffix to selection
         editorChange = { text: prefix + selectedText + suffix, ...adjustRange };
-        resetSelection = { anchor: editor.offsetToPos(fos + PL), head: editor.offsetToPos(tos + PL) }
+        // resetSelection = { anchor: editor.offsetToPos(fos + PL), head: editor.offsetToPos(tos + PL) }
+        resetSelectionOffset = { anchor: fos + PL, head: tos + PL }
     }
-    return { editorChange: editorChange, resetSelection: resetSelection, selectedText: selectedText };
+    return {
+        editorChange: editorChange,
+        selectedText: selectedText,
+        // resetSelection: resetSelection,
+        resetSelectionOffset: resetSelectionOffset,
+    };
 }
 
 export function replaceLigature(s: string): string {

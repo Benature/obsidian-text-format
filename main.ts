@@ -731,7 +731,8 @@ export default class TextFormat extends Plugin {
           selectedText = wrapperResult.selectedText;
           replacedText = wrapperResult.editorChange.text;
           context.adjustRange = { from: wrapperResult.editorChange.from, to: wrapperResult.editorChange.to };
-          ret.resetSelection = wrapperResult.resetSelection;
+          // ret.resetSelection = wrapperResult.resetSelection;
+          ret.resetSelectionOffset = wrapperResult.resetSelectionOffset;
           break;
         case "callout":
           const reCalloutType = /(?:(^|\n)\>\s*\[\!)(\w+)(?:\])/gm;
@@ -906,7 +907,12 @@ export default class TextFormat extends Plugin {
           resetSelection = originSelection;
           break;
         case "wrapper":
-          resetSelection = formatResult.resetSelection;
+          // resetSelection = formatResult.resetSelection;
+          resetSelection = {
+            anchor: editor.offsetToPos(formatResult.resetSelectionOffset.anchor),
+            head: editor.offsetToPos(formatResult.resetSelectionOffset.head)
+          }
+          // console.log(resetSelection)
           break;
         case "callout":
         case "heading":
