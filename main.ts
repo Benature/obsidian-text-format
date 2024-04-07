@@ -957,7 +957,7 @@ export default class TextFormat extends Plugin {
         if (!this.settings.customReplaceBuiltInLog[command.id].modified) {
           // upgrade replacement data
           const index = this.settings.customReplaceList.findIndex(item => item.id === command.id);
-          console.log(index);
+          // console.log(index);
           if (index > -1) {
             this.settings.customReplaceList[index].data = renew(command.data);
           }

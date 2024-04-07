@@ -496,8 +496,8 @@ export async function requestAPI(s: string, file: TFile, url: string): Promise<s
 export function slugify(text: string, maxLength: number = 76): string {
     // Convert to Lowercase
     text = text.toLowerCase();
-    // Remove Special Characters
-    text = text.replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+    // Remove Special Characters, preserve Latin and Cyrillic and Swedish characters
+    text = text.replace(/[^\w\s\u0400-\u04FFåäöÅÄÖ]|_/g, "").replace(/\s+/g, " ").trim();
     // Replace Spaces with Dashes
     text = text.replace(/\s+/g, "-");
     // Remove Accents and Diacritics
