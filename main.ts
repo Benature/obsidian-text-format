@@ -442,7 +442,7 @@ export default class TextFormat extends Plugin {
     const lang = getLang();
     this.settings.WrapperList.forEach((wrapper, index) => {
       this.addCommand({
-        id: `wrapper-${index}`,
+        id: `wrapper:${wrapper.id}`,
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
@@ -455,7 +455,7 @@ export default class TextFormat extends Plugin {
     const lang = getLang();
     this.settings.RequestList.forEach((request, index) => {
       this.addCommand({
-        id: `request-${index}`,
+        id: `request:${request.id}`,
         name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
@@ -468,7 +468,7 @@ export default class TextFormat extends Plugin {
     const lang = getLang();
     this.settings.customReplaceList.forEach((customReplace, index) => {
       this.addCommand({
-        id: `custom-replace-${index}`,
+        id: `custom-replace:${customReplace.id}`,
         name: { "en": "Custom Replace", "zh": "自定义替换", "zh-TW": "自定義取代" }[lang] + " - " + customReplace.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
