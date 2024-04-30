@@ -566,8 +566,8 @@ export default class TextFormat extends Plugin {
           break;
         case "space-word-symbol":
           replacedText = selectedText
-            .replace(/(\w+)([\(\[\{])/g, "$1 $2")
-            .replace(/([\)\]\}])(\w+)/g, "$1 $2")
+            .replace(/([\u4e00-\u9fa5]+)([\(\[\{])/g, "$1 $2")
+            .replace(/([\)\]\}])([a-zA-Z0-9\u4e00-\u9fa5]+)/g, "$1 $2")
             .replace(/([\u4e00-\u9fa5])([a-zA-Z])/g, "$1 $2")
             .replace(/([a-zA-Z])([\u4e00-\u9fa5])/g, "$1 $2");
           break;
@@ -789,6 +789,7 @@ export default class TextFormat extends Plugin {
           Error("Unknown command");
       }
     } catch (e) {
+      new Notice(e);
       console.error(e);
     }
 

@@ -285,9 +285,11 @@ export function textWrapper(selectedText: string, context: any): { editorChange:
     let resetSelectionOffset;
     let editorChange: EditorChange;
 
-    const metaProperties = context.view.metadataEditor.properties;
     let meta: Record<string, any> = {};
-    for (const m of metaProperties) { meta[m.key] = m.value; }
+    const metaProperties = context.view.metadataEditor?.properties;
+    if (metaProperties) {
+        for (const m of metaProperties) { meta[m.key] = m.value; }
+    }
 
     let prefix_template = compileTemplate(prefix_setting.replace(/\\n/g, "\n"), { noEscape: true })
     let suffix_template = compileTemplate(suffix_setting.replace(/\\n/g, "\n"), { noEscape: true })
