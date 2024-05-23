@@ -5,6 +5,7 @@ import { CustomReplacementBuiltInCommands } from "../commands"
 import { getString } from "../langs/langs";
 import { addDonationElement } from "./donation"
 import { v4 as uuidv4 } from "uuid";
+import { get } from "http";
 
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
@@ -36,7 +37,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.addClass("plugin-text-format");
     containerEl
-      .createEl("p", { text: "More details in Github: " })
+      .createEl("p", { text: getString(["setting", "more-details"]) })
       .createEl("a", {
         text: "text-format",
         href: "https://github.com/Benature/obsidian-text-format",
@@ -52,7 +53,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    headerEl = headerDiv.createEl("h3", { text: "Others" });
+    headerEl = headerDiv.createEl("h3", { text: getString(["setting", "others"]) });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl, true);
@@ -61,8 +62,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
     new Setting(this.contentEl)
-      .setName("Remove spaces when converting Chinese punctuation marks")
-      .setDesc("for OCR case")
+      .setName(getString(["setting", "remove-spaces-when-converting"]))
+      .setDesc(getString(["setting", "remove-spaces-when-converting-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.RemoveBlanksWhenChinese)
@@ -73,8 +74,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
       });
 
     new Setting(this.contentEl)
-      .setName("Debug logging")
-      .setDesc("verbose logging in the console")
+      .setName(getString(["setting", "debug-logging"]))
+      .setDesc(getString(["setting", "debug-logging-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.debugMode)
@@ -133,15 +134,13 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
   addSettingsAboutWordCase(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "Word cases" })
-    headerDiv.createEl("div", { text: "lowercase / uppercase / title case / capitalize case / cycle case", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "word-cases"]) })
+    headerDiv.createEl("div", { text: getString(["setting", "word-cases-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
-      .setName("Lowercase before capitalize/title case")
-      .setDesc(
-        "When running the capitalize or title case command, the plugin will lowercase the selection at first."
-      )
+      .setName(getString(["setting", "lowercase-before-capitalize"]))
+      .setDesc(getString(["setting", "lowercase-before-capitalize-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.LowercaseFirst)
@@ -151,10 +150,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
     new Setting(this.contentEl)
-      .setName("Cycle case sequence (one case in a line)")
-      .setDesc("Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
-        "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
-        "the two cases are not recommended to be used in the same time.")
+      .setName(getString(["setting", "cycle-case-sequence"]))
+      .setDesc(getString(["setting", "cycle-case-sequence-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("lowerCase\nupperCase")
@@ -165,8 +162,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(this.contentEl)
-      .setName("Proper noun")
-      .setDesc("The words will be ignore to format in title case. Separated by comma, e.g. `USA, UFO`.")
+      .setName(getString(["setting", "proper-noun"]))
+      .setDesc(getString(["setting", "proper-noun-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("USA, UFO")
@@ -184,10 +181,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
     new Setting(contentEl)
-      .setName("Remove redundant blank lines")
-      .setDesc(
-        'change blank lines into single blank lines, e.g. "\\n\\n\\n" will be changed to "\\n\\n"'
-      )
+      .setName(getString(["setting", "remove-redundant-blank-lines"]))
+      .setDesc(getString(["setting", "remove-redundant-blank-lines-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.MergeParagraph_Newlines)
@@ -198,8 +193,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
       });
 
     new Setting(contentEl)
-      .setName("Remove redundant blank spaces")
-      .setDesc("ensure only one space between words")
+      .setName(getString(["setting", "remove-redundant-blank-spaces"]))
+      .setDesc(getString(["setting", "remove-redundant-blank-spaces-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.MergeParagraph_Spaces)
@@ -212,27 +207,27 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
   addSettingsAboutLink(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "Link format" });
-    headerDiv.createEl("div", { text: "Markdown links (`[]()`), Wiki links (`[[ ]]`)", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "link-format"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "link-format-desc"]) });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
-      .setName("Path mode when covering wikilinks to plain markdown links.")
+      .setName(getString(["setting", "path-mode"]))
       // .setDesc("Or will use absolute path instead.")
       .addDropdown(dropDown =>
         dropDown
-          .addOption(Wikilink2mdPathMode.relativeObsidian, 'Relative to Obsidian Vault')
-          .addOption(Wikilink2mdPathMode.relativeFile, 'Relative to current file')
-          .addOption(Wikilink2mdPathMode.absolute, 'Absolute')
+          .addOption(Wikilink2mdPathMode.relativeObsidian, getString(["setting", "Wikilink2mdPathMode-relative-obsidian"]))
+          .addOption(Wikilink2mdPathMode.relativeFile, getString(["setting", "Wikilink2mdPathModerelative-file"]))
+          .addOption(Wikilink2mdPathMode.absolute, getString(["setting", "Wikilink2mdPathMode-absolute"]))
           .setValue(this.plugin.settings.Wikilink2mdRelativePath || Wikilink2mdPathMode.relativeObsidian)
           .onChange(async (value) => {
             this.plugin.settings.Wikilink2mdRelativePath = value as Wikilink2mdPathMode;
             await this.plugin.saveSettings();
           }));
     new Setting(this.contentEl)
-      .setName("The format of result when calling `Remove URL links format in selection`")
-      .setDesc("Matching with `[{text}]({url})`, use `{text}` if you want to maintain the text, or use `{url}` if you want to maintain the url.")
+      .setName(getString(["setting", "result-format"]))
+      .setDesc(getString(["setting", "result-format-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("{url}")
@@ -243,7 +238,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(this.contentEl)
-      .setName("Remove WikiLink as well when calling `Remove URL links format in selection`")
+      .setName(getString(["setting", "remove-wikilink-url"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.RemoveWikiURL2)
@@ -255,8 +250,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.contentEl.createEl("h4", { text: "Format when removing wikiLink" });
     // containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
     new Setting(this.contentEl)
-      .setName("WikiLink with heading")
-      .setDesc("e.g. [[title#heading]]")
+      .setName(getString(["setting", "wiki-link-format-heading"]))
+      .setDesc(getString(["setting", "wiki-link-format-heading-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("{title} (> {heading})")
@@ -267,8 +262,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(this.contentEl)
-      .setName("WikiLink with alias")
-      .setDesc("e.g. [[title|alias]]")
+      .setName(getString(["setting", "wiki-link-format-alias"]))
+      .setDesc(getString(["setting", "wiki-link-format-alias-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("{alias} ({title})")
@@ -279,8 +274,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(this.contentEl)
-      .setName("WikiLink with both heading and alias")
-      .setDesc("e.g. [[title#heading|alias]]")
+      .setName(getString(["setting", "wiki-link-format-both"]))
+      .setDesc(getString(["setting", "wiki-link-format-both-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("{alias} ({title})")
@@ -293,13 +288,13 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutList(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "List format" });
-    headerDiv.createEl("div", { text: "Detect and convert bullet list / ordered list", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "list-format"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "list-format-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
-      .setName("Possible bullet point characters")
-      .setDesc("The characters that will be regarded as bullet points.")
+      .setName(getString(["setting", "bullet-point-characters"]))
+      .setDesc(getString(["setting", "bullet-point-characters-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder("•–")
@@ -310,10 +305,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           })
       );
     new Setting(this.contentEl)
-      .setName("Format ordered list custom separator RegExp")
-      .setDesc(
-        "Separated by `|`. e.g.: `\sand\s|\s?AND\s?`. Default as empty."
-      )
+      .setName(getString(["setting", "ordered-list-custom-separator"]))
+      .setDesc(getString(["setting", "ordered-list-custom-separator-desc"]))
       .addTextArea((text) =>
         text
           .setPlaceholder(
@@ -328,23 +321,23 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutWrapper(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "Wrapper" });
-    headerDiv.createEl("div", { text: "Wrap the selection with prefix and suffix", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "wrapper"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "wrapper-desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     const wrapperRuleDesc = document.createDocumentFragment();
     wrapperRuleDesc.append(
-      "<Wrapper Name> <Prefix Template> <Suffix Template>",
+      getString(["setting", "wrapper-rule-desc1"]),
       document.createDocumentFragment().createEl("br"),
-      "Template for metadata (file properties) is supported with Handlebars syntax. For example, `{{link}}` will be replaced with the value of current file's property `link`.",
+      getString(["setting", "wrapper-rule-desc2"])
     );
     new Setting(this.contentEl)
-      .setName("Add new wrapper")
+      .setName(getString(["setting", "add-new-wrapper"]))
       .setDesc(wrapperRuleDesc)
       .addButton((button: ButtonComponent) => {
         button
-          .setTooltip("Add new rule")
+          .setTooltip(getString(["setting", "new-wrapper-rule-tooltip"]))
           .setButtonText("+")
           .setCta()
           .onClick(async () => {
@@ -361,7 +354,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.plugin.settings.WrapperList.forEach((wrapperSetting, index) => {
       const s = new Setting(this.contentEl)
         .addText((cb) => {
-          cb.setPlaceholder("Wrapper Name (command name)")
+          cb.setPlaceholder(getString(["setting", "wrapper-name-placeholder"]))
             .setValue(wrapperSetting.name)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].name = newValue;
@@ -370,7 +363,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Prefix")
+          cb.setPlaceholder(getString(["setting", "wrapper-prefix-placeholder"]))
             .setValue(wrapperSetting.prefix)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].prefix = newValue;
@@ -379,7 +372,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Suffix")
+          cb.setPlaceholder(getString(["setting", "wrapper-suffix-placeholder"]))
             .setValue(wrapperSetting.suffix)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].suffix = newValue;
@@ -389,7 +382,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
         })
         .addExtraButton((cb) => {
           cb.setIcon("cross")
-            .setTooltip("Delete")
+            .setTooltip(getString(["setting", "delete-tooltip"]))
             .onClick(async () => {
               this.plugin.settings.WrapperList.splice(index, 1);
               await this.plugin.saveSettings();
@@ -402,21 +395,16 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutApiRequest(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "API Request" });
-    headerDiv.createEl("div", { text: "Send a request to an API and replace the selection with the return", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "api-request"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "api-request-desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
-      .setName("API Request URL")
-      .setDesc(
-        "The URL that plugin will send a POST and replace with return.\n" +
-        "The return json should have two attribution: `text` and `notification`. " +
-        "If `text` exist then `text` will replace the selection, or do nothing.\n" +
-        "If `notification` exist then Send a notice if this string, or do nothing."
-      )
+      .setName(getString(["setting", "api-request-url"]))
+      .setDesc(getString(["setting", "api-request-url-desc"]))
       .addButton((button: ButtonComponent) => {
-        button.setTooltip("Add new request")
+        button.setTooltip(getString(["setting", "new-request-tooltip"]))
           .setButtonText("+")
           .setCta().onClick(async () => {
             this.plugin.settings.RequestList.push({
@@ -431,7 +419,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.plugin.settings.RequestList.forEach((requestSetting, index) => {
       const s = new Setting(this.contentEl)
         .addText((cb) => {
-          cb.setPlaceholder("Request Name (command name)")
+          cb.setPlaceholder(getString(["setting", "request-name-placeholder"]))
             .setValue(requestSetting.name)
             .onChange(async (newValue) => {
               this.plugin.settings.RequestList[index].name = newValue;
@@ -440,7 +428,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Request URL")
+          cb.setPlaceholder(getString(["setting", "request-url-placeholder"]))
             .setValue(requestSetting.url)
             .onChange(async (newValue) => {
               this.plugin.settings.RequestList[index].url = newValue;
@@ -450,7 +438,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
         })
         .addExtraButton((cb) => {
           cb.setIcon("cross")
-            .setTooltip("Delete")
+            .setTooltip(getString(["setting", "delete-tooltip"]))
             .onClick(async () => {
               this.plugin.settings.RequestList.splice(index, 1);
               await this.plugin.saveSettings();
@@ -463,17 +451,17 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutReplacement(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "Custom replacement" });
-    headerDiv.createEl("div", { text: "Replace specific pattern with custom string", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "custom-replacement"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "custom-replacement-desc"]), cls: "setting-item-description heading-description" });
 
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
-      .setName("Add custom replacement")
-      .setDesc("The plugin will replace the `search` string with the `replace` string in the selection. RegExp is supported.")
+      .setName(getString(["setting", "add-custom-replacement"]))
+      .setDesc(getString(["setting", "add-custom-replacement-desc"]))
       .addButton((button: ButtonComponent) => {
-        button.setTooltip("Add new replacement")
+        button.setTooltip(getString(["setting", "add-new-replacement-tooltip"]))
           .setButtonText("+")
           .setCta().onClick(async () => {
             this.plugin.settings.customReplaceList.push({
@@ -509,7 +497,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
       };
       const s = new Setting(this.contentEl)
         .addText((cb) => {
-          cb.setPlaceholder("Command name")
+          cb.setPlaceholder(getString(["setting", "replacement-command-name-placeholder"]))
             .setValue(replaceSetting.name)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].name = newValue;
@@ -518,7 +506,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Search")
+          cb.setPlaceholder(getString(["setting", "replacement-search-placeholder"]))
             .setValue(replaceSetting.data[0].search)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].data[0].search = newValue;
@@ -528,7 +516,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder("Replace (empty is fine)")
+          cb.setPlaceholder(getString(["setting", "replacement-replace-placeholder"]))
             .setValue(replaceSetting.data[0].replace)
             .onChange(async (newValue) => {
               this.plugin.settings.customReplaceList[index].data[0].replace = newValue;
@@ -539,7 +527,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
         })
         .addExtraButton((cb) => {
           cb.setIcon("cross")
-            .setTooltip("Delete")
+            .setTooltip(getString(["setting", "delete-tooltip"]))
             .onClick(async () => {
               this.plugin.settings.customReplaceList.splice(index, 1);
               await this.plugin.saveSettings();
@@ -552,12 +540,12 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutZotero(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h4", { text: "Zotero pdf note format" });
+    let headerEl = headerDiv.createEl("h4", { text: getString(["setting", "zotero-pdf-note-format"]) });
 
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
     const zoteroEl = new Setting(contentEl)
-      .setName("Zotero pdf note (input) RegExp")
+      .setName(getString(["setting", "zotero-input-regexp"]))
       .addTextArea((text) => {
         text
           .setPlaceholder(
@@ -578,12 +566,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
     <li><code>item</code>: citation</li>
     </ul>`;
     new Setting(contentEl)
-      .setName("Zotero note pasted in Obsidian (output) format")
-      .setDesc(
-        "Variables: \n" +
-        "{text}: <text>,\n" +
-        "{pdf_url}: <pdf_url>,\n" +
-        "{item}: <item>."
+      .setName(getString(["setting", "zotero-output-format"]))
+      .setDesc(getString(["setting", "zotero-output-format-desc"])
+        
       )
       .addTextArea((text) => {
         text
@@ -599,14 +584,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutMarkdownQuicker(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: "Markdown quicker" });
-    headerDiv.createEl("div", { text: "Quickly format the selection with common markdown syntax", cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "markdown-quicker"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "markdown-quicker-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
 
     new Setting(this.contentEl)
-      .setName("Heading lower to plain text")
-      .setDesc("If disabled, heading level 1 cannot be lowered to plain text.")
+      .setName(getString(["setting", "heading-lower-to-plain"]))
+      .setDesc(getString(["setting", "heading-lower-to-plain-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.headingLevelMin === 0)
@@ -616,8 +601,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
     new Setting(this.contentEl)
-      .setName("Method to decide callout type")
-      .setDesc("How to decide the type of new callout block for command `Callout format`? `Fix callout type` use the default callout type always, other methods only use the default type when it fails to find previous callout block.")
+      .setName(getString(["setting", "method-decide-callout-type"]))
+      .setDesc(getString(["setting", "method-decide-callout-type-desc"]))
       .addDropdown(dropDown =>
         dropDown
           .addOption(CalloutTypeDecider.preContent, 'Last callout type before the cursor')
@@ -629,8 +614,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           }));
     new Setting(this.contentEl)
-      .setName("Default callout type")
-      .setDesc(["Set the default callout type for command `Callout format`. "].join(""))
+      .setName(getString(["setting", "default-callout-type"]))
+      .setDesc(getString(["setting", "default-callout-type-desc"]))
       .addText((text) =>
         text
           .setPlaceholder("Callout type")
