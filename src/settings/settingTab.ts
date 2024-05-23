@@ -175,13 +175,13 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutParagraph(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h4", { text: "Merge broken paragraphs behavior" });
+    let headerEl = headerDiv.createEl("h4", { text: getString(["setting", "paragraph", "header"]) });
 
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
     new Setting(contentEl)
-      .setName(getString(["setting", "remove-redundant-blank-lines"]))
-      .setDesc(getString(["setting", "remove-redundant-blank-lines-desc"]))
+      .setName(getString(["setting", "paragraph", "remove-redundant-blank-lines"]))
+      .setDesc(getString(["setting", "paragraph", "remove-redundant-blank-lines-desc"]))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.MergeParagraph_Newlines)
@@ -207,7 +207,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
   addSettingsAboutLink(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
     let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "link-format"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "link-format-desc"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "link-format-desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
@@ -567,7 +567,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     new Setting(contentEl)
       .setName(getString(["setting", "zotero-output-format"]))
       .setDesc(getString(["setting", "zotero-output-format-desc"])
-        
+
       )
       .addTextArea((text) => {
         text
