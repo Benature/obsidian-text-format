@@ -5,7 +5,6 @@ import { CustomReplacementBuiltInCommands } from "../commands"
 import { getString } from "../langs/langs";
 import { addDonationElement } from "./donation"
 import { v4 as uuidv4 } from "uuid";
-import { get } from "http";
 
 export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
