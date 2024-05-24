@@ -101,7 +101,7 @@ export default class TextFormat extends Plugin {
 
     this.addCommand({
       id: "open-settings",
-      name: "Open preference settings tab",
+      name: getString(["command", "open-settings"]),
       icon: "bolt",
       callback: () => {
         // @ts-ignore
@@ -164,7 +164,7 @@ export default class TextFormat extends Plugin {
 
     this.addCommand({
       id: "heading-upper",
-      name: { "en": "Heading upper", "zh": "调高标题级别", "zh-TW": "標題上升一級" }[lang],
+      name: getString(["command", "heading-upper"]),
       icon: "indent-increase",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.editorTextFormat(editor, view, "heading", { upper: true });
@@ -178,7 +178,7 @@ export default class TextFormat extends Plugin {
     });
     this.addCommand({
       id: "heading-lower",
-      name: { "en": "Heading lower", "zh": "调低标题级别", "zh-TW": "標題下降一級" }[lang],
+      name: getString(["command", "heading-lower"]),
       icon: "indent-decrease",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.editorTextFormat(editor, view, "heading", { upper: false });

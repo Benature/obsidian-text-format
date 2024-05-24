@@ -12,6 +12,9 @@ const EN = {
         "remove-blank-line": "Remove blank line(s)",
         "add-line-break": "Add extra line break between paragraphs",
         "split-lines-by-blank": "Split line(s) by blanks",
+        "heading-upper": "Upper heading level (more #)",
+        "heading-lower": "Lower heading level (less #)",
+        "open-settings": "Open preference settings tab",
     },
     setting: {
         "more-details": "More details in Github: ",
@@ -121,6 +124,9 @@ const ZH = {
         "remove-blank-line": "移除空行",
         "add-line-break": "在段落间添加额外换行",
         "split-lines-by-blank": "按空格分行",
+        "heading-upper": "降级标题（加 #）",
+        "heading-lower": "升级标题（减 #）",
+        "open-settings": "打开插件设置选项卡",
     },
     setting: {
         "more-details": "在 Github 查看更多详情：",
@@ -133,7 +139,7 @@ const ZH = {
         "word-cases-desc": "转换为小写 / 转换为大写 / 标题式大小写 / 单词首字母大写 / 大小写循环切换",
         "lowercase-before-capitalize": "在首字母大写之前转换为小写",
         "lowercase-before-capitalize-desc": "执行首字母大写或标题式大小写命令前，先将选中文本转换为小写。",
-        "cycle-case-sequence": "大小写循环序列（单行）",
+        "cycle-case-sequence": "大小写循环变换（单行）",
         "cycle-case-sequence-desc": 
             "支持以下大小写格式：`lowerCase`、`upperCase`、`capitalizeWord`、`capitalizeSentence`、`titleCase`。\n" +
             "注意，在某些情况下，`capitalizeWord`与`titleCase`的效果可能相同，" +

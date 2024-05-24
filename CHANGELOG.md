@@ -7,7 +7,17 @@
 
 - [feature] command for open settings tab directly
 
-## 3.0.2-beta
+## 3.0.5
+- [updated] Chinese: command translation and description of Upper/Lower heading level
+
+## 3.0.4
+- [PR] #96
+- [updated] Chinese description of Upper/Lower heading level
+
+## 3.0.3
+- [fix] wrapper did not work in canvas
+
+## 3.0.2
 - [update] #93
 - [feature] #90
 - [feature] #89
