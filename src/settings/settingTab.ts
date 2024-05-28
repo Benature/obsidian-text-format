@@ -320,23 +320,23 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutWrapper(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "wrapper"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "wrapper-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "wrapper", "header"]) });
+    headerDiv.createEl("div", { text: getString(["setting", "wrapper", "desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     const wrapperRuleDesc = document.createDocumentFragment();
     wrapperRuleDesc.append(
-      getString(["setting", "wrapper-rule-desc1"]),
+      getString(["setting", "wrapper", "rule-desc1"]),
       document.createDocumentFragment().createEl("br"),
-      getString(["setting", "wrapper-rule-desc2"])
+      getString(["setting","wrapper",  "rule-desc2"])
     );
     new Setting(this.contentEl)
-      .setName(getString(["setting", "add-new-wrapper"]))
+      .setName(getString(["setting", "wrapper", "add-new-wrapper"]))
       .setDesc(wrapperRuleDesc)
       .addButton((button: ButtonComponent) => {
         button
-          .setTooltip(getString(["setting", "new-wrapper-rule-tooltip"]))
+          .setTooltip(getString(["setting","wrapper",  "new-wrapper-rule-tooltip"]))
           .setButtonText("+")
           .setCta()
           .onClick(async () => {
@@ -353,7 +353,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.plugin.settings.WrapperList.forEach((wrapperSetting, index) => {
       const s = new Setting(this.contentEl)
         .addText((cb) => {
-          cb.setPlaceholder(getString(["setting", "wrapper-name-placeholder"]))
+          cb.setPlaceholder(getString(["setting", "wrapper", "name-placeholder"]))
             .setValue(wrapperSetting.name)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].name = newValue;
@@ -362,7 +362,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder(getString(["setting", "wrapper-prefix-placeholder"]))
+          cb.setPlaceholder(getString(["setting","wrapper",  "prefix-placeholder"]))
             .setValue(wrapperSetting.prefix)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].prefix = newValue;
@@ -371,7 +371,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             });
         })
         .addText((cb) => {
-          cb.setPlaceholder(getString(["setting", "wrapper-suffix-placeholder"]))
+          cb.setPlaceholder(getString(["setting","wrapper",  "suffix-placeholder"]))
             .setValue(wrapperSetting.suffix)
             .onChange(async (newValue) => {
               this.plugin.settings.WrapperList[index].suffix = newValue;

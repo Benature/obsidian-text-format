@@ -74,6 +74,10 @@ export interface FormatSettings {
     debugMode: boolean;
     headingLevelMin: number;
     calloutTypeDecider: CalloutTypeDecider;
+    formatOnSaveSettings: {
+        enabled: boolean;
+        commandsString: string;
+    }
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -102,4 +106,8 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     debugMode: false,
     headingLevelMin: 0,
     calloutTypeDecider: CalloutTypeDecider.preContent,
+    formatOnSaveSettings: {
+        enabled: false,
+        commandsString: "",
+    }
 };

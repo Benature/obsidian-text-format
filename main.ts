@@ -626,7 +626,7 @@ export default class TextFormat extends Plugin {
         case "Chinese-punctuation":
           replacedText = selectedText;
           replacedText = replacedText
-            .replace(/ ?, ?/g, "，")
+            .replace(/(?:[\u4e00-\u9fa5])( ?, ?)(?:[\u4e00-\u9fa5])/g,(t, t1) => t.replace(t1, "，"))
             .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
             .replace(/ ?、 ?/g, "、")
             .replace(/;/g, "；")
@@ -642,7 +642,9 @@ export default class TextFormat extends Plugin {
           }
           break;
         case "English-punctuation":
-          replacedText = selectedText.replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)");
+          replacedText = selectedText
+            .replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)")
+            .replace(/(?:[a-zA-Z])(， ?)(?:[a-zA-Z])/g, (t, t1) => t.replace(t1, ", "));
           break;
         case "decodeURI":
           replacedText = selectedText.replace(
