@@ -5,6 +5,8 @@
 ## 🏗️ developed
 > to be update in the next version
 
+## 3.1.0-b1
+- [feature] several commands (e.g. decode URI) support in front matter (metadata)
 - [feature] command for open settings tab directly
 
 ## 3.0.5

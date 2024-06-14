@@ -6,7 +6,7 @@ import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown 
 import { TextFormatSettingTab } from "src/settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "src/settings/types";
 import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex, camelCase } from "src/format";
-import { CustomReplacementBuiltInCommands, LetterCaseCommands } from "src/commands";
+import { CustomReplacementBuiltInCommands, GlobalCommands } from "src/commands";
 import { getString } from "src/langs/langs";
 import { selectionBehavior, FormatSelectionReturn } from "src/types";
 import { v4 as uuidv4 } from "uuid";
@@ -18,10 +18,6 @@ function getLang() {
   return lang;
 }
 
-function isActiveTitle(): boolean {
-  const activeClasses = document.activeElement.classList;
-  return activeClasses.contains("inline-title") || activeClasses.contains("view-header-title");
-}
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
@@ -34,16 +30,59 @@ export default class TextFormat extends Plugin {
     this.app.commands.executeCommandById(cmd);
   }
 
-  async formatEditorOrTitle(cmd: string) {
-    if (isActiveTitle()) {
-      const file = this.app.workspace.getActiveFile();
-      const formatResult = await this.formatSelection(file.basename, cmd);
-      const newName = formatResult.editorChange.text;
-      const newPath = normalizePath(file.parent.path + "/" + newName + "." + file.extension)
-      this.app.vault.adapter.rename(file.path, newPath);
-    } else {
-      // @ts-ignore
-      this.app.commands.executeCommandById(`obsidian-text-format::private:${cmd}`);
+  async quickFormat(text: string, cmd: string) {
+    let formatRes = await this.formatSelection(text, cmd);
+    let res = formatRes.editorChange.text
+    if (res)
+      return res;
+    return text;
+  }
+
+  async formatGlobal(cmd: string) {
+    let activeElement = document.activeElement;
+    const activeClasses = activeElement.classList;
+
+    let where = "editor";
+    if (activeClasses.contains("inline-title") || activeClasses.contains("view-header-title")) {
+      where = "title";
+    } else if (activeClasses.contains("metadata-input-longtext")) {
+      where = "metadata-long-text"
+    } else if (activeClasses.contains("metadata-property")) {
+      let longtext = activeElement.querySelector(".metadata-input-longtext");
+      if (longtext) {
+        activeElement = longtext;
+        where = "metadata-long-text"
+      }
+    }
+    const file = this.app.workspace.getActiveFile();
+
+    switch (where) {
+      case "editor":
+        this.executeCommandById(`obsidian-text-format::private:${cmd}`);
+        break;
+      case "title":
+        const formatResult = await this.formatSelection(file.basename, cmd);
+        const newName = formatResult.editorChange.text;
+        const newPath = normalizePath(file.parent.path + "/" + newName + "." + file.extension)
+        this.app.vault.adapter.rename(file.path, newPath);
+        break;
+      case "metadata-long-text":
+        const activePPElement = activeElement.parentElement.parentElement;
+        let metadataKey = activePPElement.getAttribute("data-property-key");
+        // focus on parent element, so that the new frontmatter can be updated
+        activePPElement.focus();
+        if (!file)
+          break;
+        const text = activeElement.textContent;
+        const replacedText = await this.quickFormat(text, cmd);
+        await this.app.fileManager.processFrontMatter(file, (fm) => {
+            fm[metadataKey] = replacedText;
+        });
+        // let keyboardEvent = new KeyboardEvent('keydown', {
+        //   keyCode: 13, code: 'KeyEnter', key: 'Enter'
+        // })
+        //  document.activeElement.dispatchEvent(keyboardEvent);
+        break;
     }
   }
 
@@ -116,13 +155,13 @@ export default class TextFormat extends Plugin {
       },
     });
 
-    LetterCaseCommands.forEach(command => {
+    GlobalCommands.forEach(command => {
       this.addCommand({
         id: command.id,
         name: getString(["command", command.id]),
         icon: "case-sensitive",
-        callback: () => {
-          this.formatEditorOrTitle(command.id);
+        callback: async () => {
+          await this.formatGlobal(command.id);
         },
       });
       this.addCommand({
@@ -412,37 +451,38 @@ export default class TextFormat extends Plugin {
     this.debounceUpdateCommandRequest();
     this.debounceUpdateCommandCustomReplace();
 
-    this.addCommand({
-      id: "decodeURI",
-      name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang],
-      icon: "link",
-      callback: async () => {
-        const activeElement = document.activeElement;
-        if (activeElement.classList.contains("metadata-input-longtext")) {
-          let metadataKey = activeElement.parentElement.parentElement.getAttribute("data-property-key");
-          // focus on parent element, so that the new frontmatter can be updated
-          activeElement.parentElement.parentElement.focus();
-          const file = this.app.workspace.getActiveFile();
-          const frontmatter = this.app.metadataCache.getCache(file?.path as string)?.frontmatter;
-          let formatRes = await this.formatSelection(frontmatter[metadataKey], "decodeURI");
-          if (file) {
-            await this.app.fileManager.processFrontMatter(file, (fm) => {
-              fm[metadataKey] = formatRes.editorChange.text;
-            });
-          }
-        } else {
-          this.executeCommandById(`obsidian-text-format::editor:decodeURI`);
-        }
-      },
-    });
-    this.addCommand({
-      id: ":editor:decodeURI",
-      name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang] + " (Editor)",
-      icon: "link",
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "decodeURI");
-      },
-    });
+    // this.addCommand({
+    //   id: "decodeURI",
+    //   name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang],
+    //   icon: "link",
+    //   callback: async () => {
+    //     const activeElement = document.activeElement;
+    //     if (activeElement.classList.contains("metadata-input-longtext")) {
+    //       let metadataKey = activeElement.parentElement.parentElement.getAttribute("data-property-key");
+    //       // focus on parent element, so that the new frontmatter can be updated
+    //       activeElement.parentElement.parentElement.focus();
+    //       const file = this.app.workspace.getActiveFile();
+    //       const frontmatter = this.app.metadataCache.getCache(file?.path as string)?.frontmatter;
+    //       let formatRes = await this.formatSelection(frontmatter[metadataKey], "decodeURI");
+    //       if (file) {
+    //         await this.app.fileManager.processFrontMatter(file, (fm) => {
+    //           fm[metadataKey] = formatRes.editorChange.text;
+    //         });
+    //         // activeElement.parentElement.focus();
+    //       }
+    //     } else {
+    //       this.executeCommandById(`obsidian-text-format::editor:decodeURI`);
+    //     }
+    //   },
+    // });
+    // this.addCommand({
+    //   id: ":editor:decodeURI",
+    //   name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang] + " (Editor)",
+    //   icon: "link",
+    //   editorCallback: (editor: Editor, view: MarkdownView) => {
+    //     this.editorTextFormat(editor, view, "decodeURI");
+    //   },
+    // });
 
     this.addCommand({
       id: "space-word-symbol",
@@ -642,7 +682,7 @@ export default class TextFormat extends Plugin {
         case "Chinese-punctuation":
           replacedText = selectedText;
           replacedText = replacedText
-            .replace(/(?:[\u4e00-\u9fa5])( ?, ?)(?:[\u4e00-\u9fa5])/g,(t, t1) => t.replace(t1, "，"))
+            .replace(/(?:[\u4e00-\u9fa5])( ?, ?)(?:[\u4e00-\u9fa5])/g, (t, t1) => t.replace(t1, "，"))
             .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
             .replace(/ ?、 ?/g, "、")
             .replace(/;/g, "；")
@@ -671,6 +711,7 @@ export default class TextFormat extends Plugin {
                 .replace(/%2F/g, "/");
             }
           );
+          console.log(replacedText);
           break;
         case "hyphen":
           replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");

@@ -8,6 +8,7 @@ const EN = {
         "cycle-case": "Cycle-case",
         "slugify": "Slugify",
         "snakify": "Snakify",
+        "decodeURI": "Decode URL",
         "remove-trailing-spaces": "Remove trailing spaces",
         "remove-blank-line": "Remove blank line(s)",
         "add-line-break": "Add extra line break between paragraphs",
@@ -129,6 +130,7 @@ const ZH = {
         "heading-upper": "降级标题（加 #）",
         "heading-lower": "升级标题（减 #）",
         "open-settings": "打开插件设置选项卡",
+        "decodeURI": "解码 URL",
     },
     setting: {
         "more-details": "在 Github 查看更多详情：",

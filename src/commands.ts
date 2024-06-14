@@ -1,17 +1,26 @@
-export const LetterCaseCommands = [
+export const GlobalCommands = [
     {
         id: "lowercase",
+        icon: "case-sensitive",
     }, {
         id: "uppercase",
+        icon: "case-sensitive",
     }, {
         id: "capitalize-word",
+        icon: "case-sensitive",
     }, {
         id: "capitalize-sentence",
+        icon: "case-sensitive",
     }, {
         id: "title-case",
+        icon: "case-sensitive",
     }, {
         id: "cycle-case",
-    },
+        icon: "case-sensitive",
+    }, {
+        id: "decodeURI",
+        icon: "link",
+    }
 ]
 
 export const CustomReplacementBuiltInCommands = [
