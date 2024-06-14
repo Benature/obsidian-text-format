@@ -29,6 +29,11 @@ export default class TextFormat extends Plugin {
   debounceUpdateCommandRequest = debounce(this.updateCommandRequest, 1000, true);
   // memory: TextFormatMemory;
 
+  executeCommandById(cmd: string) {
+    // @ts-ignore
+    this.app.commands.executeCommandById(cmd);
+  }
+
   async formatEditorOrTitle(cmd: string) {
     if (isActiveTitle()) {
       const file = this.app.workspace.getActiveFile();
@@ -406,28 +411,39 @@ export default class TextFormat extends Plugin {
     this.debounceUpdateCommandWrapper();
     this.debounceUpdateCommandRequest();
     this.debounceUpdateCommandCustomReplace();
+
     this.addCommand({
       id: "decodeURI",
       name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang],
+      icon: "link",
+      callback: async () => {
+        const activeElement = document.activeElement;
+        if (activeElement.classList.contains("metadata-input-longtext")) {
+          let metadataKey = activeElement.parentElement.parentElement.getAttribute("data-property-key");
+          // focus on parent element, so that the new frontmatter can be updated
+          activeElement.parentElement.parentElement.focus();
+          const file = this.app.workspace.getActiveFile();
+          const frontmatter = this.app.metadataCache.getCache(file?.path as string)?.frontmatter;
+          let formatRes = await this.formatSelection(frontmatter[metadataKey], "decodeURI");
+          if (file) {
+            await this.app.fileManager.processFrontMatter(file, (fm) => {
+              fm[metadataKey] = formatRes.editorChange.text;
+            });
+          }
+        } else {
+          this.executeCommandById(`obsidian-text-format::editor:decodeURI`);
+        }
+      },
+    });
+    this.addCommand({
+      id: ":editor:decodeURI",
+      name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang] + " (Editor)",
       icon: "link",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.editorTextFormat(editor, view, "decodeURI");
       },
     });
-    // this.addCommand({
-    //   id: "paragraph-double-spaces",
-    //   name: { en: "Add extra double spaces per paragraph for whole file", zh: "全文为每段段末添加双空格", "zh-TW": "全文為每段段末添加雙空格" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     extraDoubleSpaces(editor, view);
-    //   },
-    // });
-    // this.addCommand({
-    //   id: "add-line-break",
-    //   name: { en: "Add extra line break to paragraph", zh: "在段落末添加额外换行", "zh-TW": "在段落末添加額外換行" }[lang],
-    //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "add-line-break");
-    //   },
-    // });
+
     this.addCommand({
       id: "space-word-symbol",
       name: { en: "Format space between words and symbols", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
