@@ -5,9 +5,10 @@
 ## 🏗️ developed
 > to be update in the next version
 
-## 3.1.0-b1
+## 3.1.0
 - [feature] several commands (e.g. decode URI) support in front matter (metadata)
 - [feature] command for open settings tab directly
+- [fix] convert Latex has no editor when formatting on paste
 
 ## 3.0.5
 - [updated] Chinese: command translation and description of Upper/Lower heading level
