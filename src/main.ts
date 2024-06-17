@@ -76,7 +76,7 @@ export default class TextFormat extends Plugin {
         const text = activeElement.textContent;
         const replacedText = await this.quickFormat(text, cmd);
         await this.app.fileManager.processFrontMatter(file, (fm) => {
-            fm[metadataKey] = replacedText;
+          fm[metadataKey] = replacedText;
         });
         // let keyboardEvent = new KeyboardEvent('keydown', {
         //   keyCode: 13, code: 'KeyEnter', key: 'Enter'
@@ -102,14 +102,19 @@ export default class TextFormat extends Plugin {
         return;
       }
       // @ts-ignore
-      const formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste")?.value;
+      let formatOnPasteCmdList = info.metadataEditor.properties.find(m => m.key === "tfFormatOnPaste")?.value;
       // console.log(formatOnPasteCmdList)
-      if (formatOnPasteCmdList === undefined || formatOnPasteCmdList?.length == 0) { return; }
+      if (formatOnPasteCmdList === undefined) {
+        if (this.settings.formatOnSaveSettings.enabled) {
+          formatOnPasteCmdList = this.settings.formatOnSaveSettings.commandsString.split("\n").map((c) => c.trim().replace(/^[ -]*/g, ""));
+        } else return;
+      }
+      if (formatOnPasteCmdList?.length == 0) return;
+
       let clipboard = evt.clipboardData.getData('text/html') || evt.clipboardData.getData('text/plain');
       if (!clipboard) { return; }
 
       evt?.preventDefault();
-      // evt?.stopPropagation();
 
       for (let cmd of formatOnPasteCmdList) {
         const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;

@@ -5,6 +5,9 @@
 ## 🏗️ developed
 > to be update in the next version
 
+## 3.2.0-b1
+- [feature] Settings: global configuration for format on paste #97
+
 ## 3.1.0
 - [feature] several commands (e.g. decode URI) support in front matter (metadata)
 - [feature] command for open settings tab directly

@@ -28,7 +28,7 @@ const EN = {
         "word-cases-desc": "lowercase / uppercase / title case / capitalize case / cycle case",
         "lowercase-before-capitalize": "Lowercase before capitalize/title case",
         "lowercase-before-capitalize-desc": "When running the capitalize or title case command, the plugin will lowercase the selection at first.",
-        "cycle-case-sequence": "Cycle case sequence (one case in a line)",
+        "cycle-case-sequence": "Cycle case sequence (one case per line)",
         "cycle-case-sequence-desc": 
             "Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
             "Note that the result of `capitalizeWord` and `titleCase` could be the same in some cases, " +
@@ -109,7 +109,11 @@ const EN = {
         "method-decide-callout-type": "Method to decide callout type",
         "method-decide-callout-type-desc": "How to decide the type of new callout block for command `Callout format`? `Fix callout type` use the default callout type always, other methods only use the default type when it fails to find previous callout block.",
         "default-callout-type": "Default callout type",
-        "default-callout-type-desc": "Set the default callout type for command `Callout format`. "
+        "default-callout-type-desc": "Set the default callout type for command `Callout format`. ",
+        "format-on-paste": {
+            "name": "Format on paste",
+            "desc": "Format the pasted content automatically. One command per line.",
+        }
     }
 }
 

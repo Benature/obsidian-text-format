@@ -58,6 +58,26 @@ export class TextFormatSettingTab extends PluginSettingTab {
     this.makeCollapsible(headerEl, this.contentEl, true);
 
 
+    new Setting(this.contentEl)
+      .setName(getString(["setting", "format-on-paste", "name"]))
+      .setDesc(getString(["setting", "format-on-paste", "desc"]))
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.formatOnSaveSettings.enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.formatOnSaveSettings.enabled = value;
+            await this.plugin.saveSettings();
+          });
+      })
+      .addTextArea((text) =>
+        text
+          // .setPlaceholder(getString(["setting", "format-on-paste", "placeholder"]))
+          .setValue(this.plugin.settings.formatOnSaveSettings.commandsString)
+          .onChange(async (value) => {            
+            this.plugin.settings.formatOnSaveSettings.commandsString = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
 
     new Setting(this.contentEl)
