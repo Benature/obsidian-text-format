@@ -579,30 +579,30 @@ export function customReplace(text: string, s: customReplaceSetting): string {
 }
 
 export function convertLatex(editor: Editor, selectedText: string): string {
-
-
     //: If selectedText is surrounded by `$`, convert unicode Greek letters to latex commands
-    const fos = editor.posToOffset(editor.getCursor("from")); // from offset
-    const tos = editor.posToOffset(editor.getCursor("to")); // to offset
-    const beforeText = editor.getRange(editor.offsetToPos(fos - 1), editor.offsetToPos(fos));
-    const afterText = editor.getRange(editor.offsetToPos(tos), editor.offsetToPos(tos + 1));
-    if (beforeText === "$" && afterText === "$") {
-        let result = "";
-        let lastGreek = false;
-        for (let i = 0; i < selectedText.length; i++) {
-            let char = GreekLetters[selectedText[i]];
-            if (char) {
-                result += char;
-                lastGreek = true;
-            } else {
-                if (lastGreek && !/\d/.test(selectedText[i])) {
-                    result += " ";
+    if (editor) {
+        const fos = editor.posToOffset(editor.getCursor("from")); // from offset
+        const tos = editor.posToOffset(editor.getCursor("to")); // to offset
+        const beforeText = editor.getRange(editor.offsetToPos(fos - 1), editor.offsetToPos(fos));
+        const afterText = editor.getRange(editor.offsetToPos(tos), editor.offsetToPos(tos + 1));
+        if (beforeText === "$" && afterText === "$") {
+            let result = "";
+            let lastGreek = false;
+            for (let i = 0; i < selectedText.length; i++) {
+                let char = GreekLetters[selectedText[i]];
+                if (char) {
+                    result += char;
+                    lastGreek = true;
+                } else {
+                    if (lastGreek && !/\d/.test(selectedText[i])) {
+                        result += " ";
+                    }
+                    result += selectedText[i];
+                    lastGreek = false;
                 }
-                result += selectedText[i];
-                lastGreek = false;
             }
+            return result.replace(/\s*$/g, "");
         }
-        return result.replace(/\s*$/g, "");
     }
 
     function G(str: string): string {
@@ -613,7 +613,6 @@ export function convertLatex(editor: Editor, selectedText: string): string {
     //: Or, find math text and surround it with `$`
     const pre = String.raw`([\s：（）。，、；—\(\)]|^)`;
     const suf = String.raw`(?=[\s\,\:\.\?\!，。、（）；—\(\)]|$)`;
-
 
     const patternChar2 = String.raw`([\u03B1-\u03C9\u0391-\u03A9a-zA-Z])([\u03B1-\u03C9\u0391-\u03A9a-zA-Z0-9])`;
 
