@@ -1,6 +1,6 @@
 import { stringFormat } from "./format";
 import { WikiLinkFormatGroup, Wikilink2mdPathMode } from "./settings/types";
-import TextFormat from "../main";
+import TextFormat from "./main";
 
 export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
   return s.replace(/\[\[.*?\]\]/g, function (t) {

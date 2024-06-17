@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, EditorRangeOrCaret, EditorChange, EditorSelection, EditorSelectionOrCaret } from "obsidian";
-import { FormatSettings, customReplaceSetting } from "src/settings/types";
+import { FormatSettings, customReplaceSetting } from "./settings/types";
 import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
 
 import { Ligatures, GreekLetters } from "./presets";

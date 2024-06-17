@@ -2,15 +2,15 @@ import {
   Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
   EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo
 } from "obsidian";
-import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "src/link";
-import { TextFormatSettingTab } from "src/settings/settingTab";
-import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "src/settings/types";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex, camelCase } from "src/format";
-import { CustomReplacementBuiltInCommands, GlobalCommands } from "src/commands";
-import { getString } from "src/langs/langs";
-import { selectionBehavior, FormatSelectionReturn } from "src/types";
+import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "./link";
+import { TextFormatSettingTab } from "./settings/settingTab";
+import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "./settings/types";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex, camelCase } from "./format";
+import { CustomReplacementBuiltInCommands, GlobalCommands } from "./commands";
+import { getString } from "./langs/langs";
+import { selectionBehavior, FormatSelectionReturn } from "./types";
 import { v4 as uuidv4 } from "uuid";
-import { renew } from "src/util";
+import { renew } from "./util";
 
 function getLang() {
   let lang = window.localStorage.getItem('language');

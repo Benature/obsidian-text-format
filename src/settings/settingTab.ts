@@ -1,5 +1,5 @@
 import { Setting, PluginSettingTab, App, ButtonComponent, setIcon } from "obsidian";
-import TextFormat from "../../main";
+import TextFormat from "../main";
 import { Wikilink2mdPathMode, CalloutTypeDecider } from './types';
 import { CustomReplacementBuiltInCommands } from "../commands"
 import { getString } from "../langs/langs";
