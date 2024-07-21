@@ -228,7 +228,11 @@ const ZH = {
         "method-decide-callout-type": "决定标注类型的方法",
         "method-decide-callout-type-desc": "选择用于命令 `Callout format` 的新标注块的类型的方法。如果选择固定标注类型，则总是使用默认的标注类型。在无法找到前一个标注块时，其它方法也将使用默认类型。",
         "default-callout-type": "默认callout类型",
-        "default-callout-type-desc": "设置命令 `Callout format` 的默认标注类型。"       
+        "default-callout-type-desc": "设置命令 `Callout format` 的默认标注类型。",
+        "format-on-paste": {
+            "name": "粘贴自动格式化",
+            "desc": "自动格式化粘贴内容。每行一条命令。",
+        }
     }
 }
 

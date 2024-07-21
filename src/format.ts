@@ -137,7 +137,7 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
     // remove header from `content` but record the header string
     content = content.replace(/[\S\s]+\n[:\-\| ]+\|\n/g, (t) => {
         header_str = t
-            .match(/^[\S ]+/)[0]
+            // .match(/^[\S ]+/)[0]
             .replace(/ *\| *$|^ *\| */g, "")
             .replace(/ *\| */g, "|");
         return "";
@@ -147,10 +147,14 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
         headers[i] = withHeader ? `${headers[i]}: ` : "";
     }
     content.split("\n").forEach((line) => {
-        let items = line.replace(/\| *$|^ *\|/g, "").split("|");
-        output += `- ${items[0].trim()}\n`;
-        for (let i = 1; i < items.length; i++) {
-            output += `    - ${headers[i]}${items[i].trim()}\n`;
+        if (line.trim().startsWith('|')) {
+            let items = line.replace(/\| *$|^ *\|/g, "").split("|");
+            output += `- ${items[0].trim()}\n`;
+            for (let i = 1; i < items.length; i++) {
+                output += `    - ${headers[i]}${items[i].trim()}\n`;
+            }
+        }        else {
+            output += line + "\n"
         }
     });
 

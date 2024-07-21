@@ -5,6 +5,11 @@
 ## 🏗️ developed
 > to be update in the next version
 
+
+## 3.2.1-b2
+- [fix] Convert Table to Bullet List, may be related to #99
+- [updated] latex math add: `'≠': '\\neq'`
+
 ## 3.2.0-b1
 - [feature] Settings: global configuration for format on paste #97
 

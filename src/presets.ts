@@ -115,6 +115,7 @@ export const GreekLetters: { [key: string]: string } = {
     ' ̃': '\\tilde ',
     '∞': '\\infty',
     '≠': '\\neq',
+    '≠': '\\neq',
     '≤': '\\leq',
     '≥': '\\geq',
     ',...,': ',\\dots,',

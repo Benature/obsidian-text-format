@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-text-format",
 	"name": "Text Format",
-	"version": "3.2.0-b1",
+	"version": "3.2.1-b1",
 	"minAppVersion": "0.9.7",
 	"description": "Format text such as lowercase/uppercase/capitalize/titlecase, converting order/bullet list, removing redundant spaces/newline characters.",
 	"author": "Benature",
