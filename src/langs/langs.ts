@@ -19,6 +19,10 @@ const EN = {
     },
     setting: {
         "more-details": "More details in Github: ",
+        "search-settings": "Search settings",
+        "search-settings-desc": "Filter by setting names, descriptions, and custom rule values.",
+        "search-settings-placeholder": "Search settings...",
+        "search-settings-no-results": "No settings found for \"{query}\".",
         "others": "Others",
         "remove-spaces-when-converting": "Remove spaces when converting Chinese punctuation marks",
         "remove-spaces-when-converting-desc": "for OCR case",
@@ -138,6 +142,10 @@ const ZH = {
     },
     setting: {
         "more-details": "在 Github 查看更多详情：",
+        "search-settings": "搜索设置",
+        "search-settings-desc": "按设置名称、说明及自定义规则的内容筛选。",
+        "search-settings-placeholder": "搜索设置项…",
+        "search-settings-no-results": "未找到与“{query}”相关的设置。",
         "others": "其他设置",
         "remove-spaces-when-converting": "转换中文标点时去除空格",
         "remove-spaces-when-converting-desc": "适用于 OCR 场景",

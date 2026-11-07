@@ -10,11 +10,13 @@ export class TextFormatSettingTab extends PluginSettingTab {
   plugin: TextFormat;
   contentEl: HTMLElement;
   collapseMemory: { [key: string]: boolean };
+  searchQuery: string;
 
   constructor(app: App, plugin: TextFormat) {
     super(app, plugin);
     this.plugin = plugin;
     this.collapseMemory = {}
+    this.searchQuery = "";
     // this.builtInCustomReplacement();
   }
 
@@ -41,6 +43,20 @@ export class TextFormatSettingTab extends PluginSettingTab {
         text: "text-format",
         href: "https://github.com/Benature/obsidian-text-format",
       });
+
+    new Setting(containerEl)
+      .setName(getString(["setting", "search-settings"]))
+      .setDesc(getString(["setting", "search-settings-desc"]))
+      .addSearch((search) => {
+        search
+          .setPlaceholder(getString(["setting", "search-settings-placeholder"]))
+          .setValue(this.searchQuery)
+          .onChange((value) => {
+            this.searchQuery = value;
+            this.applySettingsSearch(containerEl);
+          });
+      })
+      .settingEl.addClass("tf-settings-search");
 
     this.addSettingsAboutWordCase(containerEl);
     this.addSettingsAboutLink(containerEl);
@@ -107,7 +123,72 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
     this.addSettingsAboutZotero(this.contentEl);
 
+    containerEl.createDiv({ cls: "tf-settings-no-results" });
+    this.applySettingsSearch(containerEl);
     addDonationElement(containerEl);
+  }
+
+  applySettingsSearch(containerEl: HTMLElement) {
+    const query = this.searchQuery.trim().toLocaleLowerCase();
+    const contents = Array.from(containerEl.querySelectorAll<HTMLElement>(".tf-collapsible-content"));
+
+    containerEl.classList.remove("tf-searching", "tf-search-no-results");
+    containerEl.querySelectorAll<HTMLElement>(".tf-search-match").forEach((el) => {
+      el.classList.remove("tf-search-match");
+    });
+    contents.forEach((contentEl) => {
+      const headerDiv = contentEl.previousElementSibling as HTMLElement;
+      if (headerDiv?.hasClass("header-div")) {
+        setCollapsibleIcon(headerDiv.querySelector<HTMLElement>("h3, h4"), contentEl.hasClass("is-active"));
+      }
+    });
+
+    if (!query) { return; }
+
+    containerEl.addClass("tf-searching");
+    const sections = contents.map((contentEl) => {
+      const headerDiv = contentEl.previousElementSibling as HTMLElement;
+      return {
+        contentEl,
+        headerDiv,
+        settingEls: Array.from(contentEl.querySelectorAll<HTMLElement>(":scope > .setting-item")),
+        headerMatches: getSearchableText(headerDiv).includes(query),
+        hasMatches: false,
+      };
+    });
+
+    // Child sections are processed before their parents so that a match in
+    // Paragraph or Zotero also keeps the enclosing Others section visible.
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const section = sections[i];
+      const showAll = sections.some((other) =>
+        other.headerMatches && other.contentEl.contains(section.contentEl)
+      );
+
+      section.settingEls.forEach((settingEl) => {
+        const matches = showAll || getSearchableText(settingEl).includes(query);
+        settingEl.classList.toggle("tf-search-match", matches);
+        if (matches) { section.hasMatches = true; }
+      });
+
+      const childMatches = sections.some((other) =>
+        other.hasMatches && other.headerDiv.parentElement === section.contentEl
+      );
+      section.hasMatches = section.hasMatches || childMatches;
+      section.contentEl.classList.toggle("tf-search-match", section.hasMatches);
+      section.headerDiv.classList.toggle("tf-search-match", section.hasMatches);
+
+      if (section.hasMatches) {
+        setCollapsibleIcon(section.headerDiv.querySelector<HTMLElement>("h3, h4"), true);
+      }
+    }
+
+    const hasResults = sections.some((section) => section.hasMatches);
+    containerEl.classList.toggle("tf-search-no-results", !hasResults);
+    const noResultsEl = containerEl.querySelector<HTMLElement>(".tf-settings-no-results");
+    noResultsEl?.setText(
+      getString(["setting", "search-settings-no-results"]).replace("{query}", this.searchQuery.trim())
+    );
   }
 
   // refer from https://github.com/Mocca101/obsidian-plugin-groups/tree/main
@@ -138,6 +219,9 @@ export class TextFormatSettingTab extends PluginSettingTab {
     }
 
     foldClickElement.onclick = () => {
+      // Search results temporarily expand all matching sections. Keep the
+      // original collapse state untouched so clearing search can restore it.
+      if (this.searchQuery.trim()) { return; }
       if (content.hasClass('is-active')) {
         content.removeClass('is-active');
         this.collapseMemory[text] = false;
@@ -648,6 +732,25 @@ export class TextFormatSettingTab extends PluginSettingTab {
 }
 
 
+
+function getSearchableText(el: HTMLElement): string {
+  if (!el) { return ""; }
+  const text = [el.textContent || ""];
+  el.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea").forEach((inputEl) => {
+    text.push(inputEl.value, inputEl.placeholder);
+  });
+  return text.join(" ").toLocaleLowerCase();
+}
+
+function setCollapsibleIcon(parentEl: HTMLElement | null, isOpen: boolean) {
+  if (!parentEl) { return; }
+  let foldable = parentEl.querySelector<HTMLElement>(":scope > .tf-collapsible-icon");
+  if (!foldable) {
+    foldable = parentEl.createSpan({ cls: "tf-collapsible-icon" });
+  }
+  setIcon(foldable, isOpen ? "chevron-down" : "chevron-up");
+  foldable.dataset.togglestate = isOpen ? "down" : "up";
+}
 
 function toggleCollapsibleIcon(parentEl: HTMLElement) {
   let foldable: HTMLElement | null = parentEl.querySelector(
