@@ -6,9 +6,17 @@
 > to be update in the next version
 
 
-## 3.2.1-b2
-- [fix] Convert Table to Bullet List, may be related to #99
+## 3.2.1
+- [feature] Settings: global configuration for format on paste #97
+- [fix] Prevent empty input and duplicate results from freezing `cycle-case` #110
+- [fix] Parse table headers separately and handle rows with extra cells #99
+- [fix] Remove Markdown links with escaped/nested parentheses and optional titles #115
+- [fix] Remove WikiLinks with an empty heading such as `[[#]]` #103
+- [fix] Convert commas with the Chinese punctuation command #117
+- [fix] Capitalize sentence starts in checkbox lists #112
+- [fix] Stop increasing headings beyond H6 #102
 - [updated] latex math add: `'≠': '\\neq'`
+- [test] Add regression tests for the reported formatting bugs
 
 ## 3.2.0-b1
 - [feature] Settings: global configuration for format on paste #97
