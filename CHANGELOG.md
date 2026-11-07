@@ -2,8 +2,7 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
-## 🏗️ developed
-> to be update in the next version
+## 3.2.4
 
 - [docs] Align command tables with registered commands, clarify remove-line-break behavior and built-in custom replacements #120
 - [fix] Support Vietnamese and other Unicode letters in title case #114
