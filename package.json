@@ -25,7 +25,7 @@
     "uuid": "^11.1.1"
   },
   "dependencies": {
-    "handlebars": "^4.7.6"
+    "handlebars": "4.7.10"
   },
   "overrides": {
     "minimatch": "^11.0.5"

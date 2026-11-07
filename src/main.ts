@@ -96,7 +96,7 @@ export default class TextFormat extends Plugin {
     const lang = getLang();
 
     this.registerEvent(this.app.workspace.on('editor-paste', async (evt: ClipboardEvent, editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
-      if (evt?.defaultPrevented) { return; }
+      if (evt && evt.defaultPrevented) { return; }
       this.log(evt, editor, info)
       // refer: https://github.com/kxxt/obsidian-advanced-paste/blob/cfb04918298f14ffa7f04aefa49beaef9a2e8a76/src/main.ts#L220
       const isManuallyTriggered = evt == null; // Not triggered by Ctrl+V
@@ -117,7 +117,7 @@ export default class TextFormat extends Plugin {
       let clipboard = evt.clipboardData.getData('text/html') || evt.clipboardData.getData('text/plain');
       if (!clipboard) { return; }
 
-      evt?.preventDefault();
+      evt.preventDefault();
 
       for (let cmd of formatOnPasteCmdList) {
         const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;

@@ -2,6 +2,12 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
+## 🏗️ developed
+> to be update in the next version
+
+- [fix] Use explicit paste-event checks recognized by the automated review
+- [build] Pin Handlebars and commit the lockfile for reproducible build verification
+
 ## 3.2.2
 
 - [security] Replace `innerHTML` with Obsidian DOM helpers and move static styles to CSS classes

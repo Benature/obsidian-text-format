@@ -3,7 +3,7 @@
 ## Development setup
 
 1. Use Node.js 22 or a compatible newer release.
-2. Install dependencies with `npm install`.
+2. Install dependencies reproducibly with `npm ci`.
 3. Run the checks before submitting changes:
 
    ```sh
