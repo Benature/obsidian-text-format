@@ -2,8 +2,7 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
-## 🏗️ developed
-> to be update in the next version
+## 3.2.2
 
 - [security] Replace `innerHTML` with Obsidian DOM helpers and move static styles to CSS classes
 - [compatibility] Require Obsidian 1.13.0+ and use declarative settings, `getLanguage()`, and `activeDocument`
