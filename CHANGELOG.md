@@ -2,6 +2,11 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
+## 🏗️ developed
+> to be update in the next version
+
+- [docs] Align command tables with registered commands, clarify remove-line-break behavior and built-in custom replacements #120
+
 ## 3.2.3
 
 - [fix] Use explicit paste-event checks recognized by the automated review
