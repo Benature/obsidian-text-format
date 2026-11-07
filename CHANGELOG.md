@@ -2,8 +2,7 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
-## 🏗️ developed
-> to be update in the next version
+## 3.2.3
 
 - [fix] Use explicit paste-event checks recognized by the automated review
 - [build] Pin Handlebars and commit the lockfile for reproducible build verification
