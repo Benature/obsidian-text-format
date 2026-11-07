@@ -579,33 +579,18 @@ export default class TextFormat extends Plugin {
             }
           }
           let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
-          let textHistory = new Array<string>();
-          let i;
-          const L = toggleSeq.length;
-          for (i = 0; i < L; i++) {
-            let resText = getNewString(toggleSeq[i]), duplicated = false;
-            // console.log(resText, toggleSeq[i])
-            for (let j = 0; j < textHistory.length; j++) {
-              if (textHistory[j] == resText) {
-                duplicated = true;
-                break;
-              }
-            }
-            if (!duplicated) { //: if the converted text is the same as before cycle case, ignore it
-              if (selectedText == resText) { break; }
-            }
-            textHistory.push(resText);
-          }
-          //: find the cycle case that is different from the original text
-          for (i++; i < i + L; i++) {
-            let resText = getNewString(toggleSeq[i % L]);
-            if (selectedText != resText) {
-              // console.log("!", toggleSeq[i % L])
+          // #110: 预计算各档位并定位当前状态；空文本或重复结果也只能检查有限的一轮，避免死循环。
+          const convertedCases = toggleSeq.map(getNewString);
+          const currentIndex = convertedCases.findIndex((text) => text === selectedText);
+          const startIndex = currentIndex === -1 ? -1 : currentIndex;
+          // 从当前档位的下一项开始，选择第一个与原值不同的有效结果。
+          for (let step = 1; step <= convertedCases.length; step++) {
+            const resText = convertedCases[(startIndex + step) % convertedCases.length];
+            if (typeof resText === "string" && selectedText !== resText) {
               replacedText = resText;
               break;
             }
           }
-          if (!(replacedText)) { return; }
           break;
         case "remove-redundant-spaces":
           replacedText = selectedText
@@ -687,7 +672,8 @@ export default class TextFormat extends Plugin {
         case "Chinese-punctuation":
           replacedText = selectedText;
           replacedText = replacedText
-            .replace(/(?:[\u4e00-\u9fa5])( ?, ?)(?:[\u4e00-\u9fa5])/g, (t, t1) => t.replace(t1, "，"))
+            // #117: 孤立标点和中英混合文本中的逗号也要转换，不能仅匹配“汉字,汉字”。
+            .replace(/ ?, ?/g, "，")
             .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
             .replace(/ ?、 ?/g, "、")
             .replace(/;/g, "；")

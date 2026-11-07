@@ -20,7 +20,8 @@ export function capitalizeWord(str: string): string {
 export function capitalizeSentence(s: string): string {
     let lcp = "(" + LC + "+)"; // LC plus
     var rx = new RegExp(
-        String.raw`(?:^|[\n"“]|[\.\!\?\~#]\s+|\s*- \s*)` + lcp,
+        // #112: 除普通句首和列表外，也跳过 Obsidian checkbox 标记，将任务正文的首字母大写。
+        String.raw`(?:^|[\n"“]|[\.\!\?\~#]\s+|\s*- \s*|\s*(?:[-*+]|\d+[.)])\s+\[[ xX]?\]\s+)` + lcp,
         "g"
     );
     return s.replace(rx, function (t0, t) {
@@ -36,6 +37,10 @@ export function headingLevel(s: string, upper: boolean = true, minLevel: number,
     let ignorePlain = minLevel > 0;
     let offset = 0;
     if (upper) {
+        // #102: Markdown 标题最高为 H6；达到或已经超过六级时不再继续添加 #。
+        if (/^#{6,}\s/.test(s)) {
+            return { text: s, offset: offset };
+        }
         let prefix = `#`;
         if (!/^#+\s/.test(s)) { // plain text (not a heading)
             if (isMultiLine) { return { text: s, offset: offset }; }
@@ -135,9 +140,10 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
     let header_str = "";
     let output = "";
     // remove header from `content` but record the header string
-    content = content.replace(/[\S\s]+\n[:\-\| ]+\|\n/g, (t) => {
-        header_str = t
-            // .match(/^[\S ]+/)[0]
+    content = content.replace(/[^\n]+\n[:\-\| ]+\|\n/, (t) => {
+        // #99: 匹配结果包含表头和分隔两行，只取首行生成标签，避免把分隔符混入表头。
+        const headerLine = t.slice(0, t.indexOf("\n"));
+        header_str = headerLine
             .replace(/ *\| *$|^ *\| */g, "")
             .replace(/ *\| */g, "|");
         return "";
@@ -151,7 +157,8 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
             let items = line.replace(/\| *$|^ *\|/g, "").split("|");
             output += `- ${items[0].trim()}\n`;
             for (let i = 1; i < items.length; i++) {
-                output += `    - ${headers[i]}${items[i].trim()}\n`;
+                // #99: 数据行可能多于表头列数；额外单元格没有标签时留空，不能输出 undefined。
+                output += `    - ${headers[i] || ""}${items[i].trim()}\n`;
             }
         }        else {
             output += line + "\n"
