@@ -1,58 +1,54 @@
-.plugin-text-format H3,
-.plugin-text-format H4 {
-  margin-bottom: 0px;
-  padding-bottom: 0px;
-}
-.plugin-text-format H4{
-  opacity: 0.7;
-}
-.plugin-text-format .heading-description {
-  padding-top: 0px;
-  color: var(--text-faint);
-}
-
-.plugin-text-format .header-div:has(H3) + .tf-collapsible-content {
-  margin-top: 10px;
-}
-.plugin-text-format .header-div:has(H4) + .tf-collapsible-content {
-  margin-top: 5px;
-}
-
 .plugin-text-format .setting-item > .setting-item-control > input {
   min-width: 145px;
 }
 
-.plugin-text-format .setting-item.custom-replace input,
-.plugin-text-format .setting-item.wrapper input {
-  width: 33%;
-}
-.plugin-text-format .setting-item.api-request input:first-child {
-  width: 30%;
-}
-.plugin-text-format .setting-item.api-request input {
-  width: 70%;
+.plugin-text-format .setting-item:is(.custom-replace, .wrapper, .api-request) .setting-item-control,
+.plugin-text-format .setting-item-control:is(.custom-replace, .wrapper, .api-request) {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--size-4-2, 8px);
 }
 
-.tf-collapsible-content.is-active {
-  display: block;
+.plugin-text-format .setting-item:is(.custom-replace, .wrapper, .api-request) input {
+  flex: 1 1 140px;
+  width: auto;
+  min-width: 0;
 }
 
-.tf-collapsible-content {
+.plugin-text-format .setting-item-control textarea {
+  max-width: 100%;
+}
+
+.plugin-text-format .text-format-donation {
+  margin-top: 3rem;
+  border-top: 0.2px solid var(--text-faint);
+  text-align: center;
+}
+
+.plugin-text-format .text-format-donation-text {
+  margin: 10px 0;
+  color: var(--text-faint);
+  font-size: var(--font-smallest);
+}
+
+.plugin-text-format .text-format-qrcode-toggle {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.plugin-text-format .text-format-donation-center {
+  display: flex;
+  justify-content: center;
+}
+
+.plugin-text-format .text-format-donation-qrcode {
   display: none;
+  width: 300px;
+  max-width: 100%;
+  margin-bottom: 1rem;
 }
 
-.plugin-text-format .header-div:hover {
-  background-color: var(--interactive-hover, #363636);
-  border-radius: var(--button-radius, 5px);
-}
-
-.tf-collapsible-header {
-  padding-bottom: 8px;
-  padding-top: 4px;
-}
-
-.tf-collapsible-icon {
-  position: relative;
-  top: 4px;
-  left: 16px;
+.plugin-text-format .text-format-donation-qrcode.is-visible {
+  display: block;
 }

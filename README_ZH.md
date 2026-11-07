@@ -62,8 +62,8 @@
 
 | 命令         | 描述                                                      |
 | ------------ | --------------------------------------------------------- |
-| 标题上升一级 | 例如：`# 标题` -> `## 标题`（默认快捷键：`Ctrl+Shift+]`） |
-| 标题下降一级 | 例如：`## 标题` -> `# 标题`（默认快捷键：`Ctrl+Shift+[`） |
+| 标题上升一级 | 例如：`# 标题` -> `## 标题` |
+| 标题下降一级 | 例如：`## 标题` -> `# 标题` |
 
 
 #### 列表
@@ -143,9 +143,18 @@
 - 字体颜色: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
 
 
+## 隐私与网络访问
+
+Text Format 不收集遥测数据。仅在以下场景访问外部数据：
+
+- **自定义 API 请求**：仅在你主动执行命令时，将选中文本和当前文件路径发送到你配置的接口。
+- **WikiLink 转换**：在 vault 已加载文件中查找匹配的笔记路径。
+- **粘贴自动格式化**：仅在笔记属性或全局设置启用时读取剪贴板内容。
+- **赞助信息**：从页面展示的外部域名加载赞助链接和二维码图片。
+
 ## 支持
 
-如果您发现此插件有用并想要支持其开发，您可以通过 [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature)、微信、支付宝或[爱发电](https://afdian.net/a/Benature-K)支持我，谢谢！
+如果您发现此插件有用并想要支持其开发，您可以通过 [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature)、微信、支付宝或[爱发电](https://afdian.com/a/Benature-K)支持我，谢谢！
 
 <p align="center">
 <img src="https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png" width="500px">

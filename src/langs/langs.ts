@@ -1,3 +1,5 @@
+import { getLanguage } from "obsidian";
+
 const EN = {
     command: {
         "uppercase": "Uppercase",
@@ -62,7 +64,7 @@ const EN = {
         "bullet-point-characters": "Possible bullet point characters",
         "bullet-point-characters-desc": "The characters that will be regarded as bullet points.",
         "ordered-list-custom-separator": "Format ordered list custom separator RegExp",
-        "ordered-list-custom-separator-desc": "Separated by `|`. e.g.: `\sand\s|\s?AND\s?`. Default as empty.",
+        "ordered-list-custom-separator-desc": "Separated by `|`. e.g.: `\\sand\\s|\\s?AND\\s?`. Default as empty.",
         wrapper: {
             "header": "Wrapper",
             "desc": "Wrap the selection with prefix and suffix",
@@ -181,7 +183,7 @@ const ZH = {
         "bullet-point-characters": "项目符号字符",
         "bullet-point-characters-desc": "被视为项目符号的字符。",
         "ordered-list-custom-separator": "有序列表自定义分隔符正则表达式",
-        "ordered-list-custom-separator-desc": "使用`|`分隔，例如：`\sand\s|\s?AND\s?`。默认为空。",
+        "ordered-list-custom-separator-desc": "使用`|`分隔，例如：`\\sand\\s|\\s?AND\\s?`。默认为空。",
         wrapper: {
             "header": "包装器",
             "desc": "在选中的文本前后添加前缀和后缀。",
@@ -236,8 +238,12 @@ const ZH = {
     }
 }
 
+interface LocaleMessages {
+    [key: string]: string | LocaleMessages;
+}
+
 interface Languages {
-    [lang: string]: any
+    [lang: string]: LocaleMessages;
 }
 
 const languages: Languages = {
@@ -260,20 +266,17 @@ function setLanguage(lang: string): string {
 export function getString(keys: string[], useDefault: boolean = false): string {
     let currentLanguage = "en";
     if (!useDefault) {
-        currentLanguage = setLanguage(window.localStorage.getItem("language"));
+        currentLanguage = setLanguage(getLanguage());
     }
-    let obj = languages[currentLanguage];
-    let fail = false;
-    for (let key of keys) {
-        if (!(key in obj)) {
-            fail = true;
-            break
+    let obj: string | LocaleMessages = languages[currentLanguage];
+    for (const key of keys) {
+        if (typeof obj === "string" || !(key in obj)) {
+            return useDefault ? "" : getString(keys, true);
         }
         obj = obj[key];
     }
-    if (fail) {
-        return getString(keys, true);
-    } else {
-        return obj;
+    if (typeof obj !== "string") {
+        return useDefault ? "" : getString(keys, true);
     }
+    return obj;
 }

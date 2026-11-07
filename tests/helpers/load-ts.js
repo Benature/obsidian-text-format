@@ -28,6 +28,7 @@ Module._load = function (request, parent, isMain) {
       Setting: class Setting {},
       Notice: class Notice {},
       debounce: (fn) => fn,
+      getLanguage: () => "en",
       normalizePath: (value) => value,
     };
   }
@@ -38,12 +39,17 @@ const format = require(path.join(root, "src/format.ts"));
 const link = require(path.join(root, "src/link.ts"));
 const { DEFAULT_SETTINGS } = require(path.join(root, "src/settings/types.ts"));
 const TextFormat = require(path.join(root, "src/main.ts")).default;
+const { TextFormatSettingTab } = require(path.join(root, "src/settings/settingTab.ts"));
 
 function createPlugin() {
   const plugin = Object.create(TextFormat.prototype);
   plugin.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   plugin.log = () => {};
+  plugin.saveData = async () => {};
+  plugin.debounceUpdateCommandWrapper = () => {};
+  plugin.debounceUpdateCommandRequest = () => {};
+  plugin.debounceUpdateCommandCustomReplace = () => {};
   return plugin;
 }
 
-module.exports = { format, link, DEFAULT_SETTINGS, createPlugin };
+module.exports = { format, link, DEFAULT_SETTINGS, createPlugin, TextFormatSettingTab };

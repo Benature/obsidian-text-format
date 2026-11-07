@@ -1,8 +1,9 @@
-import { Editor, MarkdownView, EditorPosition, App, requestUrl, TFile, Notice, EditorRangeOrCaret, EditorChange, EditorSelection, EditorSelectionOrCaret } from "obsidian";
+import { Editor, MarkdownView, EditorPosition, requestUrl, TFile, Notice, EditorRangeOrCaret, EditorChange } from "obsidian";
 import { FormatSettings, customReplaceSetting } from "./settings/types";
-import { compile as compileTemplate, TemplateDelegate as Template } from 'handlebars';
+import { compile as compileTemplate } from 'handlebars';
 
 import { Ligatures, GreekLetters } from "./presets";
+import { FormatContext } from "./types";
 
 export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
@@ -11,15 +12,15 @@ export function stringFormat(str: string, values: Record<string, string>) {
 const LC = "[\\w\\u0400-\\u04FFåäöÅÄÖ]"; // Latin and Cyrillic and Swedish characters
 
 export function capitalizeWord(str: string): string {
-    var rx = new RegExp(LC + "\\S*", "g");
+    let rx = new RegExp(LC + "\\S*", "g");
     return str.replace(rx, function (t) {
-        return t.charAt(0).toUpperCase() + t.substr(1);
+        return t.charAt(0).toUpperCase() + t.slice(1);
     });
 }
 
 export function capitalizeSentence(s: string): string {
     let lcp = "(" + LC + "+)"; // LC plus
-    var rx = new RegExp(
+    let rx = new RegExp(
         // #112: 除普通句首和列表外，也跳过 Obsidian checkbox 标记，将任务正文的首字母大写。
         String.raw`(?:^|[\n"“]|[\.\!\?\~#]\s+|\s*- \s*|\s*(?:[-*+]|\d+[.)])\s+\[[ xX]?\]\s+)` + lcp,
         "g"
@@ -28,7 +29,7 @@ export function capitalizeSentence(s: string): string {
         if (/^(ve|t|m|d|ll|s|re)$/.test(t)) {
             return t0;
         } else {
-            return t0.replace(t, t.charAt(0).toUpperCase() + t.substr(1));
+            return t0.replace(t, t.charAt(0).toUpperCase() + t.slice(1));
         }
     });
 }
@@ -51,7 +52,6 @@ export function headingLevel(s: string, upper: boolean = true, minLevel: number,
     } else { //: LOWER
         if (/^# /.test(s)) { //: heading level 1
             if (ignorePlain) {
-                console.log("ignore plain text")
                 return { text: s, offset: offset };
             }
             s = s.slice(2);
@@ -67,7 +67,7 @@ export function headingLevel(s: string, upper: boolean = true, minLevel: number,
 
 export function ankiSelection(str: string): string {
     let sections = str.split(/\r?\n/);
-    var seclen = sections.length;
+    let seclen = sections.length;
     let returned = "";
 
     if (sections[0] == "") {
@@ -108,7 +108,7 @@ export function ankiSelection(str: string): string {
 }
 
 export function removeAllSpaces(s: string): string {
-    return s.replace(/(?:[^\)\]\:#\-]) +| +$/g, (t) => t.replace(/ +/g, ""));
+    return s.replace(/(?:[^)\]:#-]) +| +$/g, (t) => t.replace(/ +/g, ""));
 }
 
 export function zoteroNote(
@@ -140,7 +140,7 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
     let header_str = "";
     let output = "";
     // remove header from `content` but record the header string
-    content = content.replace(/[^\n]+\n[:\-\| ]+\|\n/, (t) => {
+    content = content.replace(/[^\n]+\n[-:| ]+\|\n/, (t) => {
         // #99: 匹配结果包含表头和分隔两行，只取首行生成标签，避免把分隔符混入表头。
         const headerLine = t.slice(0, t.indexOf("\n"));
         header_str = headerLine
@@ -169,13 +169,13 @@ export function table2bullet(content: string, withHeader: boolean = false): stri
 }
 
 export function array2markdown(content: string): string {
-    let volume = content.match(/\{([clr\|]+)\}/)[1].match(/[clr]/g).length;
+    let volume = content.match(/\{([clr|]+)\}/)[1].match(/[clr]/g).length;
 
     // remove `\test{}`
     content = content
         .replace(/\$|\n/g, ``)
         .replace(/\\text *\{.*?\}/g, (t) => {
-            return t.match(/\{((.*?))\}/g)[0].replace(/^ +| +$|[\{\}]/g, ``)
+            return t.match(/\{((.*?))\}/g)[0].replace(/^ +| +$|[{}]/g, ``)
         }
         );
     // return content
@@ -199,7 +199,7 @@ export function array2markdown(content: string): string {
     let markdown = (
         "|" +
         content
-            .replace(/\\begin\{array\}\{[clr\|]+\}|\\end\{array\}|\\hline/g, "")
+            .replace(/\\begin\{array\}\{[clr|]+\}|\\end\{array\}|\\hline/g, "")
             .replace(/&/g, "|")
             .replace(/\n[ ]*$/, "")
             .replace(/\\\\[ ]*?\n/g, "|\n|")
@@ -208,18 +208,18 @@ export function array2markdown(content: string): string {
 
     let beautify_markdown = markdown
         .replace(/\[[\d,]+?\]/g, "")
-        .replace(/\\[\w\{\}\d]+/g, (t) => `$${t}$`);
+        .replace(/\\[\w{}\d]+/g, (t) => `$${t}$`);
 
     return beautify_markdown;
 }
 
 export function toTitleCase(text: string, settings: FormatSettings | null = null): string {
     // reference: https://github.com/gouch/to-title-case
-    var properNouns = RegExp(`^(` + settings?.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
-    var smallWords =
+    let properNouns = RegExp(`^(` + settings?.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
+    let smallWords =
         /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
-    var alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
-    var wordSeparators = /([\s\:\–\—\-\(\)])/;
+    let alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
+    let wordSeparators = /([\s:–—()-])/;
 
     return text.split(wordSeparators)
         .map(function (current: string, index: number, array: string[]): string {
@@ -248,7 +248,7 @@ export function toTitleCase(text: string, settings: FormatSettings | null = null
             }
 
             /* Ignore intentional capitalization */
-            if (current.substr(1).search(/[A-Z]|\../) > -1) {
+            if (current.slice(1).search(/[A-Z]|\../) > -1) {
                 return current;
             }
 
@@ -265,29 +265,28 @@ export function toTitleCase(text: string, settings: FormatSettings | null = null
         .join("");
 };
 
-String.prototype.format = function (args: any) {
-    var result = this;
-    if (arguments.length > 0) {
-        if (arguments.length == 1 && typeof args == "object") {
-            for (var key in args) {
-                if (args[key] != undefined) {
-                    var reg = new RegExp("({" + key + "})", "g");
-                    result = result.replace(reg, args[key]);
-                }
-            }
-        } else {
-            for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] != undefined) {
-                    var reg = new RegExp("({)" + i + "(})", "g");
-                    result = result.replace(reg, arguments[i]);
-                }
-            }
-        }
+String.prototype.format = function (this: string, ...args: Array<string | number | Record<string, string | number>>): string {
+    if (args.length === 0) {
+        return this;
     }
-    return result;
+    if (args.length === 1 && typeof args[0] === "object" && args[0] !== null) {
+        return Object.entries(args[0]).reduce((text, [key, value]) => {
+            if (value == undefined) {
+                return text;
+            }
+            return text.replace(new RegExp("({" + key + "})", "g"), String(value));
+        }, this);
+    }
+    return args.reduce<string>((text, value, index) => {
+        if (value == undefined) {
+            return text;
+        }
+        const replacement = typeof value === "object" ? JSON.stringify(value) : String(value);
+        return text.replace(new RegExp("({)" + index + "(})", "g"), replacement);
+    }, this);
 };
 
-export function textWrapper(selectedText: string, context: any): { editorChange: EditorChange, selectedText: string, resetSelectionOffset: { anchor: number, head: number } } {
+export function textWrapper(selectedText: string, context: FormatContext): { editorChange: EditorChange, selectedText: string, resetSelectionOffset: { anchor: number, head: number } } {
     const editor: Editor = context.editor;
     const prefix_setting: string = context.prefix;
     const suffix_setting: string = context.suffix;
@@ -296,7 +295,7 @@ export function textWrapper(selectedText: string, context: any): { editorChange:
     let resetSelectionOffset;
     let editorChange: EditorChange;
 
-    let meta: Record<string, any> = {};
+    let meta: Record<string, string> = {};
     const metaProperties = context.view.metadataEditor?.properties;
     if (metaProperties) {
         for (const m of metaProperties) { meta[m.key] = m.value; }
@@ -357,7 +356,7 @@ export function textWrapper(selectedText: string, context: any): { editorChange:
 
 export function replaceLigature(s: string): string {
     Object.entries(Ligatures).forEach(([key, value]) => {
-        var rx = new RegExp(key, "g");
+        let rx = new RegExp(key, "g");
         s = s.replace(rx, value);
     });
     return s;
@@ -368,14 +367,14 @@ export function replaceLigature(s: string): string {
  * @param [context] The context of the sort, including the editor and the settings
  * @param [fromOffset=0] - the offset of the first line of the text to sort
 */
-export function sortTodo(text: string, context: any, fromLine: number | null = null): string {
+export function sortTodo(text: string, context: FormatContext, fromLine: number | null = null): string {
     const lines = text.split("\n");
     // console.log("lines", lines)
 
 
     let prefix_text_index = -1,
         suffix_text_index = -1;
-    let todos: { [key: string]: any[] } = {};
+    let todos: { [key: string]: string[] } = {};
     let todo_detected = false, sort_prefix = false;
     let indent = 0;
     let last_flag: string, // flag of last line that count in as a new todo of level `indent`
@@ -438,8 +437,8 @@ export function sortTodo(text: string, context: any, fromLine: number | null = n
         )) {
 
         body = "";
-        for (const [i, flag] of Object.keys(todos).sort().entries()) {
-            todos[flag].forEach((line, j) => {
+        for (const flag of Object.keys(todos).sort()) {
+            todos[flag].forEach((line) => {
                 // console.log("body line", line)
                 if (line.match(/\n/g)) {
                     let sub_lines = line.split("\n");
@@ -536,10 +535,10 @@ export function slugify(text: string, maxLength: number = 76): string {
 
     // Truncate Length if required
     if (text.length > maxLength) {
-        text = text.substr(0, maxLength);
+        text = text.slice(0, maxLength);
         // Handle case where the last character is a hyphen
         if (text.endsWith("-")) {
-            text = text.substr(0, text.lastIndexOf("-"));
+            text = text.slice(0, text.lastIndexOf("-"));
         }
     }
 

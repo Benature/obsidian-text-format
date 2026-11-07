@@ -5,6 +5,14 @@
 ## 🏗️ developed
 > to be update in the next version
 
+- [security] Replace `innerHTML` with Obsidian DOM helpers and move static styles to CSS classes
+- [compatibility] Require Obsidian 1.13.0+ and use declarative settings, `getLanguage()`, and `activeDocument`
+- [updated] Remove default heading hotkeys; custom hotkeys can still be configured in Obsidian
+- [updated] Handle promises explicitly, scope switch-case declarations, and clean up lint findings
+- [settings] Use native searchable groups/lists and responsive controls; refresh dynamic lists with `update()`
+- [build] Target ES2018, use esbuild, and add Obsidian ESLint checks
+- [docs] Add privacy disclosures and a contributing guide
+
 
 ## 3.2.1
 - [feature] Settings: global configuration for format on paste #97

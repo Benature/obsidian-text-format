@@ -5,7 +5,7 @@ import TextFormat from "./main";
 export function removeWikiLink(s: string, formatGroup: WikiLinkFormatGroup): string {
   return s.replace(/\[\[.*?\]\]/g, function (t) {
     // #103: heading 使用 * 以允许 [[#]]；完整匹配失败时保留原文，避免读取 null.groups。
-    const wikiExec = /^\[\[(?<title>[^\[#|]+)?(?<heading>#[^|\]]*)?(?<alias>\|[^|\]]+)?\]\]$/.exec(t);
+    const wikiExec = /^\[\[(?<title>[^[#|]+)?(?<heading>#[^|\]]*)?(?<alias>\|[^|\]]+)?\]\]$/.exec(t);
     if (!wikiExec) {
       return t;
     }
@@ -133,10 +133,11 @@ export function convertWikiLinkToMarkdown(wikiLink: string, plugin: TextFormat):
           // @ts-ignore
           linkURL = plugin.app.vault.adapter.basePath + "/" + linkURL;
           break;
-        case Wikilink2mdPathMode.relativeFile:
+        case Wikilink2mdPathMode.relativeFile: {
           const currentFilePath = plugin.app.workspace.getActiveFile().path;
           linkURL = relativePath(linkURL, currentFilePath)
           break;
+        }
       }
       linkURL = linkURL.replace(/\s/g, "%20");
     }

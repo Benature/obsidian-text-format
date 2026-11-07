@@ -71,8 +71,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 
 | Command        | Description                                                                                                                                      |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Heading upper  | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`)                                                                             |
-| Heading lower  | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) [[discussions](https://github.com/Benature/obsidian-text-format/issues/83)] |
+| Heading upper  | e.g.: `# Heading` -> `## Heading`                                                                             |
+| Heading lower  | e.g.: `## Heading` -> `# Heading` [[discussions](https://github.com/Benature/obsidian-text-format/issues/83)] |
 | Callout format | [#80](https://github.com/Benature/obsidian-text-format/issues/80)                                                                                |
 
 
@@ -141,9 +141,18 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Format space between word and symbol                 | add space between words and `(`                                                                                 |
 
 
+## Privacy and network access
+
+Text Format does not collect telemetry. Features that access external data are limited to the following cases:
+
+- **Custom API Request** sends the selected text and current file path to your configured endpoint only when you invoke that command.
+- **WikiLink conversion** searches loaded vault files to resolve the matching note path.
+- **Format on paste** reads clipboard content only when enabled by the note property or global setting.
+- **Donation information** loads sponsor links and a QR-code image from the displayed external domains.
+
 ## Support
 
-If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.net/a/Benature-K). Any amount is welcome, thank you!
+If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.com/a/Benature-K). Any amount is welcome, thank you!
 
 <p align="center">
 <img src="https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png" width="500px">
