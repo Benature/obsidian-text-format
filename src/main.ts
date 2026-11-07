@@ -5,7 +5,7 @@ import {
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "./link";
 import { TextFormatSettingTab } from "./settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "./settings/types";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, toTitleCase, customReplace, convertLatex, camelCase } from "./format";
+import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, toTitleCase, toLowerCaseWithLocale, customReplace, convertLatex, camelCase } from "./format";
 import { CustomReplacementBuiltInCommands, GlobalCommands } from "./commands";
 import { getString } from "./langs/langs";
 import { selectionBehavior, FormatSelectionReturn, FormatContext } from "./types";
@@ -542,22 +542,22 @@ export default class TextFormat extends Plugin {
           replacedText = ankiSelection(selectedText);
           break;
         case "lowercase":
-          replacedText = selectedText.toLowerCase();
+          replacedText = toLowerCaseWithLocale(selectedText);
           break;
         case "uppercase":
           replacedText = selectedText.toUpperCase();
           break;
         case "capitalize-word":
-          replacedText = capitalizeWord(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          replacedText = capitalizeWord(this.settings.LowercaseFirst ? toLowerCaseWithLocale(selectedText) : selectedText);
           break;
         case "capitalize-sentence":
-          replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          replacedText = capitalizeSentence(this.settings.LowercaseFirst ? toLowerCaseWithLocale(selectedText) : selectedText);
           break;
         case "title-case":
           replacedText = toTitleCase(selectedText, this.settings);
           break;
         case "cycle-case": {
-          let lowerString = selectedText.toLowerCase();
+          let lowerString = toLowerCaseWithLocale(selectedText);
           const settings = this.settings;
           function getNewString(caseCommand: string): string {
             switch (caseCommand) {

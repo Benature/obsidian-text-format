@@ -6,6 +6,8 @@
 > to be update in the next version
 
 - [docs] Align command tables with registered commands, clarify remove-line-break behavior and built-in custom replacements #120
+- [fix] Support Vietnamese and other Unicode letters in title case #114
+- [fix] Apply Turkish lowercase rules to Turkish text, including `I → ı` and `İ → i` #118
 
 ## 3.2.3
 

@@ -69,6 +69,8 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **camelCase** selected text                       | Convert text to camelCase with a lowercase first letter                                                                                                                                 |
 | **CamelCase** selected text                       | Convert text to CamelCase with an uppercase first letter                                                                                                                                |
 
+Title case supports Unicode letters. When Turkish-specific characters are present, casing uses Turkish lowercase rules (`I → ı`, `İ → i`).
+
 #### Markdown Grammar
 
 | Command        | Description                                                                                                                                      |

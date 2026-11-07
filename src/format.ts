@@ -9,10 +9,15 @@ export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
 }
 
-const LC = "[\\w\\u0400-\\u04FFåäöÅÄÖ]"; // Latin and Cyrillic and Swedish characters
+const LC = "[\\p{L}\\p{N}_]"; // Unicode letters, numbers, and underscore
+const TURKISH_SPECIFIC_LETTERS = /[ıİşŞğĞçÇöÖüÜ]/;
+
+export function toLowerCaseWithLocale(text: string): string {
+    return TURKISH_SPECIFIC_LETTERS.test(text) ? text.toLocaleLowerCase("tr") : text.toLowerCase();
+}
 
 export function capitalizeWord(str: string): string {
-    let rx = new RegExp(LC + "\\S*", "g");
+    const rx = new RegExp(LC + "\\S*", "gu");
     return str.replace(rx, function (t) {
         return t.charAt(0).toUpperCase() + t.slice(1);
     });
@@ -22,8 +27,8 @@ export function capitalizeSentence(s: string): string {
     let lcp = "(" + LC + "+)"; // LC plus
     let rx = new RegExp(
         // #112: 除普通句首和列表外，也跳过 Obsidian checkbox 标记，将任务正文的首字母大写。
-        String.raw`(?:^|[\n"“]|[\.\!\?\~#]\s+|\s*- \s*|\s*(?:[-*+]|\d+[.)])\s+\[[ xX]?\]\s+)` + lcp,
-        "g"
+        String.raw`(?:^|[\n"“]|[.!?~#]\s+|\s*- \s*|\s*(?:[-*+]|\d+[.)])\s+\[[ xX]?\]\s+)` + lcp,
+        "gu"
     );
     return s.replace(rx, function (t0, t) {
         if (/^(ve|t|m|d|ll|s|re)$/.test(t)) {
@@ -218,7 +223,7 @@ export function toTitleCase(text: string, settings: FormatSettings | null = null
     let properNouns = RegExp(`^(` + settings?.ProperNoun.split(",").map((w) => w.trim()).join("|") + `)$`);
     let smallWords =
         /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
-    let alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
+    const alphanumericPattern = /([\p{L}\p{N}])/u;
     let wordSeparators = /([\s:–—()-])/;
 
     return text.split(wordSeparators)
@@ -228,7 +233,7 @@ export function toTitleCase(text: string, settings: FormatSettings | null = null
                 return current;
             } else {
                 if (settings && settings.LowercaseFirst) {
-                    current = current.toLowerCase();
+                    current = toLowerCaseWithLocale(current);
                 }
             }
 
@@ -248,7 +253,7 @@ export function toTitleCase(text: string, settings: FormatSettings | null = null
             }
 
             /* Ignore intentional capitalization */
-            if (current.slice(1).search(/[A-Z]|\../) > -1) {
+            if (current.slice(1).search(/[\p{Lu}]|\../u) > -1) {
                 return current;
             }
 
@@ -554,7 +559,7 @@ export function snakify(text: string): string {
 }
 
 export function camelCase(text: string, lowerFirst = false): string {
-    text = toTitleCase(text.toLowerCase());
+    text = toTitleCase(toLowerCaseWithLocale(text));
     text = text.replace(/\s+/g, "");
     if (lowerFirst) {
         text = text.charAt(0).toLowerCase() + text.slice(1);
