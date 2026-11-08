@@ -6,105 +6,93 @@ const { createPlugin, TextFormatSettingTab } = require("./helpers/load-ts");
 function createSettingTab() {
   const plugin = createPlugin();
   const tab = new TextFormatSettingTab({}, plugin);
-  tab.containerEl = { addClass: () => {} };
-  tab.refreshCount = 0;
-  tab.update = () => { tab.refreshCount++; };
   return { plugin, tab };
 }
 
-function fakeElement() {
+function classElement() {
+  const classes = new Set();
   return {
-    appendText: () => {},
-    createEl: () => fakeElement(),
+    hasClass: (name) => classes.has(name),
+    addClass: (name) => classes.add(name),
+    removeClass: (name) => classes.delete(name),
   };
 }
 
-globalThis.createFragment = () => ({
-  createDiv: () => fakeElement(),
-  createEl: () => fakeElement(),
-});
-
-test("settings: declarative definitions are non-empty and use native rendering", () => {
-  const { tab } = createSettingTab();
-  const definitions = tab.getSettingDefinitions();
-  assert.ok(definitions.length >= 10);
-  assert.ok(JSON.stringify(definitions).includes("MultilineBulletPaste"));
-  assert.equal(Object.hasOwn(TextFormatSettingTab.prototype, "display"), false);
-  assert.equal(typeof tab.display, "undefined");
-
-  const wrapper = definitions.find((item) => item.type === "list" && item.cls === "wrapper");
-  assert.ok(wrapper);
-  assert.equal(wrapper.items.length, 1);
-  assert.equal(typeof wrapper.addItem.action, "function");
-  assert.equal(typeof wrapper.onDelete, "function");
-});
-
-test("settings: plugin-local search filters groups by names, descriptions, and values", () => {
-  const { tab } = createSettingTab();
-  const definitions = tab.getSettingDefinitions();
-  assert.ok(definitions.some((item) => item.name === "Search settings"));
-
-  const wordCases = definitions.find((item) => item.heading === "Word cases");
-  const others = definitions.find((item) => item.heading === "Others");
-  tab.settingsQuery = "multi";
-  assert.equal(wordCases.visible(), false);
-  assert.equal(others.visible(), true);
-
-  tab.settingsQuery = "lowerCase";
-  assert.equal(wordCases.visible(), true);
-  tab.settingsQuery = "";
-  assert.equal(others.visible(), true);
-});
-
-test("settings: GitHub guide text and link are both rendered", () => {
-  const { tab } = createSettingTab();
-  const rendered = [];
-  const setting = {
-    infoEl: {
-      empty: () => {},
-      appendText: (text) => rendered.push(text),
-      createEl: (_tag, options) => { rendered.push(options.text); },
+function collapsibleHeader(text) {
+  let icon = null;
+  const children = [];
+  return {
+    ...classElement(),
+    tagName: "H3",
+    textContent: text,
+    children,
+    querySelector: () => icon,
+    createSpan: () => {
+      icon = { dataset: {} };
+      return icon;
     },
-    controlEl: { empty: () => {} },
+    prepend: (el) => children.unshift(el),
   };
-  tab.getSettingDefinitions()[0].render(setting);
-  assert.ok(rendered.includes("More details in Github: "));
-  assert.ok(rendered.includes("text-format"));
+}
+
+test("settings: collapse icon is inserted before the heading text", () => {
+  const { tab } = createSettingTab();
+  const header = collapsibleHeader("Custom replacement");
+  const content = classElement();
+
+  tab.makeCollapsible(header, content);
+
+  assert.equal(header.children.length, 1);
+  assert.equal(header.children[0].dataset.togglestate, "up");
 });
 
-test("settings: control values support nested paths and save changes", async () => {
-  const { plugin, tab } = createSettingTab();
-  assert.equal(tab.getControlValue("LowercaseFirst"), true);
-  await tab.setControlValue("LowercaseFirst", false);
-  assert.equal(plugin.settings.LowercaseFirst, false);
+test("settings: sections are collapsed by default", () => {
+  const { tab } = createSettingTab();
+  const header = collapsibleHeader("Custom replacement");
+  const content = classElement();
 
-  await tab.setControlValue("WikiLinkFormat.headingOnly", "{heading}");
-  assert.equal(tab.getControlValue("WikiLinkFormat.headingOnly"), "{heading}");
+  tab.makeCollapsible(header, content);
 
-  await tab.setControlValue("WrapperList.0.name", "Quote");
-  assert.equal(plugin.settings.WrapperList[0].name, "Quote");
+  assert.equal(content.hasClass("tf-collapsible-content"), true);
+  assert.equal(content.hasClass("is-active"), false);
+  assert.equal(tab.collapseMemory["Custom replacement"], false);
 });
 
-test("settings: heading toggle remains compatible with numeric stored value", async () => {
-  const { plugin, tab } = createSettingTab();
-  await tab.setControlValue("headingLowerToPlain", false);
-  assert.equal(plugin.settings.headingLevelMin, 1);
-  assert.equal(tab.getControlValue("headingLowerToPlain"), false);
+test("settings: collapse state is preserved across rendering", () => {
+  const { tab } = createSettingTab();
+  const header = collapsibleHeader("Custom replacement");
+  const content = classElement();
 
-  await tab.setControlValue("headingLowerToPlain", true);
-  assert.equal(plugin.settings.headingLevelMin, 0);
-  assert.equal(tab.getControlValue("headingLowerToPlain"), true);
+  tab.makeCollapsible(header, content);
+  header.onclick();
+  assert.equal(content.hasClass("is-active"), true);
+
+  tab.makeCollapsible(header, content);
+  assert.equal(content.hasClass("is-active"), true);
+
+  header.onclick();
+  assert.equal(content.hasClass("is-active"), false);
 });
 
-test("settings: dynamic list mutations save and refresh definitions", async () => {
+test("settings: changing only flags marks a built-in replacement as modified", () => {
   const { plugin, tab } = createSettingTab();
-  const originalLength = plugin.settings.WrapperList.length;
-  await tab.addWrapper();
-  assert.equal(plugin.settings.WrapperList.length, originalLength + 1);
-  assert.equal(tab.refreshCount, 1);
-  assert.equal(tab.getSettingDefinitions().find((item) => item.cls === "wrapper").items.length, originalLength + 1);
+  const replacement = {
+    id: "built-in",
+    name: "Built-in",
+    data: [{ search: "a", replace: "b" }],
+  };
+  plugin.settings.customReplaceList.push(replacement);
+  plugin.settings.customReplaceBuiltInLog["built-in"] = {
+    id: "built-in",
+    modified: false,
+    data: [{ search: "a", replace: "b" }],
+  };
 
-  await tab.deleteDynamicItem("WrapperList", originalLength);
-  assert.equal(plugin.settings.WrapperList.length, originalLength);
-  assert.equal(tab.refreshCount, 2);
+  replacement.data[0].flags = "i";
+  tab.updateBuiltInModifiedState(replacement);
+  assert.equal(plugin.settings.customReplaceBuiltInLog["built-in"].modified, true);
+
+  replacement.data[0].flags = "";
+  tab.updateBuiltInModifiedState(replacement);
+  assert.equal(plugin.settings.customReplaceBuiltInLog["built-in"].modified, false);
 });

@@ -30,6 +30,7 @@ Module._load = function (request, parent, isMain) {
       debounce: (fn) => fn,
       getLanguage: () => "en",
       normalizePath: (value) => value,
+      setIcon: (el, icon) => { el.icon = icon; },
     };
   }
   return originalLoad.call(this, request, parent, isMain);

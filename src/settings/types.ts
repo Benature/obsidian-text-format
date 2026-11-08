@@ -21,6 +21,7 @@ export interface WikiLinkFormatGroup {
 export interface customReplaceSettingPair {
     search: string;
     replace: string;
+    flags?: string;
 }
 
 export interface customReplaceSetting {

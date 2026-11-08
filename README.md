@@ -176,6 +176,20 @@ The format template can refer to https://www.zotero.org/support/note_templates
 
 
 ### Replacements
+
+Custom replacements use global (`g`) regular expressions by default. Use the optional **Flags** field to add other JavaScript RegExp flags, such as `i` (case-insensitive), `m` (multiline), or `s` (dotAll). Leave it empty to preserve the default behavior.
+
+For example, this rule removes a Markdown link's optional title when it differs from the URL only by letter case:
+
+- Search: `\[([^\]]+)\]\((\S+) "(\2)"\)`
+- Flags: `i`
+- Replace: `[$1]($2)`
+
+```diff
+- [Example](https://example.com/PATH "https://example.com/path")
++ [Example](https://example.com/PATH)
+```
+
 [use cases](https://github.com/Benature/obsidian-text-format/milestone/1?closed=1):
 - Split paragraph into sentences: [#78](https://github.com/Benature/obsidian-text-format/issues/78#issuecomment-1999198698)
 

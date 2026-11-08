@@ -617,7 +617,8 @@ export function extraDoubleSpaces(editor: Editor, view: MarkdownView): void {
 
 export function customReplace(text: string, s: customReplaceSetting): string {
     s.data.forEach(data => {
-        const re = new RegExp(data.search, "g");
+        const flags = Array.from(new Set(`g${data.flags ?? ""}`)).join("");
+        const re = new RegExp(data.search, flags);
         text = text.replace(re, JSON.parse(`"${data.replace}"`))
     })
     return text;
