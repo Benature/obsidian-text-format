@@ -2,6 +2,11 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
+## 🏗️ developed
+> to be update in the next version
+
+- [fix] Preserve Anki cloze markers such as `{{c1::` and `}}` in wrappers while keeping metadata templates functional #111
+
 ## 3.2.4
 
 - [docs] Align command tables with registered commands, clarify remove-line-break behavior and built-in custom replacements #120

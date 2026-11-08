@@ -9,6 +9,24 @@ export function stringFormat(str: string, values: Record<string, string>) {
     return str.replace(/\{(\w+)\}/g, (match, key) => values[key] === undefined ? match : values[key]);
 }
 
+export function formatWrapperTemplate(template: string, values: Record<string, string>): string {
+    // Protect Anki cloze markers before evaluating metadata templates.
+    const markers: string[] = [];
+    const closeMarker = "___TEXT_FORMAT_ANKI_CLOSE___";
+    let prepared = template.replace(/\{\{c\d+::/g, (marker) => {
+        markers.push(marker);
+        return `___TEXT_FORMAT_ANKI_OPEN_${markers.length - 1}___`;
+    });
+    if (markers.length > 0 && prepared.endsWith("}}}}")) {
+        prepared = prepared.slice(0, -2) + closeMarker;
+    }
+    let rendered = compileTemplate(prepared, { noEscape: true })(values);
+    markers.forEach((marker, index) => {
+        rendered = rendered.replace(`___TEXT_FORMAT_ANKI_OPEN_${index}___`, marker);
+    });
+    return rendered.replace(closeMarker, "}}");
+}
+
 const LC = "[\\p{L}\\p{N}_]"; // Unicode letters, numbers, and underscore
 const TURKISH_SPECIFIC_LETTERS = /[ıİşŞğĞçÇöÖüÜ]/;
 
@@ -306,11 +324,8 @@ export function textWrapper(selectedText: string, context: FormatContext): { edi
         for (const m of metaProperties) { meta[m.key] = m.value; }
     }
 
-    let prefix_template = compileTemplate(prefix_setting.replace(/\\n/g, "\n"), { noEscape: true })
-    let suffix_template = compileTemplate(suffix_setting.replace(/\\n/g, "\n"), { noEscape: true })
-
-    const prefix = prefix_template(meta);
-    const suffix = suffix_template(meta);
+    const prefix = formatWrapperTemplate(prefix_setting.replace(/\\n/g, "\n"), meta);
+    const suffix = formatWrapperTemplate(suffix_setting.replace(/\\n/g, "\n"), meta);
     const PL = prefix.length; // Prefix Length
     const SL = suffix.length; // Suffix Length
 
