@@ -5,10 +5,45 @@
 ## 🏗️ developed
 > to be update in the next version
 
+- [feature] Add an opt-in setting to paste multi-line plain text into an empty bullet item as same-level list items (off by default) #108
 
-## 3.2.1-b2
-- [fix] Convert Table to Bullet List, may be related to #99
+## 3.2.5
+
+- [fix] Preserve Anki cloze markers such as `{{c1::` and `}}` in wrappers while keeping metadata templates functional #111
+
+## 3.2.4
+
+- [docs] Align command tables with registered commands, clarify remove-line-break behavior and built-in custom replacements #120
+- [fix] Support Vietnamese and other Unicode letters in title case #114
+- [fix] Apply Turkish lowercase rules to Turkish text, including `I → ı` and `İ → i` #118
+
+## 3.2.3
+
+- [fix] Use explicit paste-event checks recognized by the automated review
+- [build] Pin Handlebars and commit the lockfile for reproducible build verification
+
+## 3.2.2
+
+- [security] Replace `innerHTML` with Obsidian DOM helpers and move static styles to CSS classes
+- [compatibility] Require Obsidian 1.13.0+ and use declarative settings, `getLanguage()`, and `activeDocument`
+- [updated] Remove default heading hotkeys; custom hotkeys can still be configured in Obsidian
+- [updated] Handle promises explicitly, scope switch-case declarations, and clean up lint findings
+- [settings] Use native searchable groups/lists and responsive controls; refresh dynamic lists with `update()`
+- [build] Target ES2018, use esbuild, and add Obsidian ESLint checks
+- [docs] Add privacy disclosures and a contributing guide
+
+
+## 3.2.1
+- [feature] Settings: global configuration for format on paste #97
+- [fix] Prevent empty input and duplicate results from freezing `cycle-case` #110
+- [fix] Parse table headers separately and handle rows with extra cells #99
+- [fix] Remove Markdown links with escaped/nested parentheses and optional titles #115
+- [fix] Remove WikiLinks with an empty heading such as `[[#]]` #103
+- [fix] Convert commas with the Chinese punctuation command #117
+- [fix] Capitalize sentence starts in checkbox lists #112
+- [fix] Stop increasing headings beyond H6 #102
 - [updated] latex math add: `'≠': '\\neq'`
+- [test] Add regression tests for the reported formatting bugs
 
 ## 3.2.0-b1
 - [feature] Settings: global configuration for format on paste #97

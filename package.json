@@ -4,25 +4,30 @@
   "description": "Format selected text upper/lower/capitalize/title or remove redundant blanks/enters.",
   "main": "main.js",
   "scripts": {
-    "dev": "rollup --config rollup.config.js -w",
-    "build": "rollup --config rollup.config.js --environment BUILD:production"
+    "dev": "node esbuild.config.mjs",
+    "build": "npm run typecheck && node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.js",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "Benature",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^18.0.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
-    "@rollup/plugin-typescript": "^8.2.1",
-    "@types/node": "^14.14.37",
-    "@types/uuid": "^9.0.8",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.4",
+    "eslint-plugin-obsidianmd": "^0.5.1",
+    "minimatch": "^11.0.5",
     "obsidian": "latest",
-    "rollup": "^2.32.1",
-    "tslib": "^2.2.0",
-    "typescript": "^4.2.4",
-    "uuid": "9.0.0"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "uuid": "^11.1.1"
   },
   "dependencies": {
-    "handlebars": "^4.7.6"
+    "handlebars": "4.7.10"
+  },
+  "overrides": {
+    "minimatch": "^11.0.5"
   }
 }

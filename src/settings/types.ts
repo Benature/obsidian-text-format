@@ -78,6 +78,7 @@ export interface FormatSettings {
         enabled: boolean;
         commandsString: string;
     }
+    MultilineBulletPaste: boolean;
 }
 
 export const DEFAULT_SETTINGS: FormatSettings = {
@@ -109,5 +110,6 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     formatOnSaveSettings: {
         enabled: false,
         commandsString: "",
-    }
+    },
+    MultilineBulletPaste: false,
 };

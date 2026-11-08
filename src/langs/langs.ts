@@ -1,3 +1,5 @@
+import { getLanguage } from "obsidian";
+
 const EN = {
     command: {
         "uppercase": "Uppercase",
@@ -18,14 +20,13 @@ const EN = {
         "open-settings": "Open preference settings tab",
     },
     setting: {
-        "more-details": "More details in Github: ",
         "search-settings": "Search settings",
-        "search-settings-desc": "Filter by setting names, descriptions, and custom rule values.",
-        "search-settings-placeholder": "Search settings...",
-        "search-settings-no-results": "No settings found for \"{query}\".",
+        "more-details": "More details in Github: ",
         "others": "Others",
         "remove-spaces-when-converting": "Remove spaces when converting Chinese punctuation marks",
         "remove-spaces-when-converting-desc": "for OCR case",
+        "multiline-bullet-paste": "Create flat bullet lists when pasting multiple lines",
+        "multiline-bullet-paste-desc": "When enabled, pasting multiple plain-text lines into an empty bullet item creates same-level items with the current indentation and marker. Off by default.",
         "debug-logging": "Debug logging",
         "debug-logging-desc": "verbose logging in the console",
         "word-cases": "Word cases",
@@ -66,7 +67,7 @@ const EN = {
         "bullet-point-characters": "Possible bullet point characters",
         "bullet-point-characters-desc": "The characters that will be regarded as bullet points.",
         "ordered-list-custom-separator": "Format ordered list custom separator RegExp",
-        "ordered-list-custom-separator-desc": "Separated by `|`. e.g.: `\sand\s|\s?AND\s?`. Default as empty.",
+        "ordered-list-custom-separator-desc": "Separated by `|`. e.g.: `\\sand\\s|\\s?AND\\s?`. Default as empty.",
         wrapper: {
             "header": "Wrapper",
             "desc": "Wrap the selection with prefix and suffix",
@@ -141,14 +142,13 @@ const ZH = {
         "decodeURI": "解码 URL",
     },
     setting: {
-        "more-details": "在 Github 查看更多详情：",
         "search-settings": "搜索设置",
-        "search-settings-desc": "按设置名称、说明及自定义规则的内容筛选。",
-        "search-settings-placeholder": "搜索设置项…",
-        "search-settings-no-results": "未找到与“{query}”相关的设置。",
+        "more-details": "在 Github 查看更多详情：",
         "others": "其他设置",
         "remove-spaces-when-converting": "转换中文标点时去除空格",
         "remove-spaces-when-converting-desc": "适用于 OCR 场景",
+        "multiline-bullet-paste": "粘贴多行文本时生成同级无序列表",
+        "multiline-bullet-paste-desc": "启用后，在空列表项中粘贴多行纯文本时，按当前缩进和列表符号生成同级列表项。默认关闭。",
         "debug-logging": "Debug 日志",
         "debug-logging-desc": "在控制台中显示 Debug 详细日志",
         "word-cases": "文字大小写转换",
@@ -189,7 +189,7 @@ const ZH = {
         "bullet-point-characters": "项目符号字符",
         "bullet-point-characters-desc": "被视为项目符号的字符。",
         "ordered-list-custom-separator": "有序列表自定义分隔符正则表达式",
-        "ordered-list-custom-separator-desc": "使用`|`分隔，例如：`\sand\s|\s?AND\s?`。默认为空。",
+        "ordered-list-custom-separator-desc": "使用`|`分隔，例如：`\\sand\\s|\\s?AND\\s?`。默认为空。",
         wrapper: {
             "header": "包装器",
             "desc": "在选中的文本前后添加前缀和后缀。",
@@ -244,8 +244,12 @@ const ZH = {
     }
 }
 
+interface LocaleMessages {
+    [key: string]: string | LocaleMessages;
+}
+
 interface Languages {
-    [lang: string]: any
+    [lang: string]: LocaleMessages;
 }
 
 const languages: Languages = {
@@ -268,20 +272,17 @@ function setLanguage(lang: string): string {
 export function getString(keys: string[], useDefault: boolean = false): string {
     let currentLanguage = "en";
     if (!useDefault) {
-        currentLanguage = setLanguage(window.localStorage.getItem("language"));
+        currentLanguage = setLanguage(getLanguage());
     }
-    let obj = languages[currentLanguage];
-    let fail = false;
-    for (let key of keys) {
-        if (!(key in obj)) {
-            fail = true;
-            break
+    let obj: string | LocaleMessages = languages[currentLanguage];
+    for (const key of keys) {
+        if (typeof obj === "string" || !(key in obj)) {
+            return useDefault ? "" : getString(keys, true);
         }
         obj = obj[key];
     }
-    if (fail) {
-        return getString(keys, true);
-    } else {
-        return obj;
+    if (typeof obj !== "string") {
+        return useDefault ? "" : getString(keys, true);
     }
+    return obj;
 }

@@ -1,19 +1,19 @@
 import {
   Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
-  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo
+  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo, getLanguage
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "./link";
 import { TextFormatSettingTab } from "./settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "./settings/types";
-import { array2markdown, table2bullet, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, extraDoubleSpaces, toTitleCase, customReplace, convertLatex, camelCase } from "./format";
+import { array2markdown, table2bullet, formatMultilineBulletPaste, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, toTitleCase, toLowerCaseWithLocale, customReplace, convertLatex, camelCase } from "./format";
 import { CustomReplacementBuiltInCommands, GlobalCommands } from "./commands";
 import { getString } from "./langs/langs";
-import { selectionBehavior, FormatSelectionReturn } from "./types";
+import { selectionBehavior, FormatSelectionReturn, FormatContext } from "./types";
 import { v4 as uuidv4 } from "uuid";
 import { renew } from "./util";
 
 function getLang() {
-  let lang = window.localStorage.getItem('language');
+  let lang = getLanguage();
   if (["en", "zh", "zh-TW"].indexOf(lang) == -1) { lang = "en"; }
   return lang;
 }
@@ -21,8 +21,8 @@ function getLang() {
 
 export default class TextFormat extends Plugin {
   settings: FormatSettings;
-  debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper, 1000, true);
-  debounceUpdateCommandRequest = debounce(this.updateCommandRequest, 1000, true);
+  debounceUpdateCommandWrapper = debounce(this.updateCommandWrapper.bind(this), 1000, true);
+  debounceUpdateCommandRequest = debounce(this.updateCommandRequest.bind(this), 1000, true);
   // memory: TextFormatMemory;
 
   executeCommandById(cmd: string) {
@@ -39,7 +39,7 @@ export default class TextFormat extends Plugin {
   }
 
   async formatGlobal(cmd: string) {
-    let activeElement = document.activeElement;
+    let activeElement = activeDocument.activeElement;
     const activeClasses = activeElement.classList;
 
     let where = "editor";
@@ -60,13 +60,14 @@ export default class TextFormat extends Plugin {
       case "editor":
         this.executeCommandById(`obsidian-text-format::private:${cmd}`);
         break;
-      case "title":
+      case "title": {
         const formatResult = await this.formatSelection(file.basename, cmd);
         const newName = formatResult.editorChange.text;
         const newPath = normalizePath(file.parent.path + "/" + newName + "." + file.extension)
-        this.app.vault.adapter.rename(file.path, newPath);
+        await this.app.vault.adapter.rename(file.path, newPath);
         break;
-      case "metadata-long-text":
+      }
+      case "metadata-long-text": {
         const activePPElement = activeElement.parentElement.parentElement;
         let metadataKey = activePPElement.getAttribute("data-property-key");
         // focus on parent element, so that the new frontmatter can be updated
@@ -83,6 +84,7 @@ export default class TextFormat extends Plugin {
         // })
         //  document.activeElement.dispatchEvent(keyboardEvent);
         break;
+      }
     }
   }
 
@@ -94,7 +96,31 @@ export default class TextFormat extends Plugin {
     const lang = getLang();
 
     this.registerEvent(this.app.workspace.on('editor-paste', async (evt: ClipboardEvent, editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
+      if (evt && evt.defaultPrevented) { return; }
       this.log(evt, editor, info)
+      const selections = editor.listSelections();
+      if (this.settings.MultilineBulletPaste && selections.length === 1) {
+        const { anchor, head } = selections[0];
+        if (anchor.line === head.line && anchor.ch === head.ch) {
+          const currentLine = editor.getLine(anchor.line);
+          const clipboardText = evt.clipboardData?.getData("text/plain") || "";
+          const pasteText = formatMultilineBulletPaste(clipboardText, currentLine);
+          if (pasteText) {
+            evt.preventDefault();
+            editor.replaceRange(
+              pasteText,
+              { line: anchor.line, ch: 0 },
+              { line: anchor.line, ch: currentLine.length },
+            );
+            const pasteLines = pasteText.split("\n");
+            editor.setCursor({
+              line: anchor.line + pasteLines.length - 1,
+              ch: pasteLines[pasteLines.length - 1].length,
+            });
+            return;
+          }
+        }
+      }
       // refer: https://github.com/kxxt/obsidian-advanced-paste/blob/cfb04918298f14ffa7f04aefa49beaef9a2e8a76/src/main.ts#L220
       const isManuallyTriggered = evt == null; // Not triggered by Ctrl+V
       if (!isManuallyTriggered && (evt.clipboardData?.getData("application/x-textformat-tag") == "tag")) {
@@ -114,7 +140,7 @@ export default class TextFormat extends Plugin {
       let clipboard = evt.clipboardData.getData('text/html') || evt.clipboardData.getData('text/plain');
       if (!clipboard) { return; }
 
-      evt?.preventDefault();
+      evt.preventDefault();
 
       for (let cmd of formatOnPasteCmdList) {
         const formatText = (await this.formatSelection(clipboard, cmd)).editorChange.text;
@@ -173,7 +199,7 @@ export default class TextFormat extends Plugin {
         id: `:private:${command.id}`,
         name: getString(["command", command.id]) + " in editor",
         editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
-          if (!checking) { this.editorTextFormat(editor, view, command.id); }
+          if (!checking) { void this.editorTextFormat(editor, view, command.id); }
           return !checking;
         },
       });
@@ -183,7 +209,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Slugify selected text (`-` for space)", zh: "使用 Slugify 格式化选中文本（`-`连字符）", "zh-TW": "使用 Slugify 格式化選取文字（`-`連字符）" }[lang],
       icon: "case-sensitive",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "slugify");
+        void this.editorTextFormat(editor, view, "slugify");
       },
     });
     this.addCommand({
@@ -191,7 +217,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Snakify selected text (`_` for space)", zh: "使用 Snakify 格式化选中文本（`_`连字符）", "zh-TW": "使用 Snakify 格式化選取文字（`_`連字符）" }[lang],
       icon: "case-sensitive",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "snakify");
+        void this.editorTextFormat(editor, view, "snakify");
       },
     });
     this.addCommand({
@@ -199,7 +225,7 @@ export default class TextFormat extends Plugin {
       name: { en: "camelCase selected text", zh: "使用小驼峰格式化选中文本", "zh-TW": "使用小駝峰格式化選取文字" }[lang],
       icon: "case-sensitive",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "camel-case", { lowerFirst: true });
+        void this.editorTextFormat(editor, view, "camel-case", { lowerFirst: true });
       },
     });
     this.addCommand({
@@ -207,7 +233,7 @@ export default class TextFormat extends Plugin {
       name: { en: "CamelCase selected text", zh: "使用大驼峰格式化选中文本", "zh-TW": "使用大駝峰格式化選取文字" }[lang],
       icon: "case-sensitive",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "camel-case", { lowerFirst: false });
+        void this.editorTextFormat(editor, view, "camel-case", { lowerFirst: false });
       },
     });
 
@@ -216,28 +242,18 @@ export default class TextFormat extends Plugin {
       name: getString(["command", "heading-upper"]),
       icon: "indent-increase",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "heading", { upper: true });
+        void this.editorTextFormat(editor, view, "heading", { upper: true });
       },
       repeatable: false,
-      hotkeys: [
-        {
-          modifiers: ["Ctrl", "Shift"],
-          key: "]",
-        }],
     });
     this.addCommand({
       id: "heading-lower",
       name: getString(["command", "heading-lower"]),
       icon: "indent-decrease",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "heading", { upper: false });
+        void this.editorTextFormat(editor, view, "heading", { upper: false });
       },
       repeatable: false,
-      hotkeys: [
-        {
-          modifiers: ["Ctrl", "Shift"],
-          key: "[",
-        }],
     });
 
     this.addCommand({
@@ -245,7 +261,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Detect and format bullet list", zh: "识别并格式化无序列表", "zh-TW": "識別並格式化無序清單" }[lang],
       icon: "list",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "convert-bullet-list");
+        void this.editorTextFormat(editor, view, "convert-bullet-list");
       },
     });
     this.addCommand({
@@ -253,7 +269,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Detect and format ordered list", zh: "识别并格式化有序列表", "zh-TW": "識別並格式化有序清單" }[lang],
       icon: "list-ordered",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "convert-ordered-list");
+        void this.editorTextFormat(editor, view, "convert-ordered-list");
       },
     });
     this.addCommand({
@@ -261,7 +277,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert table to bullet list without header", zh: "将表格转换为无序列表（不含标题）", "zh-TW": "將表格轉換為無序清單（不含標題）" }[lang],
       icon: "list",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "table2bullet");
+        void this.editorTextFormat(editor, view, "table2bullet");
       },
     });
     this.addCommand({
@@ -269,7 +285,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert table to bullet list with header", zh: "将表格转换为无序列表（含标题）", "zh-TW": "將表格轉換為無序清單（含標題）" }[lang],
       icon: "list",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "table2bullet-header");
+        void this.editorTextFormat(editor, view, "table2bullet-header");
       },
     });
     this.addCommand({
@@ -277,7 +293,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Sort to-do list", zh: "将待办事项列表排序", "zh-TW": "將待辦事項列表排序" }[lang],
       icon: "arrow-down-narrow-wide",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "sort-todo");
+        void this.editorTextFormat(editor, view, "sort-todo");
       },
     });
 
@@ -286,7 +302,7 @@ export default class TextFormat extends Plugin {
       name: { "en": "Remove WikiLinks format in selection", "zh": "移除选中文本中的 WikiLinks 格式", "zh-TW": "移除選取文字中的 WikiLinks 格式" }[lang],
       icon: "link-2-off",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-wiki-link");
+        void this.editorTextFormat(editor, view, "remove-wiki-link");
       },
     });
     this.addCommand({
@@ -294,7 +310,7 @@ export default class TextFormat extends Plugin {
       name: { "en": "Remove URL links format in selection", "zh": "移除选中文本中的 URL 链接格式", "zh-TW": "移除選取文字中的 URL 鏈接格式" }[lang],
       icon: "link-2-off",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-url-link");
+        void this.editorTextFormat(editor, view, "remove-url-link");
       },
     });
     this.addCommand({
@@ -302,7 +318,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert URL links to WikiLinks in selection", zh: "将选中文本中的 URL 链接转换为 WikiLinks 格式", "zh-TW": "將選取文字中的 URL 鏈接轉換為 WikiLinks 格式" }[lang],
       icon: "link-2",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "link-url2wiki");
+        void this.editorTextFormat(editor, view, "link-url2wiki");
       },
     });
     this.addCommand({
@@ -310,7 +326,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert wikiLinks to plain markdown links in selection", zh: "将选中文本中的 WikiLinks 转换为普通 Markdown 链接格式", "zh-TW": "將選取文字中的 WikiLinks 轉換為普通 Markdown 鏈接格式" }[lang],
       icon: "link-2",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "link-wiki2md");
+        void this.editorTextFormat(editor, view, "link-wiki2md");
       },
     });
 
@@ -320,7 +336,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Remove redundant spaces in selection", zh: "将选中文本中的多余空格移除", "zh-TW": "將選取文字中的多餘空格移除" }[lang],
       icon: "space",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-redundant-spaces");
+        void this.editorTextFormat(editor, view, "remove-redundant-spaces");
       },
     });
     this.addCommand({
@@ -328,21 +344,21 @@ export default class TextFormat extends Plugin {
       name: { en: "Remove all spaces in selection", zh: "将选中文本中的所有空格移除", "zh-TW": "將選取文字中的所有空格移除" }[lang],
       icon: "space",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "spaces-all");
+        void this.editorTextFormat(editor, view, "spaces-all");
       },
     });
     // this.addCommand({
     //   id: "remove-trailing-all",
     //   name: { en: "Remove trailing spaces in selection", zh: "将选中文本中的所有行末空格移除", "zh-TW": "將選取文字中的所有行尾空格移除" }[lang],
     //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "trailing-spaces");
+    //     void this.editorTextFormat(editor, view, "trailing-spaces");
     //   },
     // });
     // this.addCommand({
     //   id: "remove-blank-line",
     //   name: { en: "Remove blank line(s)", zh: "将选中文本中的空行移除", "zh-TW": "將選取文字中的空行移除" }[lang],
     //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "remove-blank-line");
+    //     void this.editorTextFormat(editor, view, "remove-blank-line");
     //   },
     // });
     this.addCommand({
@@ -350,14 +366,14 @@ export default class TextFormat extends Plugin {
       name: { en: "Merge broken paragraph(s) in selection", zh: "将选中文本中的断行合并", "zh-TW": "將選取文字中的斷行合併" }[lang],
       icon: "wrap-text",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "merge-line");
+        void this.editorTextFormat(editor, view, "merge-line");
       },
     });
     // this.addCommand({
     //   id: "split-blank",
     //   name: { en: "Split line(s) by blanks", zh: "将选中文本按空格分行", "zh-TW": "將選取文字按空格分行" }[lang],
     //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "split-blank");
+    //     void this.editorTextFormat(editor, view, "split-blank");
     //   },
     // });
     this.addCommand({
@@ -365,7 +381,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert to Chinese punctuation marks (,;:!?)", zh: "转换为中文标点符号（,;:!?）", "zh-TW": "轉換為中文標點符號（,;:!?）" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "Chinese-punctuation");
+        void this.editorTextFormat(editor, view, "Chinese-punctuation");
       },
     });
     this.addCommand({
@@ -373,7 +389,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Convert to English punctuation marks", zh: "转换为英文标点符号", "zh-TW": "轉換為英文標點符號" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "English-punctuation");
+        void this.editorTextFormat(editor, view, "English-punctuation");
       },
     });
     this.addCommand({
@@ -381,7 +397,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Remove hyphens", zh: "移除连字符", "zh-TW": "移除連字符" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "hyphen");
+        void this.editorTextFormat(editor, view, "hyphen");
       },
     });
     this.addCommand({
@@ -389,7 +405,7 @@ export default class TextFormat extends Plugin {
       name: { "en": "Replace ligature", "zh": "替换连字", "zh-TW": "取代連字" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "ligature");
+        void this.editorTextFormat(editor, view, "ligature");
       },
     });
 
@@ -399,7 +415,7 @@ export default class TextFormat extends Plugin {
       name: { "en": "Convert selection into Anki card format", "zh": "将选中内容转换为 Anki 卡片格式", "zh-TW": "將選取內容轉換為 Anki 卡片格式" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "anki");
+        void this.editorTextFormat(editor, view, "anki");
       },
     });
     this.addCommand({
@@ -407,7 +423,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Remove citation index", zh: "移除引用索引编号", "zh-TW": "移除引用索引編號" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "remove-citation");
+        void this.editorTextFormat(editor, view, "remove-citation");
       },
     });
     this.addCommand({
@@ -429,7 +445,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Detect and convert characters to math mode (LaTeX)", zh: "识别并转换字符为数学模式（LaTeX）", "zh-TW": "識別並轉換字符為數學模式（LaTeX）" }[lang],
       icon: "square-sigma",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "latex-letter");
+        void this.editorTextFormat(editor, view, "latex-letter");
       },
     });
     this.addCommand({
@@ -439,7 +455,7 @@ export default class TextFormat extends Plugin {
       }[lang],
       icon: "square-sigma",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "array2table");
+        void this.editorTextFormat(editor, view, "array2table");
       },
     });
     this.addCommand({
@@ -447,7 +463,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Callout format", zh: "Callout 格式", "zh-TW": "Callout 格式" }[lang],
       icon: "a-large-small",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "callout");
+        void this.editorTextFormat(editor, view, "callout");
       },
     });
 
@@ -485,7 +501,7 @@ export default class TextFormat extends Plugin {
     //   name: { en: "Decode URL", zh: "解码 URL", "zh-TW": "解碼 URL" }[lang] + " (Editor)",
     //   icon: "link",
     //   editorCallback: (editor: Editor, view: MarkdownView) => {
-    //     this.editorTextFormat(editor, view, "decodeURI");
+    //     void this.editorTextFormat(editor, view, "decodeURI");
     //   },
     // });
 
@@ -494,7 +510,7 @@ export default class TextFormat extends Plugin {
       name: { en: "Format space between words and symbols", zh: "格式化单词与符号之间的空格", "zh-TW": "格式化單詞與符號之間的空格" }[lang],
       icon: "space",
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.editorTextFormat(editor, view, "space-word-symbol");
+        void this.editorTextFormat(editor, view, "space-word-symbol");
       },
     });
   }
@@ -507,7 +523,7 @@ export default class TextFormat extends Plugin {
         name: { "en": "Wrapper", "zh": "包装器", "zh-TW": "包裝器" }[lang] + " - " + wrapper.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.editorTextFormat(editor, view, "wrapper", wrapper);
+          void this.editorTextFormat(editor, view, "wrapper", wrapper);
         },
       });
     });
@@ -520,7 +536,7 @@ export default class TextFormat extends Plugin {
         name: { "en": "API Request", "zh": "API 请求", "zh-TW": "API 請求" }[lang] + " - " + request.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.editorTextFormat(editor, view, "api-request", { url: request.url });
+          void this.editorTextFormat(editor, view, "api-request", { url: request.url });
         },
       });
     });
@@ -533,13 +549,13 @@ export default class TextFormat extends Plugin {
         name: { "en": "Custom Replace", "zh": "自定义替换", "zh-TW": "自定義取代" }[lang] + " - " + customReplace.name,
         icon: "a-large-small",
         editorCallback: (editor: Editor, view: MarkdownView) => {
-          this.editorTextFormat(editor, view, "custom-replace", { settings: customReplace });
+          void this.editorTextFormat(editor, view, "custom-replace", { settings: customReplace });
         },
       });
     });
   }
 
-  async formatSelection(selectedText: string, cmd: string, context: any = {}): Promise<FormatSelectionReturn> {
+  async formatSelection(selectedText: string, cmd: string, context: FormatContext = {}): Promise<FormatSelectionReturn> {
     this.log("formatSelection", selectedText, cmd, context)
     let replacedText: string = selectedText;
     let ret: FormatSelectionReturn = { editorChange: {} as EditorChange };
@@ -549,22 +565,22 @@ export default class TextFormat extends Plugin {
           replacedText = ankiSelection(selectedText);
           break;
         case "lowercase":
-          replacedText = selectedText.toLowerCase();
+          replacedText = toLowerCaseWithLocale(selectedText);
           break;
         case "uppercase":
           replacedText = selectedText.toUpperCase();
           break;
         case "capitalize-word":
-          replacedText = capitalizeWord(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          replacedText = capitalizeWord(this.settings.LowercaseFirst ? toLowerCaseWithLocale(selectedText) : selectedText);
           break;
         case "capitalize-sentence":
-          replacedText = capitalizeSentence(this.settings.LowercaseFirst ? selectedText.toLowerCase() : selectedText);
+          replacedText = capitalizeSentence(this.settings.LowercaseFirst ? toLowerCaseWithLocale(selectedText) : selectedText);
           break;
         case "title-case":
           replacedText = toTitleCase(selectedText, this.settings);
           break;
-        case "cycle-case":
-          let lowerString = selectedText.toLowerCase();
+        case "cycle-case": {
+          let lowerString = toLowerCaseWithLocale(selectedText);
           const settings = this.settings;
           function getNewString(caseCommand: string): string {
             switch (caseCommand) {
@@ -579,34 +595,20 @@ export default class TextFormat extends Plugin {
             }
           }
           let toggleSeq = this.settings.ToggleSequence.replace(/ /g, "").replace(/\n+/g, "\n").split('\n');
-          let textHistory = new Array<string>();
-          let i;
-          const L = toggleSeq.length;
-          for (i = 0; i < L; i++) {
-            let resText = getNewString(toggleSeq[i]), duplicated = false;
-            // console.log(resText, toggleSeq[i])
-            for (let j = 0; j < textHistory.length; j++) {
-              if (textHistory[j] == resText) {
-                duplicated = true;
-                break;
-              }
-            }
-            if (!duplicated) { //: if the converted text is the same as before cycle case, ignore it
-              if (selectedText == resText) { break; }
-            }
-            textHistory.push(resText);
-          }
-          //: find the cycle case that is different from the original text
-          for (i++; i < i + L; i++) {
-            let resText = getNewString(toggleSeq[i % L]);
-            if (selectedText != resText) {
-              // console.log("!", toggleSeq[i % L])
+          // #110: 预计算各档位并定位当前状态；空文本或重复结果也只能检查有限的一轮，避免死循环。
+          const convertedCases = toggleSeq.map(getNewString);
+          const currentIndex = convertedCases.findIndex((text) => text === selectedText);
+          const startIndex = currentIndex === -1 ? -1 : currentIndex;
+          // 从当前档位的下一项开始，选择第一个与原值不同的有效结果。
+          for (let step = 1; step <= convertedCases.length; step++) {
+            const resText = convertedCases[(startIndex + step) % convertedCases.length];
+            if (typeof resText === "string" && selectedText !== resText) {
               replacedText = resText;
               break;
             }
           }
-          if (!(replacedText)) { return; }
           break;
+        }
         case "remove-redundant-spaces":
           replacedText = selectedText
             .replace(/(\S) {2,}/g, "$1 ")
@@ -627,15 +629,15 @@ export default class TextFormat extends Plugin {
           break;
         case "space-word-symbol":
           replacedText = selectedText
-            .replace(/([\u4e00-\u9fa5]+)([\(\[\{])/g, "$1 $2")
-            .replace(/([\)\]\}])([a-zA-Z0-9\u4e00-\u9fa5]+)/g, "$1 $2")
+            .replace(/([\u4e00-\u9fa5]+)([([{])/g, "$1 $2")
+            .replace(/([)\]}])([a-zA-Z0-9\u4e00-\u9fa5]+)/g, "$1 $2")
             .replace(/([\u4e00-\u9fa5])([a-zA-Z])/g, "$1 $2")
             .replace(/([a-zA-Z])([\u4e00-\u9fa5])/g, "$1 $2");
           break;
         case "remove-citation":
           replacedText = selectedText.replace(/\[\d+\]|【\d+】/g, "").replace(/ +/g, " ");
           break;
-        case "convert-ordered-list":
+        case "convert-ordered-list": {
           let orderedCount = 0;
           // var rx = new RegExp(
           //   String.raw`(?:^|[\s，。])((?:[:;]?i{1,4}[）\)]|\d\.) *)` +
@@ -660,11 +662,12 @@ export default class TextFormat extends Plugin {
           );
           replacedText = replacedText.replace(/\n+/g, "\n").replace(/^\n/, "");
           break;
-        case "convert-bullet-list":
+        }
+        case "convert-bullet-list": {
           let r = this.settings.BulletPoints;//.replace("-", "");
           let bulletSymbolFound = false;
           replacedText = selectedText
-            .replace(RegExp(`\s*([${r}] *)|(\n[~\/Vv-] +)`, "g"), (t, t1, t2) => {
+            .replace(RegExp(String.raw`\s*([${r}] *)|(\n[~/Vv-] +)`, "g"), (t, t1, t2) => {
               // console.log(t, t1, t2)
               bulletSymbolFound = true;
               return t.replace(t1 || t2, "\n- ")
@@ -681,21 +684,23 @@ export default class TextFormat extends Plugin {
           }
           replacedText = replacedText.replace(/^\n*/, "");
           break;
+        }
         // case "split-blank":
         //   replacedText = selectedText.replace(/ /g, "\n");
         //   break;
         case "Chinese-punctuation":
           replacedText = selectedText;
           replacedText = replacedText
-            .replace(/(?:[\u4e00-\u9fa5])( ?, ?)(?:[\u4e00-\u9fa5])/g, (t, t1) => t.replace(t1, "，"))
+            // #117: 孤立标点和中英混合文本中的逗号也要转换，不能仅匹配“汉字,汉字”。
+            .replace(/ ?, ?/g, "，")
             .replace(/(?:[^\d])( ?\. ?)/g, (t, t1) => t.replace(t1, "。"))
             .replace(/ ?、 ?/g, "、")
             .replace(/;/g, "；")
             .replace(/--/g, "——")
             .replace(/[^a-zA-Z0-9](: ?)/g, (t, t1) => t.replace(t1, "："))
-            .replace(/\!(?=[^\[])/g, "！")
+            .replace(/!(?=[^[])/g, "！")
             .replace(/\?/g, "？")
-            .replace(/[\(（][^\)]*?[\u4e00-\u9fa5]+?[^\)]*?[\)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
+            .replace(/[(（][^)]*?[\u4e00-\u9fa5]+?[^)]*?[)）]/g, (t) => `（${t.slice(1, t.length - 1)}）`);
           // TODO: ignore `!` that is `[!note]`
           if (this.settings.RemoveBlanksWhenChinese) {
             replacedText = replacedText.replace(
@@ -704,7 +709,7 @@ export default class TextFormat extends Plugin {
           break;
         case "English-punctuation":
           replacedText = selectedText
-            .replace(/[（\(]([\w !\"#$%&'()*+,-./:;<=>?@\[\\\]^_`{\|}~]+)[）\)]/g, "($1)")
+            .replace(/[（(]([\w !"#$%&'()*+,-./:;<=>?@\x5b\\\]^_{|}~]+)[）)]/g, "($1)")
             .replace(/(?:[a-zA-Z])(， ?)(?:[a-zA-Z])/g, (t, t1) => t.replace(t1, ", "));
           break;
         case "decodeURI":
@@ -716,7 +721,6 @@ export default class TextFormat extends Plugin {
                 .replace(/%2F/g, "/");
             }
           );
-          console.log(replacedText);
           break;
         case "hyphen":
           replacedText = selectedText.replace(/(\w)-[ ]/g, "$1");
@@ -748,7 +752,7 @@ export default class TextFormat extends Plugin {
         case "ligature":
           replacedText = replaceLigature(selectedText);
           break;
-        case "sort-todo":
+        case "sort-todo": {
           // const blocks = selectedText.split(/\n\s*\n/g);
           // const results: string[] = [];
           // for (const block of blocks) {
@@ -756,11 +760,12 @@ export default class TextFormat extends Plugin {
           // }
           // replacedText = results.join("\n\n");
           let fromLine = context.adjustRange.from.line;
-          if ((context.originRange.from.line === context.originRange.to.line) && (!context.editor.getLine(context.originRange.from.line).match(/\s*- \[[ \w\?\!\-]\] /))) {
+          if ((context.originRange.from.line === context.originRange.to.line) && (!context.editor.getLine(context.originRange.from.line).match(/\s*- \[[ \w?!-]\] /))) {
             fromLine = null;
           }
           replacedText = sortTodo(selectedText, context, fromLine);
           break;
+        }
         case "slugify":
           replacedText = slugify(selectedText);
           break;
@@ -773,7 +778,7 @@ export default class TextFormat extends Plugin {
         case "custom-replace":
           replacedText = customReplace(selectedText, context.settings);
           break;
-        case "heading":
+        case "heading": {
           const adjustRange = context.adjustRange;
           if (adjustRange.from.line === adjustRange.to.line) {
             const headingRes = headingLevel(selectedText, context.upper, this.settings.headingLevelMin);
@@ -787,10 +792,11 @@ export default class TextFormat extends Plugin {
             replacedText = replacedText.slice(0, -1); // remove the last `\n`
           }
           break;
+        }
         case "api-request":
           replacedText = await requestAPI(selectedText, context.view.file, context.url);
           break;
-        case "wrapper":
+        case "wrapper": {
           const wrapperResult = textWrapper(selectedText, context);
           selectedText = wrapperResult.selectedText;
           replacedText = wrapperResult.editorChange.text;
@@ -798,8 +804,9 @@ export default class TextFormat extends Plugin {
           // ret.resetSelection = wrapperResult.resetSelection;
           ret.resetSelectionOffset = wrapperResult.resetSelectionOffset;
           break;
-        case "callout":
-          const reCalloutType = /(?:(^|\n)\>\s*\[\!)(\w+)(?:\])/gm;
+        }
+        case "callout": {
+          const reCalloutType = /(?:(^|\n)>\s*\[!)(\w+)(?:\])/gm;
           const lines = selectedText.replace(/^\n|\n$/g, "").split("\n");
           if (lines[0].match(reCalloutType)) { //: detect callout grammar, delete callout prefix
             replacedText = lines[0].replace(reCalloutType, "").replace(/^\s*/g, "");
@@ -846,6 +853,7 @@ export default class TextFormat extends Plugin {
             // this.memory.lastCallout = type;
           }
           break;
+        }
         case "latex-letter":
           replacedText = convertLatex(context.editor, selectedText);
           break;
@@ -863,14 +871,14 @@ export default class TextFormat extends Plugin {
     return ret;
   }
 
-  log(...args: any[]): void {
+  log(...args: unknown[]): void {
     // TODO: add verbose log setting
     if (this.settings.debugMode) {
-      console.log(...args);
+      console.debug(...args);
     }
   }
 
-  async editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: any = {}): Promise<void> {
+  async editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: FormatContext = {}): Promise<void> {
 
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
@@ -1059,21 +1067,20 @@ export default class TextFormat extends Plugin {
 
   compatibleSettingsUpgrade() {
     // uuid init
-    for (let i in this.settings.customReplaceList)
-      if (!this.settings.customReplaceList[i].id)
-        this.settings.customReplaceList[i].id = uuidv4();
-    for (let i in this.settings.WrapperList)
-      if (!this.settings.WrapperList[i].id)
-        this.settings.WrapperList[i].id = uuidv4();
-    for (let i in this.settings.RequestList)
-      if (!this.settings.RequestList[i].id)
-        this.settings.RequestList[i].id = uuidv4();
+    for (const setting of this.settings.customReplaceList)
+      if (!setting.id)
+        setting.id = uuidv4();
+    for (const setting of this.settings.WrapperList)
+      if (!setting.id)
+        setting.id = uuidv4();
+    for (const setting of this.settings.RequestList)
+      if (!setting.id)
+        setting.id = uuidv4();
 
     // @ts-ignore
     const oldCustomReplaceBuiltIn = this.settings.customReplaceBuiltIn;
     if (oldCustomReplaceBuiltIn &&
       (!this.settings.customReplaceBuiltInLog || Object.keys(this.settings.customReplaceBuiltInLog).length == 0)) {
-      console.log("upgrade customReplaceBuiltInLog")
       let newBuiltIn: { [id: string]: CustomReplaceBuiltIn } = {};
       for (const i in oldCustomReplaceBuiltIn) {
         const id: string = oldCustomReplaceBuiltIn[i]; // string

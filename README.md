@@ -66,13 +66,17 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | **Cycle case**  ⚙️                                 | A custom loop to format the selection or the whole title (when cursor focus inline tile)                                                                                                |
 | **Slugify** selected text                         | convert any input text into a URL-friendly slug                                                                                                                                         |
 | **Snakify** selected text                         | Lowercase all letters in selection *and* replace spaces with underscores                                                                                                                |
+| **camelCase** selected text                       | Convert text to camelCase with a lowercase first letter                                                                                                                                 |
+| **CamelCase** selected text                       | Convert text to CamelCase with an uppercase first letter                                                                                                                                |
+
+Title case supports Unicode letters. When Turkish-specific characters are present, casing uses Turkish lowercase rules (`I → ı`, `İ → i`).
 
 #### Markdown Grammar
 
 | Command        | Description                                                                                                                                      |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Heading upper  | e.g.: `# Heading` -> `## Heading` (default shortcut: `Ctrl+Shift+]`)                                                                             |
-| Heading lower  | e.g.: `## Heading` -> `# Heading` (default shortcut: `Ctrl+Shift+[`) [[discussions](https://github.com/Benature/obsidian-text-format/issues/83)] |
+| Heading upper  | e.g.: `# Heading` -> `## Heading`                                                                             |
+| Heading lower  | e.g.: `## Heading` -> `# Heading` [[discussions](https://github.com/Benature/obsidian-text-format/issues/83)] |
 | Callout format | [#80](https://github.com/Benature/obsidian-text-format/issues/80)                                                                                |
 
 
@@ -81,7 +85,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Detect and format **bullet** list ⚙️      | Change `•` into bullet list, i.e. `- `; split every bullet point into single line; and remove blank lines. ([test cases](https://github.com/Benature/obsidian-text-format/issues/66)) |
 | Detect and format **ordered** list       | Change `*)`(star could be any letter) into ordered list (e.g. `1. `, `2. `); split every ordered point into single line; and remove blank lines. (#4)                                 |
-| Convert table to bullet list             | The first volume is 1st list, other volumes are sub-list                                                                                                                              |
+| Convert table to bullet list without header | The first column becomes the top-level list; other columns become sub-lists                                                                                                                              |
 | Convert table to bullet list with header | Sub-list begins with `${header}: `                                                                                                                                                    |
 | **Sort to-do** list                      | [#37](https://github.com/Benature/obsidian-text-format/issues/37), [#46](https://github.com/Benature/obsidian-text-format/issues/46)                                                  |
 
@@ -102,13 +106,15 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Remove **all spaces** in selection                 | Remove all spaces                                                                                                                                                                                                                                  |
 | Remove **trailing spaces** in selection            | Remove trailing spaces ([#61](https://github.com/Benature/obsidian-text-format/issues/61))                                                                                                                                                         |
 | Remove **blank line(s)**                           | replace `\n\n` with `\n`                                                                                                                                                                                                                           |
-| Merge **broken paragraph(s)** in selection ⚙️       | Change selected lines into single-line, except lines are separated by blank line(s). *At the same time, blank lines will be merged into one blank line(optional, default enable), and redundant spaces will be removed(optional, default enable).* |
+| Merge **broken paragraph(s)** in selection ⚙️ (**remove line breaks**) | Remove single line breaks and change selected lines into a single line. For example, `first line\nsecond line` becomes `first line second line`. Paragraphs separated by blank lines remain separate. *Blank lines can optionally be merged into one blank line, and redundant spaces can optionally be removed (both enabled by default).* |
 | **Split** line(s) by **blanks**                    | Replace ` ` with `\n` for OCR use case.                                                                                                                                                                                                            |
 | Convert to **Chinese punctuation** marks (,;:!?) ⚙️ | For OCR use case. (For who require more custom setting, I would recommend <https://p.gantrol.com/>)                                                                                                                                                |
 | Convert to **English punctuation** marks           | Similar to `Convert to Chinese punctuation marks (,;:!?)`                                                                                                                                                                                          |
 | Remove **hyphens**                                 | Remove hyphens (like when pasting text from pdf) [#15](https://github.com/Benature/obsidian-text-format/issues/15)                                                                                                                                 |
 | Replace **ligature**                               | Replace [ligature](https://en.wikipedia.org/wiki/Ligature_(writing)) to Non-ligature [#24](https://github.com/Benature/obsidian-text-format/issues/24)                                                                                             |
 
+
+`Remove trailing spaces`, `Remove blank line(s)`, `Split line(s) by blanks`, and `Add extra line break between paragraphs` are provided as built-in **Custom Replacement** commands.
 
 #### Academic / Study
 
@@ -118,7 +124,7 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 | Remove citation index                                  | e.g., `A research [12] about notes` => `A research about notes`              |
 | Get **Zotero** note from clipboard and paste ⚙️         | See [below ⬇️](#zotero-format)                                                |
 | Detect and convert characters to **math mode** (LaTeX) | e.g. convert `P` into `$P$` (latex), apply for all single letter except `a`. |
-| Convert **Mathpix** array to markdown table            | Convert latex array generated by Mathpix to markdown table format            |
+| Convert **Mathpix's LaTeX array** to markdown table | Convert a LaTeX array generated by Mathpix to Markdown table format |
 
 
 
@@ -135,15 +141,24 @@ Or you can consider to bind custom hotkeys to those commands according to [#29](
 #### Others
 | Command                                              | Description                                                                                                     |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Open preference settings tab                       | Open the Text Format settings tab directly                                                                                |
 | Decode **URL**                                       | Decode URL for better reading and shorter url.                                                                  |
-| Add extra double spaces per paragraph for whole file | Add double spaces at the end of every paragraph [#8](https://github.com/Benature/obsidian-text-format/issues/8) |
-| Add extra line break to paragraph                    | replace `\n` with `\n\n`                                                                                        |
-| Format space between word and symbol                 | add space between words and `(`                                                                                 |
+| Add extra line break between paragraphs            | replace `\n` with `\n\n`                                                                                        |
+| Format space between words and symbols             | add spaces between words and symbols, such as `(`                                                                                 |
 
+
+## Privacy and network access
+
+Text Format does not collect telemetry. Features that access external data are limited to the following cases:
+
+- **Custom API Request** sends the selected text and current file path to your configured endpoint only when you invoke that command.
+- **WikiLink conversion** searches loaded vault files to resolve the matching note path.
+- **Format on paste** reads clipboard content only when enabled by the note property or global setting. When the optional multiline bullet paste setting is enabled (off by default), pasting multiple plain-text lines into an empty bullet item converts them into same-level items with the current indentation and marker.
+- **Donation information** loads sponsor links and a QR-code image from the displayed external domains.
 
 ## Support
 
-If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.net/a/Benature-K). Any amount is welcome, thank you!
+If you find this plugin useful and would like to support its development, you can sponsor me via [Buy Me a Coffee ☕️](https://www.buymeacoffee.com/benature), WeChat, Alipay or [AiFaDian](https://afdian.com/a/Benature-K). Any amount is welcome, thank you!
 
 <p align="center">
 <img src="https://s2.loli.net/2024/04/01/VtX3vYLobdF6MBc.png" width="500px">
@@ -165,6 +180,8 @@ The format template can refer to https://www.zotero.org/support/note_templates
 - Split paragraph into sentences: [#78](https://github.com/Benature/obsidian-text-format/issues/78#issuecomment-1999198698)
 
 ### Wrapper
+
+Anki cloze markers such as `{{c1::` and `}}` are preserved as literal text. Metadata templates such as `{{link}}` are still evaluated when used alongside them.
 [use cases](https://github.com/Benature/obsidian-text-format/milestone/2?closed=1):
 - Underline: prefix=`<u>`, suffix=`</u>`, then selected text will turn into `<u>text</u>`
 - Font color: [#30](https://github.com/Benature/obsidian-text-format/issues/30#issuecomment-1229835540)
