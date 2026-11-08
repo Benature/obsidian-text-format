@@ -2,10 +2,12 @@
 
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
-## 🏗️ developed
-> to be update in the next version
+## 3.3.0
 
+- [feature] Add optional JavaScript RegExp flags to custom replacements, with backward-compatible global matching #107
+- [feature] Format the word at each Title Case caret and optionally expand partial selections to whole words, including hyphenated and camelCase words #106
 - [feature] Add an opt-in setting to paste multi-line plain text into an empty bullet item as same-level list items (off by default) #108
+- [settings] Restore collapsible sections, clarify custom replacement guidance, and improve responsive layouts
 
 ## 3.2.5
 
