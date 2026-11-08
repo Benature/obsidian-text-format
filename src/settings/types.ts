@@ -56,6 +56,7 @@ export interface FormatSettings {
     MergeParagraph_Newlines: boolean;
     MergeParagraph_Spaces: boolean;
     LowercaseFirst: boolean;
+    TitleCaseExpandSelection: boolean;
     RemoveBlanksWhenChinese: boolean;
     ZoteroNoteRegExp: string;
     ZoteroNoteTemplate: string;
@@ -89,6 +90,7 @@ export const DEFAULT_SETTINGS: FormatSettings = {
     MergeParagraph_Newlines: true,
     MergeParagraph_Spaces: true,
     LowercaseFirst: true,
+    TitleCaseExpandSelection: false,
     RemoveBlanksWhenChinese: false,
     ZoteroNoteRegExp: String.raw`“(?<text>.*)” \((?<item>.*?)\) \(\[pdf\]\((?<pdf_url>.*?)\)\)`,
     ZoteroNoteTemplate: "{text} [🔖]({pdf_url})",

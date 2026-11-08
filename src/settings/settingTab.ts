@@ -264,6 +264,17 @@ export class TextFormatSettingTab extends PluginSettingTab {
           });
       });
     new Setting(this.contentEl)
+      .setName(getString(["setting", "title-case-expand-selection"]))
+      .setDesc(getString(["setting", "title-case-expand-selection-desc"]))
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.plugin.settings.TitleCaseExpandSelection)
+          .onChange(async (value) => {
+            this.plugin.settings.TitleCaseExpandSelection = value;
+            await this.plugin.saveSettings();
+          });
+      });
+    new Setting(this.contentEl)
       .setName(getString(["setting", "cycle-case-sequence"]))
       .setDesc(getString(["setting", "cycle-case-sequence-desc"]))
       .addTextArea((text) =>

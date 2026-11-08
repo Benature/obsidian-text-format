@@ -33,6 +33,8 @@ const EN = {
         "word-cases-desc": "lowercase / uppercase / title case / capitalize case / cycle case",
         "lowercase-before-capitalize": "Lowercase before capitalize/title case",
         "lowercase-before-capitalize-desc": "When running the capitalize or title case command, the plugin will lowercase the selection at first.",
+        "title-case-expand-selection": "Expand partial selections to whole words for Title Case",
+        "title-case-expand-selection-desc": "Off by default. When enabled, partial selections expand to complete words, including hyphenated words, possessives, and camelCase words. With no selection, Title Case always formats the word at the cursor.",
         "cycle-case-sequence": "Cycle case sequence (one case per line)",
         "cycle-case-sequence-desc": 
             "Support cases: `lowerCase`, `upperCase`, `capitalizeWord`, `capitalizeSentence`, `titleCase`. \n" +
@@ -156,6 +158,8 @@ const ZH = {
         "word-cases-desc": "转换为小写 / 转换为大写 / 标题式大小写 / 单词首字母大写 / 大小写循环切换",
         "lowercase-before-capitalize": "在首字母大写之前转换为小写",
         "lowercase-before-capitalize-desc": "执行首字母大写或标题式大小写命令前，先将选中文本转换为小写。",
+        "title-case-expand-selection": "标题式大小写：将部分选区扩展到完整单词",
+        "title-case-expand-selection-desc": "默认关闭。启用后，部分选区会扩展到完整单词，包括连字符词、所有格和 camelCase 单词。无选区时，始终格式化光标所在的单词。",
         "cycle-case-sequence": "大小写循环变换（单行）",
         "cycle-case-sequence-desc": 
             "支持以下大小写格式：`lowerCase`、`upperCase`、`capitalizeWord`、`capitalizeSentence`、`titleCase`。\n" +

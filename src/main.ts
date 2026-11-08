@@ -1,6 +1,6 @@
 import {
   Editor, MarkdownView, Plugin, Notice, debounce, normalizePath,
-  EditorSelectionOrCaret, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo, getLanguage
+  EditorSelectionOrCaret, EditorRange, EditorRangeOrCaret, EditorChange, EditorPosition, MarkdownFileInfo, getLanguage
 } from "obsidian";
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "./link";
 import { TextFormatSettingTab } from "./settings/settingTab";
@@ -878,7 +878,70 @@ export default class TextFormat extends Plugin {
     }
   }
 
+  async editorTitleCase(editor: Editor, view: MarkdownView, context: FormatContext = {}): Promise<void> {
+    interface TitleCaseTarget {
+      range: EditorRange;
+      fromOffset: number;
+      toOffset: number;
+      shouldFormat: boolean;
+    }
+
+    const originSelectionList = editor.listSelections();
+    const targets: TitleCaseTarget[] = originSelectionList.map((originSelection) => {
+      const originRange = selection2range(editor, originSelection);
+      const targetRange = titleCaseTargetRange(editor, originRange, this.settings.TitleCaseExpandSelection);
+      const range = targetRange ?? originRange;
+      return {
+        range,
+        fromOffset: editor.posToOffset(range.from),
+        toOffset: editor.posToOffset(range.to),
+        shouldFormat: targetRange !== null,
+      };
+    }).sort((a, b) => a.fromOffset - b.fromOffset || a.toOffset - b.toOffset);
+
+    // Expansion can make multiple cursors target the same or overlapping words.
+    // Merge them so the transaction never contains overlapping changes.
+    const mergedTargets: TitleCaseTarget[] = [];
+    for (const target of targets) {
+      const previous = mergedTargets[mergedTargets.length - 1];
+      if (previous && target.fromOffset < previous.toOffset) {
+        if (target.toOffset > previous.toOffset) {
+          previous.range.to = target.range.to;
+          previous.toOffset = target.toOffset;
+        }
+        previous.shouldFormat = previous.shouldFormat || target.shouldFormat;
+      } else {
+        mergedTargets.push(target);
+      }
+    }
+
+    const changes: EditorChange[] = [];
+    const selections: EditorRangeOrCaret[] = [];
+    for (const target of mergedTargets) {
+      selections.push(target.range);
+      if (!target.shouldFormat) { continue; }
+      const selectedText = editor.getRange(target.range.from, target.range.to);
+      if (!selectedText) { continue; }
+      context.editor = editor;
+      context.view = view;
+      context.adjustRange = target.range;
+      const formatResult = await this.formatSelection(selectedText, "title-case", context);
+      if (formatResult.editorChange.text !== undefined) {
+        changes.push(formatResult.editorChange);
+      }
+    }
+
+    if (changes.length > 0) {
+      editor.transaction({ changes, selections });
+    } else {
+      editor.setSelections(originSelectionList);
+    }
+  }
+
   async editorTextFormat(editor: Editor, view: MarkdownView, cmd: string, context: FormatContext = {}): Promise<void> {
+    if (cmd === "title-case") {
+      return this.editorTitleCase(editor, view, context);
+    }
 
     const originSelectionList: EditorSelectionOrCaret[] = editor.listSelections();
     const resetSelectionList: EditorSelectionOrCaret[] = [];
@@ -1092,6 +1155,28 @@ export default class TextFormat extends Plugin {
 }
 
 
+
+function titleCaseTargetRange(editor: Editor, originRange: EditorRange, expandPartial: boolean): EditorRange | null {
+  const isEmpty = originRange.from.line === originRange.to.line && originRange.from.ch === originRange.to.ch;
+  if (!isEmpty && !expandPartial) { return originRange; }
+  if (originRange.from.line !== originRange.to.line) { return isEmpty ? null : originRange; }
+
+  const line = editor.getLine(originRange.from.line);
+  const wordPattern = /[\p{L}\p{N}_]+(?:[-–—'’][\p{L}\p{N}_]+)*/gu;
+  const words = Array.from(line.matchAll(wordPattern), (match) => ({
+    from: { line: originRange.from.line, ch: match.index },
+    to: { line: originRange.from.line, ch: match.index + match[0].length },
+  }));
+
+  if (isEmpty) {
+    const ch = originRange.from.ch;
+    return words.find((word) => word.from.ch <= ch && ch <= word.to.ch) ?? null;
+  }
+
+  const intersecting = words.filter((word) => word.from.ch < originRange.to.ch && word.to.ch > originRange.from.ch);
+  if (intersecting.length === 0) { return originRange; }
+  return { from: intersecting[0].from, to: intersecting[intersecting.length - 1].to };
+}
 
 function selection2range(editor: Editor, selection: EditorSelectionOrCaret): { readonly from: EditorPosition, readonly to: EditorPosition } {
   let anchorOffset = editor.posToOffset(selection.anchor),
