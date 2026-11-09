@@ -11,11 +11,8 @@
   color: var(--text-faint);
 }
 
-.plugin-text-format .header-div:has(H3) + .tf-collapsible-content {
+.plugin-text-format .header-div + .tf-collapsible-content {
   margin-top: 10px;
-}
-.plugin-text-format .header-div:has(H4) + .tf-collapsible-content {
-  margin-top: 5px;
 }
 
 .plugin-text-format .setting-item > .setting-item-control > input {

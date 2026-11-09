@@ -1,4 +1,4 @@
-import { Setting, PluginSettingTab, App, ButtonComponent, setIcon } from "obsidian";
+import { Setting, PluginSettingTab, App, ButtonComponent, SettingDefinitionItem, setIcon } from "obsidian";
 import TextFormat from "../main";
 import { Wikilink2mdPathMode, CalloutTypeDecider, customReplaceSetting } from './types';
 import { getString } from "../langs/langs";
@@ -29,9 +29,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
   //   await this.plugin.saveSettings();
   // }
 
-  display(): void {
-    let { containerEl } = this;
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [{
+      name: "Text Format settings",
+      render: (_setting, group) => this.renderSettings(group.listEl),
+    }];
+  }
 
+  renderSettings(containerEl: HTMLElement): void {
     let headerEl;
 
     containerEl.empty();
@@ -67,7 +72,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
 
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    headerEl = headerDiv.createEl("h3", { text: getString(["setting", "others"]) });
+    headerEl = new Setting(headerDiv).setName(getString(["setting", "others"])).setHeading().settingEl;
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl, true);
@@ -248,8 +253,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
   addSettingsAboutWordCase(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "word-cases"]) })
-    headerDiv.createEl("div", { text: getString(["setting", "word-cases-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "word-cases"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "word-cases-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -301,7 +306,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutParagraph(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h4", { text: getString(["setting", "paragraph", "header"]) });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "paragraph", "header"])).setHeading().settingEl;
 
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
@@ -332,8 +337,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
   addSettingsAboutLink(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "link-format"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "link-format-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "link-format"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "link-format-desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
@@ -372,7 +377,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
-    this.contentEl.createEl("h4", { text: "Format when removing wikiLink" });
+    new Setting(this.contentEl).setName("Format when removing wikiLink").setHeading();
     // containerEl.createEl("p", { text: "Define the result of calling `Remove WikiLink format in selection`" });
     new Setting(this.contentEl)
       .setName(getString(["setting", "wiki-link-format-heading"]))
@@ -413,8 +418,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutList(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "list-format"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "list-format-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "list-format"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "list-format-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
     new Setting(this.contentEl)
@@ -446,15 +451,15 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutWrapper(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "wrapper", "header"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "wrapper", "desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "wrapper", "header"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "wrapper", "desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
-    const wrapperRuleDesc = document.createDocumentFragment();
+    const wrapperRuleDesc = createFragment();
     wrapperRuleDesc.append(
       getString(["setting", "wrapper", "rule-desc1"]),
-      document.createDocumentFragment().createEl("br"),
+      createEl("br"),
       getString(["setting","wrapper",  "rule-desc2"])
     );
     new Setting(this.contentEl)
@@ -473,7 +478,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               suffix: "",
             });
             await this.plugin.saveSettings();
-            this.display();
+            this.update();
           });
       });
     this.plugin.settings.WrapperList.forEach((wrapperSetting, index) => {
@@ -511,7 +516,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onClick(async () => {
               this.plugin.settings.WrapperList.splice(index, 1);
               await this.plugin.saveSettings();
-              this.display();
+              this.update();
             });
         });
       s.infoEl.remove();
@@ -520,8 +525,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutApiRequest(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "api-request"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "api-request-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "api-request"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "api-request-desc"]), cls: "setting-item-description heading-description" });
 
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
@@ -538,7 +543,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               url: "",
             });
             await this.plugin.saveSettings();
-            this.display();
+            this.update();
           });
       })
     this.plugin.settings.RequestList.forEach((requestSetting, index) => {
@@ -567,7 +572,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onClick(async () => {
               this.plugin.settings.RequestList.splice(index, 1);
               await this.plugin.saveSettings();
-              this.display();
+              this.update();
             });
         });
       s.infoEl.remove();
@@ -576,8 +581,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutReplacement(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "custom-replacement"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "custom-replacement-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "custom-replacement"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "custom-replacement-desc"]), cls: "setting-item-description heading-description" });
 
 
     this.contentEl = containerEl.createDiv();
@@ -599,7 +604,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
               }]
             });
             await this.plugin.saveSettings();
-            this.display();
+            this.update();
           });
       })
     this.plugin.settings.customReplaceList.forEach((replaceSetting, index) => {
@@ -650,7 +655,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
             .onClick(async () => {
               this.plugin.settings.customReplaceList.splice(index, 1);
               await this.plugin.saveSettings();
-              this.display();
+              this.update();
             });
         });
       s.settingEl.addClass("custom-replace");
@@ -672,7 +677,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
 
   addSettingsAboutZotero(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h4", { text: getString(["setting", "zotero-pdf-note-format"]) });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "zotero-pdf-note-format"])).setHeading().settingEl;
 
     let contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, contentEl);
@@ -691,12 +696,14 @@ export class TextFormatSettingTab extends PluginSettingTab {
         text.inputEl.addClass("zotero-input-regexp");
       }
       );
-    zoteroEl.descEl.innerHTML = `<div>The format of note template can configured refer to <a href="https://github.com/Benature/obsidian-text-format?tab=readme-ov-file#zotero-format">document</a>.</div>
-    <ul>
-    <li><code>text</code>: highlight</li>
-    <li><code>pdf_url</code>: comment</li>
-    <li><code>item</code>: citation</li>
-    </ul>`;
+    const zoteroDesc = zoteroEl.descEl.createDiv();
+    zoteroDesc.appendText("The note template format can be configured in the ");
+    zoteroDesc.createEl("a", { text: "documentation", href: "https://github.com/Benature/obsidian-text-format?tab=readme-ov-file#zotero-format" });
+    zoteroDesc.appendText(".");
+    const zoteroList = zoteroEl.descEl.createEl("ul");
+    zoteroList.createEl("li", { text: "text: highlight" });
+    zoteroList.createEl("li", { text: "pdf_url: comment" });
+    zoteroList.createEl("li", { text: "item: citation" });
     new Setting(contentEl)
       .setName(getString(["setting", "zotero-output-format"]))
       .setDesc(getString(["setting", "zotero-output-format-desc"])
@@ -716,8 +723,8 @@ export class TextFormatSettingTab extends PluginSettingTab {
   }
   addSettingsAboutMarkdownQuicker(containerEl: HTMLElement) {
     let headerDiv = containerEl.createDiv({ cls: "header-div" });
-    let headerEl = headerDiv.createEl("h3", { text: getString(["setting", "markdown-quicker"]) });
-    headerDiv.createEl("div", { text: getString(["setting", "markdown-quicker-desc"]), cls: "setting-item-description heading-description" });
+    let headerEl = new Setting(headerDiv).setName(getString(["setting", "markdown-quicker"])).setHeading().settingEl;
+    headerDiv.createDiv({ text: getString(["setting", "markdown-quicker-desc"]), cls: "setting-item-description heading-description" });
     this.contentEl = containerEl.createDiv();
     this.makeCollapsible(headerEl, this.contentEl);
 

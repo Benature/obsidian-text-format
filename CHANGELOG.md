@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.0
+
+- [fix] Resolve all Obsidian community review warnings in settings and CSS
+- [updated] Render settings through the declarative API, standardize headings, and refresh them with update()
+- [chore] Update release actions and retain build-provenance attestations
+
 🧱 [Todo Project](https://github.com/Benature/obsidian-text-format/projects/1)
 
 ## 3.3.0
