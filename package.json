@@ -1,6 +1,6 @@
 {
   "name": "obsidian-text-format",
-  "version": "3.4.0",
+  "version": "3.3.1",
   "description": "Format selected text upper/lower/capitalize/title or remove redundant blanks/enters.",
   "main": "main.js",
   "scripts": {

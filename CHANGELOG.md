@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.4.0
+## 3.3.1
 
 - [fix] Resolve all Obsidian community review warnings in settings and CSS
 - [updated] Render settings through the declarative API, standardize headings, and refresh them with update()
