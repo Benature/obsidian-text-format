@@ -32,7 +32,7 @@ export class TextFormatSettingTab extends PluginSettingTab {
   getSettingDefinitions(): SettingDefinitionItem[] {
     return [{
       name: "Text Format settings",
-      render: (_setting, group) => this.renderSettings(group.listEl),
+      render: (setting) => this.renderSettings(setting.settingEl),
     }];
   }
 

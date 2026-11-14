@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.2
+
+- [fix] Keep custom settings content mounted after Obsidian 1.15 reconciles declarative setting groups #124
+
 ## 3.3.1
 
 - [fix] Resolve all Obsidian community review warnings in settings and CSS

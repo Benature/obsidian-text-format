@@ -35,6 +35,26 @@ function collapsibleHeader(text) {
   };
 }
 
+test("#124: custom settings render into the row preserved by Obsidian 1.15", () => {
+  const { tab } = createSettingTab();
+  const setting = { settingEl: { id: "setting-row" } };
+  const group = { listEl: { id: "host-managed-group-list" } };
+  let renderedTo = null;
+  tab.renderSettings = (containerEl) => {
+    renderedTo = containerEl;
+    containerEl.rendered = true;
+  };
+
+  const [definition] = tab.getSettingDefinitions();
+  definition.render(setting, group);
+
+  // Obsidian 1.15 reconciles group.listEl after render() returns, replacing
+  // arbitrary children there. The row itself remains and keeps its children.
+  assert.equal(renderedTo, setting.settingEl);
+  assert.notEqual(renderedTo, group.listEl);
+  assert.equal(setting.settingEl.rendered, true);
+});
+
 test("settings: collapse icon is inserted before the heading text", () => {
   const { tab } = createSettingTab();
   const header = collapsibleHeader("Custom replacement");

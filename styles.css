@@ -1,3 +1,7 @@
+.plugin-text-format.setting-item {
+  display: block;
+}
+
 .plugin-text-format H3,
 .plugin-text-format H4 {
   margin-bottom: 0px;
