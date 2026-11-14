@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.3
+
+- [style] Tighten section title-to-description spacing while preserving clear separation between sections
+
 ## 3.3.2
 
 - [fix] Keep custom settings content mounted after Obsidian 1.15 reconciles declarative setting groups #124

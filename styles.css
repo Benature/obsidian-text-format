@@ -10,13 +10,23 @@
 .plugin-text-format H4{
   opacity: 0.7;
 }
+.plugin-text-format .header-div {
+  margin-bottom: var(--size-4-3, 12px);
+}
+
+.plugin-text-format .header-div .tf-collapsible-header {
+  margin-bottom: var(--size-4-1, 4px);
+}
+
 .plugin-text-format .heading-description {
-  padding-top: 0px;
+  margin-top: 0;
+  padding-top: 0;
   color: var(--text-faint);
+  line-height: 1.4;
 }
 
 .plugin-text-format .header-div + .tf-collapsible-content {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .plugin-text-format .setting-item > .setting-item-control > input {
@@ -112,7 +122,7 @@
 }
 
 .tf-collapsible-header {
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   padding-top: 4px;
 }
 
