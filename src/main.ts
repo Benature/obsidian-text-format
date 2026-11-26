@@ -5,7 +5,7 @@ import {
 import { removeWikiLink, removeUrlLink, url2WikiLink, convertWikiLinkToMarkdown } from "./link";
 import { TextFormatSettingTab } from "./settings/settingTab";
 import { FormatSettings, DEFAULT_SETTINGS, CalloutTypeDecider, CustomReplaceBuiltIn } from "./settings/types";
-import { array2markdown, table2bullet, formatMultilineBulletPaste, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, toTitleCase, toLowerCaseWithLocale, customReplace, convertLatex, camelCase } from "./format";
+import { array2markdown, table2bullet, formatMultilineBulletPaste, reverseLines, capitalizeWord, capitalizeSentence, removeAllSpaces, zoteroNote, textWrapper, replaceLigature, ankiSelection, sortTodo, requestAPI, headingLevel, slugify, snakify, toTitleCase, toLowerCaseWithLocale, customReplace, convertLatex, camelCase } from "./format";
 import { CustomReplacementBuiltInCommands, GlobalCommands } from "./commands";
 import { getString } from "./langs/langs";
 import { selectionBehavior, FormatSelectionReturn, FormatContext } from "./types";
@@ -367,6 +367,14 @@ export default class TextFormat extends Plugin {
       icon: "wrap-text",
       editorCallback: (editor: Editor, view: MarkdownView) => {
         void this.editorTextFormat(editor, view, "merge-line");
+      },
+    });
+    this.addCommand({
+      id: "reverse-lines",
+      name: { en: "Reverse lines", zh: "反转行顺序", "zh-TW": "反轉行順序" }[lang],
+      icon: "arrow-up-down",
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+        void this.editorTextFormat(editor, view, "reverse-lines");
       },
     });
     // this.addCommand({
@@ -752,6 +760,9 @@ export default class TextFormat extends Plugin {
         case "ligature":
           replacedText = replaceLigature(selectedText);
           break;
+        case "reverse-lines":
+          replacedText = reverseLines(selectedText);
+          break;
         case "sort-todo": {
           // const blocks = selectedText.split(/\n\s*\n/g);
           // const results: string[] = [];
@@ -967,6 +978,7 @@ export default class TextFormat extends Plugin {
         case "convert-bullet-list":
         case "convert-ordered-list":
         case "callout":
+        case "reverse-lines":
           //: Force to select whole paragraph(s)
           adjustSelectionCmd = selectionBehavior.wholeLine;
           break;

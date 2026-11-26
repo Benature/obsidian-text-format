@@ -159,6 +159,10 @@ export function zoteroNote(
     }
 }
 
+export function reverseLines(text: string): string {
+    return text.split(/\r?\n/).reverse().join("\n");
+}
+
 export function formatMultilineBulletPaste(content: string, currentLine: string): string | null {
     const bullet = currentLine.match(/^(\s*)([-*+])\s+$/);
     if (!bullet) {
