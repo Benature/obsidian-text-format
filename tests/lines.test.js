@@ -52,6 +52,10 @@ test("reverse-lines: a single line is unchanged", () => {
   assert.equal(format.reverseLines("only line"), "only line");
 });
 
+test("reverse-lines: handles CRLF line endings", () => {
+  assert.equal(format.reverseLines("1\r\n2\r\n3"), "3\n2\n1");
+});
+
 test("reverse-lines: command is wired through formatSelection", async () => {
   const plugin = createPlugin();
   const result = await plugin.formatSelection("first\nsecond\nthird", "reverse-lines");
