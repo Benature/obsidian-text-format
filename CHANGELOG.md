@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.4.0
+
+- [feature] Add `reverse-lines` command to reverse the order of the selected lines #125
+
 ## 3.3.3
 
 - [style] Tighten section title-to-description spacing while preserving clear separation between sections
